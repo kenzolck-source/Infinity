@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>無限恐怖：輪迴開端</title>
+    <style>
+        :root { --bg: #050505; --term: #33ff00; --ui: #1a1a1a; --bd: #444; --acc: #b71c1c; }
+        body { background: var(--bg); color: #ccc; font-family: 'Microsoft JhengHei', monospace; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* Windows 95 Dialog */
+        #intro-win { position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:999; display:flex; justify-content:center; align-items:center; }
+        .win-box { background:#c0c0c0; border:2px outset #fff; width:350px; padding:2px; box-shadow:5px 5px 0 #333; color:black;}
+        .win-head { background:#000080; color:white; padding:3px; font-weight:bold; display:flex; justify-content:space-between; }
+        .win-content { padding:20px; text-align:center; font-size:1.1em; }
+        .win-btn { border:2px outset white; background:#c0c0c0; padding:5px 15px; cursor:pointer; margin:5px; font-weight:bold; }
+        .win-btn:active { border:2px inset white; }
+
+        /* Char Select */
+        #char-select { display:none; flex-direction:column; align-items:center; justify-content:center; height:100%; padding:20px; }
+        .job-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; max-width:800px; width:100%; max-height:60vh; overflow-y:auto; }
+        .job-card { background: #222; border:1px solid #444; padding:10px; cursor:pointer; transition:0.2s; display:flex; flex-direction:column; }
+        .job-card:hover { border-color: var(--term); background:#333; }
+        .job-card.selected { border: 2px solid var(--acc); background:#2d1a1a; }
+        .job-name { color: var(--term); font-weight:bold; }
+        .job-desc { font-size:0.8em; color:#888; margin-top:5px; }
+        
+        /* Main UI */
+        #main-ui { display:none; height:100%; flex-direction:column; }
+        header { background:#111; padding:10px 20px; border-bottom:1px solid var(--acc); display:flex; justify-content:space-between; align-items:center; }
+        .stat-bar { color: gold; font-weight:bold; }
+        
+        #game-body { flex:1; display:flex; overflow:hidden; }
+        #sidebar { width:240px; background:#111; border-right:1px solid #333; padding:10px; overflow-y:auto; font-size:0.9em; }
+        #log-area { flex:1; background:black; padding:20px; overflow-y:auto; font-family:'Consolas', monospace; line-height:1.6; }
+        
+        .log-txt { margin-bottom:8px; color:#aaa; }
+        .log-imp { color:white; font-weight:bold; margin-top:10px; margin-bottom:5px; }
+        .log-sys { color:yellow; }
+        .log-dmg { color:#ff4444; }
+        .log-get { color:#00e676; }
+        .log-gene { color:#ff0000; text-shadow:0 0 5px red; font-weight:bold; font-size:1.1em; animation: pulse 2s infinite; }
+        
+        #controls { padding:10px; background:#1a1a1a; display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; border-top:1px solid #333; }
+        button.act-btn { background:#333; color:#eee; border:1px solid #555; padding:12px; cursor:pointer; border-radius:4px; font-size:1em; }
+        button.act-btn:hover { background:#444; border-color:#888; }
+        button.btn-special { background:#b71c1c; border-color:#ff5252; color:white; }
+        
+        /* Shop */
+        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100; display:none; justify-content:center; align-items:center; }
+        .shop-box { width:800px; height:80vh; background:#222; border:1px solid #555; display:flex; flex-direction:column; }
+        .shop-tabs { display:flex; background:#111; }
+        .tab-btn { flex:1; padding:15px; cursor:pointer; background:transparent; color:#888; border:none; border-bottom:2px solid transparent; }
+        .tab-btn.active { color:white; border-bottom-color:var(--acc); }
+        .shop-list { flex:1; overflow-y:auto; display:grid; grid-template-columns: 1fr 1fr; gap:10px; padding:10px; }
+        .shop-item { border:1px solid #444; padding:10px; cursor:pointer; }
+        .shop-item:hover { background:#333; }
+
+        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; text-shadow: 0 0 15px red; } 100% { opacity: 0.8; } }
+    </style>
+</head>
+<body>
+
+<!-- Intro -->
+<div id="intro-win">
+    <div class="win-box">
+        <div class="win-head"><span>SYSTEM_ALERT</span><span>X</span></div>
+        <div class="win-content">
+            <p>想明白生命的意義嗎？</p>
+            <p>想真正的...活著嗎？</p>
+            <div style="margin-top:20px;">
+                <button class="win-btn" onclick="goToSelect()">YES</button>
+                <button class="win-btn" onclick="window.close()">NO</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Selection -->
+<div id="char-select">
+    <h2 style="color:var(--acc)">主神空間：意識載入中...</h2>
+    <p>隨機篩選出 10 個適合你的前世身份，請選擇一個開始輪迴：</p>
+    <div class="job-grid" id="job-container"></div>
+    <div style="margin-top:20px; width:100%; max-width:800px;">
+        <input type="text" id="player-name" value="鄭吒" placeholder="輸入名字" style="padding:10px; width:200px; background:#222; border:1px solid #555; color:white;">
+        <button class="act-btn" style="background:var(--acc); width:150px;" onclick="startGame()">確認身份</button>
+    </div>
+</div>
+
+<!-- Game UI -->
+<div id="main-ui">
+    <header>
+        <div>
+            <span id="ui-name"></span> | 
+            <span class="stat-bar" id="ui-pts">0</span> 獎勵點 | 
+            <span style="font-size:0.8em; color:#aaa;" id="ui-rank">D:0 C:0 B:0 A:0</span>
+        </div>
+        <div id="ui-loc" style="color:#00e676">主神空間</div>
+    </header>
+    <div id="game-body">
+        <div id="sidebar">
+            <h4 style="border-bottom:1px solid #555">人物屬性</h4>
+            <div id="stat-list"></div>
+            <div style="margin-top:5px; font-size:0.8em; color:#666;">*主神空間內點擊屬性可強化</div>
+            
+            <h4 style="border-bottom:1px solid #555; margin-top:20px;">裝備道具</h4>
+            <div id="inv-list"></div>
+            
+            <h4 style="border-bottom:1px solid #555; margin-top:20px;">技能血統</h4>
+            <div id="skill-list"></div>
+        </div>
+        <div id="log-area">
+            <div class="log-sys">連接主神光球... 數據同步完成。</div>
+        </div>
+    </div>
+    <div id="controls"></div>
+</div>
+
+<!-- Shop -->
+<div id="shop-modal" class="modal">
+    <div class="shop-box">
+        <div class="shop-tabs">
+            <button class="tab-btn active" onclick="renderShop('items')">武器/道具</button>
+            <button class="tab-btn" onclick="renderShop('skills')">血統/功法</button>
+            <button class="tab-btn" style="background:#b71c1c; color:white; flex:0 0 100px;" onclick="document.getElementById('shop-modal').style.display='none'">關閉</button>
+        </div>
+        <div class="shop-list" id="shop-content"></div>
+    </div>
+</div>
+
+<script>
+/* --- Data: 50 Unique Professions --- */
+const allProfessions = [
+    {n:"特種兵", s:{str:15, agi:12, vit:15, int:8, spr:10, luc:5}, i:"無限子彈衝鋒槍", d:"軍隊精英。體能強悍，自帶強力槍械。"},
+    {n:"網絡黑客", s:{str:5, agi:8, vit:5, int:20, spr:12, luc:8}, i:"便攜式超級電腦", d:"智力超群。可破解電子鎖、操控科技設施。"},
+    {n:"外科醫生", s:{str:8, agi:15, vit:8, int:15, spr:10, luc:6}, i:"高級急救箱", d:"精準的手術技巧。擅長治療傷勢，解剖弱點。"},
+    {n:"職業殺手", s:{str:10, agi:18, vit:10, int:12, spr:15, luc:5}, i:"高週波匕首", d:"隱藏在陰影中。極高的爆發傷害與速度。"},
+    {n:"網絡作家", s:{str:6, agi:7, vit:6, int:16, spr:18, luc:10}, i:"分析筆記本", d:"擅長分析佈局與劇情走向。精神力較高。"},
+    {n:"黑市拳王", s:{str:20, agi:10, vit:18, int:5, spr:8, luc:5}, i:"合金指虎", d:"近戰肉搏專家。力量與抗擊打能力極強。"},
+    {n:"考古學家", s:{str:8, agi:10, vit:10, int:18, spr:12, luc:15}, i:"黃金羅盤", d:"對古物有特殊感應。在靈異類冒險中有優勢。"},
+    {n:"退役老兵", s:{str:12, agi:10, vit:12, int:10, spr:15, luc:8}, i:"老舊軍用手槍", d:"經驗豐富，心理素質極佳。"},
+    {n:"神棍騙子", s:{str:5, agi:8, vit:5, int:12, spr:12, luc:20}, i:"護身符(偽)", d:"極高的運氣。總能在必死之局中找到生路。"},
+    {n:"奧運射箭手", s:{str:12, agi:15, vit:10, int:10, spr:15, luc:8}, i:"復合弓", d:"鷹眼般的視力。遠程精準打擊。"},
+    {n:"卡車司機", s:{str:12, agi:8, vit:15, int:8, spr:8, luc:8}, i:"大號扳手", d:"習慣長途跋涉，耐力驚人。"},
+    {n:"高中生", s:{str:8, agi:12, vit:8, int:12, spr:15, luc:12}, i:"多功能工具刀", d:"潛力無限，學習能力強。"},
+    {n:"公司CEO", s:{str:6, agi:8, vit:6, int:18, spr:15, luc:10}, i:"金條", d:"擅長談判與資源管理。"},
+    {n:"瑜伽教練", s:{str:8, agi:18, vit:10, int:10, spr:12, luc:8}, i:"能量飲料", d:"身體柔韌性極佳，閃避率高。"},
+    {n:"私家偵探", s:{str:10, agi:10, vit:10, int:16, spr:14, luc:8}, i:"放大鏡與左輪", d:"觀察入微，容易發現隱藏支線。"},
+    {n:"建築工人", s:{str:18, agi:8, vit:16, int:6, spr:8, luc:6}, i:"鐵鎚", d:"擁有強大的破壞力與體力。"},
+    {n:"魔術師", s:{str:6, agi:18, vit:8, int:14, spr:12, luc:12}, i:"魔術撲克牌", d:"手法靈活，擅長投擲與迷惑敵人。"},
+    {n:"修車技工", s:{str:12, agi:10, vit:12, int:12, spr:8, luc:8}, i:"維修工具組", d:"可以修復受損的道具或機械。"},
+    {n:"植物學家", s:{str:6, agi:8, vit:8, int:18, spr:10, luc:10}, i:"草藥圖鑑", d:"能識別有毒或有益的植物。"},
+    {n:"遊手好閒者", s:{str:5, agi:5, vit:5, int:5, spr:5, luc:25}, i:"幸運硬幣", d:"屬性平庸，但運氣好到逆天。"},
+    // ... 這裡省略部分重複結構，實際代碼中會有50個，以下補足多樣性
+    {n:"黑幫打手", s:{str:14, agi:10, vit:14, int:8, spr:10, luc:5}, i:"開山刀", d:"凶狠好鬥。"},
+    {n:"獵人", s:{str:12, agi:14, vit:12, int:10, spr:12, luc:10}, i:"獵槍", d:"擅長追蹤獵物。"},
+    {n:"消防員", s:{str:15, agi:12, vit:15, int:10, spr:12, luc:8}, i:"消防斧", d:"在火場中也能冷靜行動。"},
+    {n:"保鏢", s:{str:16, agi:12, vit:16, int:10, spr:10, luc:6}, i:"防彈背心", d:"防禦力出眾。"},
+    {n:"心理醫生", s:{str:5, agi:5, vit:5, int:18, spr:20, luc:8}, i:"懷錶", d:"精神力極高，甚至能催眠敵人。"},
+    {n:"極限運動員", s:{str:10, agi:20, vit:12, int:8, spr:15, luc:5}, i:"滑翔翼", d:"速度與反應神經頂尖。"},
+    {n:"圖書管理員", s:{str:5, agi:8, vit:5, int:20, spr:15, luc:5}, i:"古籍殘卷", d:"知識淵博，可能懂得古代咒語。"},
+    {n:"賭徒", s:{str:6, agi:8, vit:6, int:12, spr:15, luc:22}, i:"灌鉛骰子", d:"以命搏命的瘋子。"},
+    {n:"農夫", s:{str:14, agi:10, vit:16, int:8, spr:8, luc:10}, i:"鐮刀", d:"樸實無華但體力極好。"},
+    {n:"廚師", s:{str:10, agi:12, vit:10, int:10, spr:8, luc:10}, i:"屠骨刀", d:"刀法精湛。"},
+    {n:"道士下山", s:{str:10, agi:12, vit:10, int:15, spr:18, luc:10}, i:"桃木劍", d:"對殭屍鬼魂有特攻。"},
+    {n:"化學家", s:{str:6, agi:8, vit:6, int:20, spr:12, luc:8}, i:"腐蝕酸瓶", d:"能製造簡易炸藥或毒藥。"},
+    {n:"記者", s:{str:8, agi:10, vit:8, int:15, spr:15, luc:15}, i:"照相機", d:"總能在關鍵時刻發現線索。"},
+    {n:"程式設計師", s:{str:5, agi:5, vit:5, int:22, spr:10, luc:5}, i:"機械鍵盤", d:"邏輯思維極強。"},
+    {n:"囚犯", s:{str:12, agi:12, vit:12, int:10, spr:15, luc:5}, i:"磨尖的牙刷", d:"適應惡劣環境，求生欲強。"},
+    {n:"賽車手", s:{str:8, agi:18, vit:10, int:12, spr:12, luc:8}, i:"賽車頭盔", d:"動態視力極佳。"},
+    {n:"神父", s:{str:6, agi:6, vit:8, int:15, spr:20, luc:10}, i:"聖經", d:"精神信仰強大，可安撫隊友。"},
+    {n:"保險推銷員", s:{str:6, agi:10, vit:6, int:15, spr:18, luc:10}, i:"公文包", d:"口才極好，能忽悠劇情人物。"},
+    {n:"空手道家", s:{str:16, agi:14, vit:14, int:8, spr:10, luc:5}, i:"黑帶", d:"空手戰鬥力強。"},
+    {n:"模特", s:{str:6, agi:12, vit:8, int:10, spr:12, luc:15}, i:"高跟鞋", d:"魅力值高。"},
+    {n:"電工", s:{str:10, agi:10, vit:10, int:14, spr:8, luc:8}, i:"絕緣手套", d:"對電力機關有抗性。"},
+    {n:"馴獸師", s:{str:10, agi:10, vit:10, int:12, spr:15, luc:10}, i:"皮鞭", d:"能與動物類怪物溝通。"},
+    {n:"傭兵", s:{str:16, agi:14, vit:16, int:10, spr:12, luc:5}, i:"戰術背心", d:"戰場殺戮機器。"},
+    {n:"乞丐", s:{str:8, agi:8, vit:14, int:8, spr:10, luc:15}, i:"破碗", d:"極強的生存與忍耐能力。"},
+    {n:"富二代", s:{str:5, agi:5, vit:5, int:10, spr:5, luc:15}, i:"信用卡(無用)", d:"雖然屬性差，但可能有隱藏的家族傳承。"},
+    {n:"武術指導", s:{str:12, agi:16, vit:12, int:12, spr:10, luc:8}, i:"雙節棍", d:"精通各種兵器使用。"},
+    {n:"登山客", s:{str:12, agi:12, vit:16, int:8, spr:12, luc:8}, i:"登山鎬", d:"在複雜地形行動自如。"},
+    {n:"家庭主婦", s:{str:8, agi:10, vit:10, int:12, spr:15, luc:12}, i:"平底鍋", d:"為了保護家人能爆發驚人潛力。"},
+    {n:"古董商", s:{str:6, agi:8, vit:6, int:16, spr:12, luc:15}, i:"鑑識鏡", d:"能看出物品的真實價值。"},
+    {n:"一般職員", s:{str:7, agi:7, vit:7, int:9, spr:8, luc:9}, i:"領帶", d:"最普通的人，發展方向無限。"}
+];
+
+/* --- Data: Shop Items (50 distinct) --- */
+const shopItems = [
+    {n:"無限子彈沙漠之鷹", c:100, d:"無限彈藥，威力尚可。"},
+    {n:"高震動粒子切割匕首", c:500, d:"無視部分物理防禦。"},
+    {n:"強效止血噴霧", c:100, d:"瞬間修復外傷，回復100HP。"},
+    {n:"T病毒原液", c:1500, d:"強化身體素質，開啟基因鎖門檻降低。"},
+    {n:"納戒", c:1500, d:"空間儲存道具，附帶靈魂攻擊防禦。"},
+    {n:"強融槍", c:800, d:"發射酸液，腐蝕金屬。"},
+    {n:"審判之矛(仿)", c:2000, d:"投擲用傳說武器，對靈體特效。"},
+    {n:"綠魔滑板", c:2000, d:"飛行道具，附帶導彈。"},
+    {n:"高斯狙擊步槍", c:3000, d:"極遠距離，極高穿透力。"},
+    {n:"防護玉佩", c:500, d:"抵擋一次致命靈異攻擊。"},
+    {n:"微型核彈", c:5000, d:"毀滅性範圍傷害，慎用。"},
+    {n:"艾德曼合金盾牌", c:2500, d:"堅不可摧的防禦。"},
+    {n:"解毒劑", c:50, d:"解除一般生物毒素。"},
+    {n:"固態水", c:20, d:"壓縮水源，生存必備。"},
+    {n:"壓縮食物", c:20, d:"高熱量食物。"},
+    {n:"夜視儀", c:200, d:"黑暗中視物。"},
+    {n:"蜘蛛絲發射器", c:800, d:"高機動性移動裝置。"},
+    {n:"雷射劍", c:1200, d:"高溫切割。"},
+    {n:"外骨骼裝甲", c:1500, d:"力量+20，防禦+20。"},
+    {n:"復活真經(殘篇)", c:8000, d:"劇情道具，可復活隊友。"},
+    {n:"太陽金經", c:5000, d:"極大克制黑暗生物。"},
+    {n:"聯絡器", c:50, d:"團隊通訊。"},
+    {n:"閃光彈", c:100, d:"致盲敵人。"},
+    {n:"煙霧彈", c:100, d:"掩護撤退。"},
+    {n:"地雷", c:150, d:"陷阱佈置。"},
+    {n:"火焰噴射器", c:600, d:"對生物群體傷害高。"},
+    {n:"重力槍", c:2500, d:"操控物體重力。"},
+    {n:"等離子手槍", c:1000, d:"能量傷害。"},
+    {n:"防彈風衣", c:300, d:"輕便防禦。"},
+    {n:"多功能急救艙", c:2000, d:"只要有一口氣就能救回。"},
+    {n:"精神力掃描儀", c:1000, d:"顯示周圍生物位置。"},
+    {n:"隱形斗篷", c:1500, d:"光學迷彩。"},
+    {n:"替身人偶", c:1000, d:"抵擋一次死亡。"},
+    {n:"魔法捲軸：火球", c:300, d:"一次性魔法。"},
+    {n:"魔法捲軸：冰牆", c:300, d:"一次性防禦。"},
+    {n:"萬能鑰匙", c:500, d:"開啟大部分物理鎖。"},
+    {n:"抓鉤槍", c:300, d:"攀爬用。"},
+    {n:"氧氣瓶", c:100, d:"水下或真空生存。"},
+    {n:"興奮劑", c:200, d:"短時間屬性提升，隨後虛弱。"},
+    {n:"聖水", c:100, d:"對吸血鬼特效。"},
+    {n:"銀子彈", c:200, d:"對狼人特效。"},
+    {n:"EMP手雷", c:300, d:"癱瘓電子設備。"},
+    {n:"火箭筒", c:1000, d:"爆炸傷害。"},
+    {n:"加特林機槍", c:2000, d:"極致的火力壓制。"},
+    {n:"無人偵察機", c:500, d:"空中視野。"},
+    {n:"能量盾發生器", c:1200, d:"生成能量護盾。"},
+    {n:"傳送符", c:800, d:"隨機傳送短距離。"},
+    {n:"記憶清除器", c:500, d:"消除NPC記憶。"},
+    {n:"黃金磚", c:1000, d:"換取劇情世界貨幣。"},
+    {n:"主神手錶(備用)", c:10, d:"查看任務。"}
+];
+
+/* --- Data: Shop Skills (50 distinct) --- */
+const shopSkills = [
+    {n:"混元一氣功", c:800, d:"基礎內功，增加力量與體力。"},
+    {n:"紅炎", c:1500, d:"將內力轉化為紅色火焰燃燒敵人。"},
+    {n:"爆炸", c:2000, d:"鄭吒自創，內力與血能對衝，爆發5倍戰力。"},
+    {n:"毀滅", c:5000, d:"爆炸進階，毀滅性的力量提升。"},
+    {n:"輕功水上漂", c:1000, d:"大幅提升移動速度與跳躍力。"},
+    {n:"吸血鬼男爵血統", c:2500, d:"擁有恢復力與紅炎技能前置。"},
+    {n:"狼人變異血統", c:2000, d:"滿月變身，力量速度翻倍。"},
+    {n:"蜘蛛俠感應", c:1500, d:"預知危險，大幅提升閃避。"},
+    {n:"心靈鎖鏈", c:1000, d:"精神力者核心技能，團隊溝通。"},
+    {n:"精神鞭撻", c:1200, d:"直接攻擊敵人大腦。"},
+    {n:"點線魔眼", c:3000, d:"看見死線，無視防禦的攻擊。"},
+    {n:"風之矢", c:1200, d:"附帶風屬性的遠程攻擊。"},
+    {n:"聖光氣", c:1500, d:"對黑暗生物造成巨大傷害。"},
+    {n:"戶愚呂弟肌肉強化", c:1800, d:"肉體力量極致強化，防禦大增。"},
+    {n:"念動力", c:1000, d:"以精神力控制物體。"},
+    {n:"AT力場", c:4000, d:"心之壁，絕對防禦。"},
+    {n:"變形術", c:1000, d:"偽裝成他人外貌。"},
+    {n:"影分身", c:2000, d:"製造實體分身迷惑敵人。"},
+    {n:"龜派氣功", c:3500, d:"聚氣釋放強力光波。"},
+    {n:"寫輪眼(單勾玉)", c:2000, d:"動態視力，看穿幻術。"},
+    {n:"白眼", c:1500, d:"360度透視視野。"},
+    {n:"北斗百裂拳", c:2500, d:"瞬間擊打對手無數死穴。"},
+    {n:"天馬流星拳", c:2500, d:"每秒數百拳的音速打擊。"},
+    {n:"乾坤大挪移", c:3000, d:"借力打力，轉移傷害。"},
+    {n:"金鐘罩", c:1500, d:"刀槍不入的硬氣功。"},
+    {n:"獨孤九劍", c:2000, d:"破盡天下武學。"},
+    {n:"六脈神劍", c:2500, d:"指尖發射無形劍氣。"},
+    {n:"超級賽亞人血統(殘)", c:8000, d:"極度憤怒時戰力暴增。"},
+    {n:"精靈族射手天賦", c:1200, d:"箭術必中，視力強化。"},
+    {n:"德魯伊變身：熊", c:1500, d:"變身巨熊，生命值大增。"},
+    {n:"亡靈法師入門", c:1000, d:"召喚骷髏兵。"},
+    {n:"冰霜新星", c:1200, d:"凍結周圍敵人。"},
+    {n:"閃電鏈", c:1500, d:"連鎖閃電傷害。"},
+    {n:"治癒術", c:800, d:"魔法治療傷口。"},
+    {n:"聖盾術", c:2000, d:"短時間無敵。"},
+    {n:"暗影步", c:1200, d:"瞬間移動到敵人背後。"},
+    {n:"狂戰士之怒", c:1500, d:"犧牲防禦換取攻擊力。"},
+    {n:"泰坦之握", c:2000, d:"可單手持有雙手武器。"},
+    {n:"神聖勸化", c:2000, d:"控制低級生物。"},
+    {n:"時間零", c:5000, d:"小範圍時間減速。"},
+    {n:"空間跳躍", c:4000, d:"短距離瞬移。"},
+    {n:"矢量操作(弱)", c:6000, d:"反射初級物理攻擊。"},
+    {n:"幻想殺手(右手)", c:3000, d:"消除異能效果。"},
+    {n:"直死之魔眼", c:8000, d:"看見萬物之死。"},
+    {n:"無限劍製", c:10000, d:"固有結界，召喚無數劍刃。"},
+    {n:"霸王色霸氣", c:5000, d:"震懾弱小敵人。"},
+    {n:"見聞色霸氣", c:2500, d:"感知攻擊意圖。"},
+    {n:"武裝色霸氣", c:2500, d:"硬化身體，增強攻擊。"},
+    {n:"九陽神功", c:3000, d:"內力源源不絕，百毒不侵。"},
+    {n:"葵花寶典", c:3000, d:"速度極致，需自宮。"}
+];
+
+/* --- Game State --- */
+let player = { n:"", job:"", hp:100, maxHp:100, pts:0, ranks:{D:0,C:0,B:0,A:0}, items:[], skills:[], stats:{}, geneUnlock: false };
+let gameState = {
+    loc: "Lobby", // Lobby, Movie
+    movieName: "",
+    stage: 0,
+    maxStage: 0,
+    isFirst: true, // First movie flag
+    geneUsed: false // Gene lock used in current movie
+};
+
+/* --- Logic --- */
+
+function goToSelect() {
+    document.getElementById('intro-win').style.display = 'none';
+    document.getElementById('char-select').style.display = 'flex';
+    
+    // Pick 10 random jobs
+    const pool = [...allProfessions].sort(()=>0.5-Math.random()).slice(0, 10);
+    const cont = document.getElementById('job-container');
+    
+    pool.forEach((j, i) => {
+        const div = document.createElement('div');
+        div.className = "job-card";
+        div.innerHTML = `<span class="job-name">${j.n}</span><span class="job-desc">${j.d}</span>
+        <div style="margin-top:5px; font-size:0.75em; color:#666;">
+            STR:${j.s.str} AGI:${j.s.agi} VIT:${j.s.vit} INT:${j.s.int} SPR:${j.s.spr} LUC:${j.s.luc}
+        </div>`;
+        div.onclick = () => {
+            document.querySelectorAll('.job-card').forEach(c=>c.classList.remove('selected'));
+            div.classList.add('selected');
+            selectedJob = j;
+        };
+        cont.appendChild(div);
+    });
+}
+
+let selectedJob = null;
+
+function startGame() {
+    if(!selectedJob) { alert("請先選擇一個身份！"); return; }
+    const name = document.getElementById('player-name').value || "鄭吒";
+    
+    player.n = name;
+    player.job = selectedJob.n;
+    player.stats = {...selectedJob.s};
+    player.items.push(selectedJob.i);
+    // Base stats calc
+    player.maxHp = player.stats.vit * 10 + 50;
+    player.hp = player.maxHp;
+    
+    document.getElementById('char-select').style.display = 'none';
+    document.getElementById('main-ui').style.display = 'flex';
+    
+    updateUI();
+    log(`主神空間傳送完畢。歡迎你，${player.n}。`, 'sys');
+    log(`你的前世身份是【${player.job}】，攜帶物品：${selectedJob.i}。`, 'get');
+    renderLobbyControls();
+}
+
+function updateUI() {
+    document.getElementById('ui-name').innerText = player.n;
+    document.getElementById('ui-pts').innerText = player.pts;
+    document.getElementById('ui-loc').innerText = gameState.loc === "Lobby" ? "主神空間" : gameState.movieName;
+    
+    const stats = player.stats;
+    const slist = document.getElementById('stat-list');
+    const isLobby = gameState.loc === "Lobby";
+    slist.innerHTML = `
+        <div class="log-txt">HP: <span style="color:#ff4444">${Math.floor(player.hp)}/${player.maxHp}</span></div>
+        <div class="log-txt">力量: ${stats.str} ${isLobby?'<button onclick="upStat(\'str\')">+</button>':''}</div>
+        <div class="log-txt">速度: ${stats.agi} ${isLobby?'<button onclick="upStat(\'agi\')">+</button>':''}</div>
+        <div class="log-txt">體力: ${stats.vit} ${isLobby?'<button onclick="upStat(\'vit\')">+</button>':''}</div>
+        <div class="log-txt">智力: ${stats.int} ${isLobby?'<button onclick="upStat(\'int\')">+</button>':''}</div>
+        <div class="log-txt">精神: ${stats.spr} ${isLobby?'<button onclick="upStat(\'spr\')">+</button>':''}</div>
+        <div class="log-txt">運氣: ${stats.luc} ${isLobby?'<button onclick="upStat(\'luc\')">+</button>':''}</div>
+    `;
+    
+    document.getElementById('inv-list').innerHTML = player.items.map(i=>`<div style="color:#aaa; font-size:0.85em;">- ${i}</div>`).join('');
+    document.getElementById('skill-list').innerHTML = player.skills.map(s=>`<div style="color:#4fc3f7; font-size:0.85em;">★ ${s.n}</div>`).join('');
+    
+    if(player.geneUnlock) {
+        document.getElementById('skill-list').innerHTML += `<div class="log-gene">基因鎖：已開啟</div>`;
+    }
+}
+
+function upStat(key) {
+    if(player.pts >= 100) {
+        player.pts -= 100;
+        player.stats[key] += 5;
+        if(key === 'vit') { player.maxHp += 50; player.hp += 50; }
+        updateUI();
+        log(`${key.toUpperCase()} 強化成功。`, 'sys');
+    } else {
+        log("獎勵點數不足 (100點/次)", 'sys');
+    }
+}
+
+function log(msg, type='txt') {
+    const div = document.createElement('div');
+    div.className = `log-${type}`;
+    div.innerHTML = `> ${msg}`;
+    const area = document.getElementById('log-area');
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+}
+
+/* --- Lobby --- */
+function renderLobbyControls() {
+    const c = document.getElementById('controls');
+    c.innerHTML = `
+        <button class="act-btn btn-special" onclick="startMovie()">進入恐怖片</button>
+        <button class="act-btn" onclick="document.getElementById('shop-modal').style.display='flex'">主神兌換</button>
+        <button class="act-btn" onclick="heal()">全身修復(50點)</button>
+    `;
+}
+
+function heal() {
+    if(player.pts >= 50) {
+        player.pts -= 50;
+        player.hp = player.maxHp;
+        updateUI();
+        log("全身修復完畢。", 'get');
+    }
+}
+
+/* --- Movie Logic --- */
+function startMovie() {
+    gameState.loc = "Movie";
+    gameState.stage = 0;
+    gameState.geneUsed = false; // Reset gene lock per movie
+    
+    if(gameState.isFirst) {
+        // Resident Evil 1 Scripted
+        gameState.movieName = "生化危機一";
+        gameState.maxStage = 7; // 5 Events + 1 Mob + 1 Boss
+        log("=== 傳送開始 ===", 'sys');
+        log("三十秒內進入光柱，轉移目標：生化危機一。", 'sys');
+        log("...", 'txt');
+        setTimeout(() => {
+            log("「不錯，你是這批新人裡素質最好的一個。」", 'imp');
+            log("冰冷、抖動... 你醒來發現自己在一列高速行駛的火車上。黑人隊長馬修·埃迪森正冷冷地看著你。", 'txt');
+            log("任務：存活至離開蜂巢。殺死爬行者可獲得獎勵點。", 'sys');
+            renderMovieControls();
+            updateUI();
+        }, 1500);
+    } else {
+        const titles = ["異形", "咒怨", "神鬼傳奇", "死神來了", "變形金剛", "猛鬼街", "侏羅紀公園"];
+        gameState.movieName = titles[Math.floor(Math.random()*titles.length)];
+        gameState.maxStage = 8;
+        log(`傳送目標：《${gameState.movieName}》。難度隨機生成。`, 'sys');
+        renderMovieControls();
+        updateUI();
+    }
+}
+
+function renderMovieControls() {
+    const c = document.getElementById('controls');
+    c.innerHTML = `<button class="act-btn" style="grid-column:span 5; background:var(--acc);" onclick="nextStage()">繼續前進 / 探索</button>`;
+}
+
+function nextStage() {
+    gameState.stage++;
+    if(gameState.isFirst) {
+        residentEvilScript();
+    } else {
+        randomMovieLogic();
+    }
+}
+
+/* --- Resident Evil Script --- */
+function residentEvilScript() {
+    const s = gameState.stage;
+    
+    // Narrative Text for Movement
+    const moveTxts = [
+        "眾人跟隨傭兵小隊小心翼翼地穿過陰暗的車廂...",
+        "來到了巨大的B餐廳，這裡擺放著無數的培養槽...",
+        "前方就是中央電腦室的通道，氣氛變得凝重...",
+        "大門緊鎖，只有重啟火焰女皇才能打開通路...",
+        "斷電了！周圍傳來了喪屍的嘶吼聲！",
+        "眾人瘋狂地向列車方向撤退..."
+    ];
+    if(s <= 6) log(moveTxts[s-1] || "隊伍繼續前進...", 'txt');
+
+    if (s === 1) eventTrigger("馬修的警告", "「記住，只要被那些東西抓傷或咬傷，你們就會變成它們的一員。」馬修嚴肅地警告新人。", 100);
+    else if (s === 2) eventTrigger("發現T病毒", "在混亂的實驗室角落，你發現了一支藍色的螺旋藥劑。", 500, "獲得T病毒原液(未鑑定)");
+    else if (s === 3) {
+        log("雷射通道啟動！第一道雷射劃過，兩名傭兵被瞬間切碎！", 'dmg');
+        if(player.stats.agi > 10 || player.job === "黑客") {
+            log("你預判了雷射軌跡/成功破解了門鎖，千鈞一髮之際逃出生天！", 'get');
+            player.pts += 500;
+        } else {
+            log("你躲避不及，手臂被雷射擦過！痛徹心扉！", 'dmg');
+            player.hp -= 30;
+        }
+    }
+    else if (s === 4) eventTrigger("重啟紅後", "火焰女皇的主機板被拔出，防禦系統失效。", 200);
+    else if (s === 5) {
+        log("遭遇戰：喪屍群！", 'dmg');
+        startCombat("喪屍", 30, 10, false);
+    }
+    else if (s === 6) eventTrigger("隊友犧牲", "牟剛被喪屍拖入了黑暗中，慘叫聲戛然而止。", 0);
+    else if (s === 7) {
+        log("警告：檢測到高能量反應！", 'sys');
+        log("一隻巨大的爬行者（Licker）跳到了列車頂部，利爪撕裂了金屬！", 'imp');
+        startCombat("爬行者(BOSS)", 100, 20, true);
+    }
+}
+
+/* --- Random Movie Logic --- */
+function randomMovieLogic() {
+    if(gameState.stage >= gameState.maxStage) {
+        log("最終BOSS出現！", 'imp');
+        startCombat("位面夢魘", 300 + (gameState.maxStage*50), 30, true);
+        return;
+    }
+    
+    // Narrative
+    const actions = ["眾人穿過迷霧...", "小心翼翼地搜索廢墟...", "聽到了遠處的慘叫...", "發現了劇情人物的屍體..."];
+    log(actions[Math.floor(Math.random()*actions.length)], 'txt');
+
+    const rnd = Math.random();
+    if(rnd < 0.4) {
+        startCombat("劇情怪物", 80, 15, false);
+    } else {
+        const evs = [
+            {t:"支線劇情", d:"發現隱藏道具！", p:500},
+            {t:"陷阱", d:"誤觸機關，全體受傷！", dmg:20},
+            {t:"安全屋", d:"暫時休息，恢復體力。", heal:50}
+        ];
+        const ev = evs[Math.floor(Math.random()*evs.length)];
+        log(`【${ev.t}】${ev.d}`, ev.dmg?'dmg':'get');
+        if(ev.p) player.pts += ev.p;
+        if(ev.dmg) player.hp -= ev.dmg;
+        if(ev.heal) player.hp = Math.min(player.maxHp, player.hp+ev.heal);
+    }
+    updateUI();
+}
+
+function eventTrigger(title, desc, pts, item) {
+    log(`【劇情】${title}：${desc}`, 'sys');
+    if(pts) { player.pts += pts; log(`獲得獎勵點數：${pts}`, 'get'); }
+    if(item) { player.items.push(item); log(`獲得物品：${item}`, 'get'); }
+    updateUI();
+}
+
+/* --- Combat --- */
+let enemy = null;
+function startCombat(name, hp, atk, isBoss) {
+    enemy = {name, hp, atk, isBoss};
+    const c = document.getElementById('controls');
+    
+    // Gene Lock Check logic: Available if unlocked AND not used yet in this movie
+    const canGene = player.geneUnlock && !gameState.geneUsed;
+    
+    let btns = `
+        <button class="act-btn" onclick="combatAct('atk')">攻擊</button>
+        ${canGene ? `<button class="act-btn btn-special" onclick="activeGene()">開啟基因鎖</button>` : ''}
+    `;
+    
+    // Add Skills
+    player.skills.forEach((s, i) => {
+        btns += `<button class="act-btn" style="color:#4fc3f7" onclick="combatAct('skill', ${i})">${s.n}</button>`;
+    });
+
+    c.innerHTML = btns;
+    log(`戰鬥開始 VS ${name} (HP:${hp})`, 'dmg');
+}
+
+function activeGene() {
+    gameState.geneUsed = true;
+    player.geneActive = true;
+    log("【基因鎖·開】！戰鬥本能覺醒，全屬性大幅提升！技能效果翻倍！", 'gene');
+    startCombat(enemy.name, enemy.hp, enemy.atk, enemy.isBoss); // Re-render buttons to remove gene button
+    updateUI();
+}
+
+function combatAct(type, idx) {
+    let dmg = player.stats.str * 1.5;
+    // Item Bonus
+    if(player.items.some(i=>i.includes("槍")||i.includes("劍")||i.includes("刀"))) dmg += 20;
+    
+    // Gene Lock Bonus
+    if(player.geneActive) dmg *= 2.5;
+
+    if(type === 'skill') {
+        const s = player.skills[idx];
+        let mult = 3;
+        if(s.n === "爆炸") { player.hp -= 20; mult = 5; log("消耗生命釋放爆炸！", 'dmg'); }
+        if(player.geneActive) mult *= 2;
+        dmg = player.stats.int * mult;
+        log(`${player.n} 使用了【${s.n}】！`, 'get');
+    }
+
+    // Attack
+    enemy.hp -= dmg;
+    log(`你造成了 ${Math.floor(dmg)} 點傷害。`, 'txt');
+
+    if(enemy.hp <= 0) {
+        log(`擊殺了 ${enemy.name}！`, 'get');
+        player.pts += enemy.isBoss ? 2000 : 100;
+        if(enemy.isBoss) {
+            if(gameState.isFirst) {
+                gameState.isFirst = false;
+                player.geneUnlock = true;
+                log("在此生死關頭，你感覺到體內某種枷鎖斷裂了...", 'gene');
+                log("恭喜！解開【基因鎖一階】！以後每部恐怖片可主動開啟一次。", 'gene');
+            }
+            endMovie();
+        } else {
+            renderMovieControls();
+        }
+    } else {
+        // Enemy Turn
+        let hurt = enemy.atk;
+        if(player.geneActive) hurt *= 0.5; // Dodge bonus
+        player.hp -= hurt;
+        log(`${enemy.name} 反擊！受到 ${Math.floor(hurt)} 傷害。`, 'dmg');
+        if(player.hp <= 0) {
+            alert("你死了... 主神抹殺。");
+            location.reload();
+        }
+    }
+    updateUI();
+}
+
+function endMovie() {
+    player.geneActive = false; // Reset buff
+    gameState.loc = "Lobby";
+    player.pts += 1000; // Base reward
+    player.hp = player.maxHp; // Free small heal
+    log("回歸主神空間...", 'sys');
+    updateUI();
+    renderLobbyControls();
+}
+
+/* --- Shop Render --- */
+function renderShop(type) {
+    const list = document.getElementById('shop-content');
+    list.innerHTML = "";
+    const db = type === 'items' ? shopItems : shopSkills;
+    
+    db.forEach(item => {
+        const div = document.createElement('div');
+        div.className = "shop-item";
+        div.innerHTML = `
+            <div style="color:${type==='items'?'gold':'#4fc3f7'}">${item.n}</div>
+            <div style="font-size:0.8em; color:#888;">${item.d}</div>
+            <div style="margin-top:5px;">${item.c} 點</div>
+        `;
+        div.onclick = () => {
+            if(player.pts >= item.c) {
+                player.pts -= item.c;
+                if(type==='items') player.items.push(item.n);
+                else player.skills.push(item);
+                log(`購買了 ${item.n}`, 'get');
+                updateUI();
+            } else {
+                alert("點數不足！");
+            }
+        };
+        list.appendChild(div);
+    });
+}
+</script>
+</body>
+</html>
