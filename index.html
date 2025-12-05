@@ -3,47 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>無限恐怖：凡人的智慧 (最終完整版)</title>
+    <title>無限恐怖：凡人的智慧 (修復版)</title>
     <style>
         :root { --bg: #050505; --term: #33ff00; --ui: #1a1a1a; --bd: #444; --acc: #b71c1c; --rare: #ffd700; --chu: #e0e0e0; }
-        body { background: var(--bg); color: #ccc; font-family: 'Microsoft JhengHei', sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         
-        /* Intro */
-        #intro-win { position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:999; display:flex; justify-content:center; align-items:center; }
+        /* 核心佈局修正：使用 dvh 避免手機瀏覽器遮擋 */
+        body { 
+            background: var(--bg); color: #ccc; font-family: 'Microsoft JhengHei', sans-serif; 
+            margin: 0; height: 100dvh; width: 100vw; overflow: hidden; 
+            display: flex; flex-direction: column; 
+        }
+        
+        /* Intro Window */
+        #intro-win { position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; justify-content:center; align-items:center; }
         .win-box { background:#c0c0c0; border:2px outset #fff; width:90%; max-width:400px; padding:2px; box-shadow:5px 5px 0 #333; color:black;}
         .win-head { background:#000080; color:white; padding:4px; font-weight:bold; display:flex; justify-content:space-between; }
         .win-content { padding:20px; text-align:center; font-size:1.1em; }
-        .win-btn { border:2px outset white; background:#c0c0c0; padding:5px 20px; cursor:pointer; margin:10px; font-weight:bold; }
+        .win-btn { border:2px outset white; background:#c0c0c0; padding:8px 25px; cursor:pointer; margin:10px; font-weight:bold; font-size: 1em;}
+        .win-btn:active { border-style: inset; }
         
-        /* Job Select */
-        #char-select { display:none; flex-direction:column; height:100%; padding:10px; background: #111; }
-        .job-header { display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; border-bottom:1px solid #333; }
-        .job-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:8px; flex:1; overflow-y:auto; padding:10px 0;}
+        /* Job Select Layout (Fix: Fixed Header/Footer, Scrollable Body) */
+        #char-select { 
+            display:none; flex-direction:column; height:100%; width: 100%; background: #111; 
+            position: absolute; top: 0; left: 0; z-index: 100;
+        }
+        .job-header { 
+            padding: 10px 15px; background: #0e0e0e; border-bottom:1px solid #333; 
+            display:flex; justify-content:space-between; align-items:center; flex-shrink: 0;
+        }
+        .job-grid-wrapper {
+            flex: 1; overflow-y: auto; padding: 10px; -webkit-overflow-scrolling: touch;
+        }
+        .job-grid { 
+            display:grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap:10px; 
+            padding-bottom: 20px; /* Space for scrolling */
+        }
+        .job-footer {
+            padding: 15px; background: #1a1a1a; border-top: 1px solid #333; 
+            flex-shrink: 0; text-align: center; z-index: 10;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+            display: flex; justify-content: center; gap: 10px; align-items: center;
+        }
+
         .job-card { 
             background: #222; border:1px solid #444; padding:10px; cursor:pointer; font-size: 0.85em; 
-            display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s;
+            display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s; min-height: 100px;
         }
         .job-card:hover { border-color: var(--term); background: #2a2a2a; }
-        .job-card.selected { border: 2px solid var(--acc); background:#2d1a1a; }
+        .job-card.selected { border: 2px solid var(--acc); background:#2d1a1a; transform: scale(1.02); }
         .job-name { color: #fff; font-weight:bold; font-size:1.1em; margin-bottom:5px; border-bottom:1px solid #555; padding-bottom:3px; }
         .job-item { color: var(--term); font-size: 0.9em; margin-top:3px; }
         
         /* Main UI */
-        #main-ui { display:none; height:100%; flex-direction:column; }
+        #main-ui { display:none; height:100%; flex-direction:column; width: 100%; }
         header { background:#0e0e0e; padding:8px 15px; border-bottom:1px solid var(--acc); display:flex; justify-content:space-between; align-items:center; font-size: 0.9em; flex-shrink: 0;}
         
-        #game-body { flex:1; display:flex; overflow:hidden; }
+        #game-body { flex:1; display:flex; overflow:hidden; position: relative; }
         
-        #sidebar { flex: 0 0 28%; background:#111; border-right:1px solid #333; padding:8px; overflow-y:auto; font-size:0.8em; }
+        /* Sidebar (Left) */
+        #sidebar { 
+            flex: 0 0 28%; background:#111; border-right:1px solid #333; padding:8px; overflow-y:auto; font-size:0.8em; 
+            min-width: 80px;
+        }
         .sb-title { color: #fff; border-bottom: 1px solid #444; margin: 15px 0 5px 0; padding-bottom: 2px; font-weight: bold; }
-        .sb-item { margin-bottom: 2px; color: #bbb; }
         
-        #log-area { flex: 1; background:#000; padding:15px; overflow-y:auto; font-family:'Consolas', monospace; line-height:1.6; font-size: 0.95em; }
+        /* Log Area (Right) */
+        #log-area { 
+            flex: 1; background:#000; padding:15px; overflow-y:auto; font-family:'Consolas', monospace; line-height:1.6; font-size: 0.95em; 
+            -webkit-overflow-scrolling: touch;
+        }
         
+        /* Common UI Elements */
         .stat-row { display:flex; justify-content:space-between; margin-bottom: 4px; }
         .plus-btn { width: 18px; height: 18px; font-size: 12px; padding: 0; line-height: 16px; background: #333; color: var(--term); border: 1px solid #555; cursor: pointer; }
 
-        /* Log Colors */
+        /* Logs */
         .log-txt { margin-bottom:6px; color:#aaa; }
         .log-sys { color:yellow; }
         .log-dmg { color:#ff4444; }
@@ -53,20 +87,21 @@
         .log-luck { color: gold; text-shadow:0 0 5px orange; font-weight:bold; }
         .log-save { color:#e040fb; font-weight:bold; border: 1px dashed #e040fb; padding: 10px; margin: 10px 0; background: #110011; }
         .log-plot { color: #eee; font-style: italic; margin: 8px 0; border-left: 3px solid #555; padding-left: 10px; }
-        .log-chu { color: #fff; background: #333; padding: 5px; border-left: 3px solid #fff; font-weight: bold; }
+        .log-chu { color: #fff; background: #333; padding: 5px; border-left: 3px solid #fff; font-weight: bold; margin: 5px 0; }
         
         /* Controls */
-        #controls { padding:8px; background:#1a1a1a; display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; border-top:1px solid #333; min-height: 65px; flex-shrink: 0;}
-        button.act-btn { background:#333; color:#eee; border:1px solid #555; padding:10px; cursor:pointer; border-radius:2px; font-size:0.9em; transition: 0.2s; }
+        #controls { padding:8px; background:#1a1a1a; display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; border-top:1px solid #333; min-height: 65px; flex-shrink: 0; z-index: 20;}
+        button.act-btn { background:#333; color:#eee; border:1px solid #555; padding:10px; cursor:pointer; border-radius:4px; font-size:0.9em; transition: 0.2s; touch-action: manipulation; }
         button.act-btn:hover { background:#444; border-color: #777; }
         button.btn-special { background:#b71c1c; border-color:#ff5252; color:white; }
         button.btn-team { background:#1565c0; color:#fff; border-color:#42a5f5; grid-column: span 2; }
+        button.btn-start { background:var(--acc); color:white; padding: 10px 20px; font-weight: bold; border: 1px solid #ff5252; font-size: 1em; }
         
         /* Modals */
-        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100; display:none; justify-content:center; align-items:center; }
-        .event-box { width:90%; max-width:550px; background:#222; border:2px solid var(--term); padding:20px; display:flex; flex-direction:column; }
+        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:999; display:none; justify-content:center; align-items:center; }
+        .event-box { width:90%; max-width:550px; background:#222; border:2px solid var(--term); padding:20px; display:flex; flex-direction:column; max-height: 90vh; overflow-y: auto; }
         .event-title { font-size: 1.2em; color: var(--term); font-weight: bold; margin-bottom: 10px; }
-        .choice-btn { background:#333; color:white; border:1px solid #555; padding:12px; margin-bottom:8px; text-align:left; cursor:pointer; }
+        .choice-btn { background:#333; color:white; border:1px solid #555; padding:12px; margin-bottom:8px; text-align:left; cursor:pointer; border-radius: 4px; }
         .choice-btn:hover { background:#444; border-color: var(--term); }
         .choice-luck { border-color: gold; color: gold; font-weight:bold; }
         .choice-chu { border: 1px solid #fff; background: #222; color: #fff; font-weight: bold; box-shadow: 0 0 10px rgba(255,255,255,0.3); }
@@ -80,7 +115,7 @@
 </head>
 <body>
 
-<!-- Intro -->
+<!-- 1. Intro -->
 <div id="intro-win">
     <div class="win-box">
         <div class="win-head"><span>SYSTEM_ALERT</span><span>X</span></div>
@@ -95,40 +130,50 @@
     </div>
 </div>
 
-<!-- Select -->
+<!-- 2. Select Job -->
 <div id="char-select">
     <div class="job-header">
-        <h3 style="color:var(--acc); margin:0;">意識載入：選擇你的前世</h3>
-        <button class="act-btn" style="padding:6px 15px;" onclick="refreshJobs()">⟳ 刷新列表</button>
+        <h3 style="color:var(--acc); margin:0; font-size: 1.1em;">意識載入：選擇前世</h3>
+        <button class="act-btn" style="padding:6px 12px; font-size: 0.8em;" onclick="refreshJobs()">⟳ 刷新列表</button>
     </div>
-    <div class="job-grid" id="job-container"></div>
-    <div style="margin-top:10px; width:100%; text-align:center; padding-top:10px; border-top:1px solid #333;">
-        <input type="text" id="player-name" value="鄭吒" style="padding:10px; width:150px; background:#222; border:1px solid #555; color:white; text-align:center;" placeholder="輸入名字">
-        <button class="act-btn" style="background:var(--acc); width:120px;" onclick="startGame()">確認開始</button>
+    
+    <div class="job-grid-wrapper">
+        <div class="job-grid" id="job-container"></div>
+    </div>
+    
+    <div class="job-footer">
+        <input type="text" id="player-name" value="鄭吒" style="padding:10px; width:120px; background:#222; border:1px solid #555; color:white; text-align:center; border-radius:4px;" placeholder="輸入名字">
+        <button class="act-btn btn-start" onclick="startGame()">確認開始</button>
     </div>
 </div>
 
-<!-- Main UI -->
+<!-- 3. Main Game -->
 <div id="main-ui">
     <header>
-        <div><span id="ui-name"></span> | <span style="color:gold" id="ui-pts">0</span> 點</div>
+        <div><span id="ui-name"></span> | <span style="color:gold" id="ui-pts">0</span> 獎勵點</div>
         <div id="ui-loc" style="color:#00e676">主神空間</div>
     </header>
+    
     <div id="game-body">
         <div id="sidebar">
             <div class="sb-title">人物屬性</div>
             <div id="stat-list"></div>
+            
             <div class="sb-title">持有物品</div>
             <div id="inv-list"></div>
+            
             <div class="sb-title">技能與血統</div>
             <div id="skill-list"></div>
+            
             <div class="sb-title">輪迴隊友</div>
             <div id="team-list"></div>
         </div>
+        
         <div id="log-area">
             <div class="log-sys">連接主神光球... 數據同步完成。</div>
         </div>
     </div>
+    
     <div id="controls"></div>
 </div>
 
@@ -156,8 +201,7 @@
 <script>
 /* --- 1. Content Libraries --- */
 
-// 職業庫 (50種職業，節選20種展示邏輯，含初始道具效果)
-// i: 道具名, d: 描述, effect: 道具隱藏效果文字
+// 職業庫 (含道具特效)
 const allJobs = [
     {n:"特種兵", s:{str:15, agi:12, vit:15, int:8, spr:10, luc:5}, i:"衝鋒槍", d:"軍隊精英。", eff:"攻擊力+30"},
     {n:"職業殺手", s:{str:10, agi:18, vit:10, int:12, spr:15, luc:5}, i:"匕首", d:"高爆發。", eff:"攻擊力+20，高暴擊"},
@@ -177,6 +221,7 @@ const allJobs = [
     {n:"流浪漢", s:{str:8, agi:8, vit:14, int:8, spr:10, luc:12}, i:"破碗", d:"生存力強。", eff:"HP+20"}
 ];
 
+// 商店道具 (特效實裝)
 const shopItems = [
     {n:"無限沙鷹", c:500, type:"weapon", atk:40, d:"無限子彈，攻擊+40"},
     {n:"高斯狙擊槍", c:3000, type:"weapon", atk:250, d:"極高穿透，攻擊+250"},
@@ -184,19 +229,27 @@ const shopItems = [
     {n:"納戒", c:1500, type:"acc", d:"空間道具，每戰回血+10"},
     {n:"綠魔滑板", c:2000, type:"acc", d:"飛行道具，速度+30"},
     {n:"防彈背心", c:300, type:"armor", d:"被動減傷20"},
-    {n:"復活真經(殘)", c:8000, type:"special", d:"復活一名隊友"},
+    {n:"復活真經(殘)", c:8000, type:"special", d:"劇情道具，可復活一名隊友"},
     {n:"高震動粒子刀", c:800, type:"weapon", atk:90, d:"攻擊+90，破防"}
 ];
 
+// 商店技能
 const shopSkills = [
-    {n:"蜘蛛感應", c:1500, type:"passive", effect:"dodge", val:0.4, d:"40%機率閃避攻擊"},
-    {n:"吸血鬼血統", c:2500, type:"passive", effect:"suck", val:0.3, d:"30%吸血效果"},
-    {n:"爆炸", c:2000, type:"active", effect:"buff", val:3, costHp:20, d:"消耗20HP，攻擊x3"},
-    {n:"毀滅", c:5000, type:"active", effect:"buff", val:6, costHp:50, d:"消耗50HP，攻擊x6"},
-    {n:"心靈震爆", c:1500, type:"active", effect:"stun", val:1, mp:30, d:"擊暈敵人1回合"},
-    {n:"紅炎", c:1500, type:"active", effect:"dmg", val:2.5, mp:20, d:"2.5倍力量傷害"},
-    {n:"治癒術", c:800, type:"active", effect:"heal", val:150, mp:40, d:"回復150HP"},
-    {n:"點線魔眼", c:3000, type:"active", effect:"crit", val:5, mp:60, d:"5倍無視防禦傷害"}
+    {n:"蜘蛛感應", c:1500, type:"passive", effect:"dodge", val:0.4, d:"被動：40%機率閃避攻擊。"},
+    {n:"吸血鬼血統", c:2500, type:"passive", effect:"suck", val:0.3, d:"被動：將造成傷害的30%轉化為生命。"},
+    {n:"爆炸", c:2000, type:"active", effect:"buff", val:3, costHp:20, d:"主動：消耗20HP，本回合攻擊力x3。"},
+    {n:"毀滅", c:5000, type:"active", effect:"buff", val:6, costHp:50, d:"主動：【爆炸進階】消耗50HP，本回合攻擊力x6。"},
+    {n:"心靈震爆", c:1500, type:"active", effect:"stun", val:1, mp:30, d:"主動：消耗30MP，擊暈敵人1回合。"},
+    {n:"紅炎", c:1500, type:"active", effect:"dmg", val:2.5, mp:20, d:"主動：消耗20MP，造成2.5倍力量傷害。"},
+    {n:"治癒術", c:800, type:"active", effect:"heal", val:150, mp:40, d:"主動：消耗40MP，回復150HP。"},
+    {n:"聖光氣", c:1200, type:"active", effect:"dmg", val:4, mp:30, d:"主動：對黑暗生物造成4倍精神傷害。"},
+    {n:"點線魔眼", c:3000, type:"active", effect:"crit", val:5, mp:60, d:"主動：消耗60MP，造成5倍無視防禦傷害。"},
+    {n:"風之矢", c:1000, type:"active", effect:"dmg", val:3, mp:20, d:"主動：造成3倍敏捷屬性傷害。"},
+    {n:"混元一氣功", c:800, type:"passive", effect:"stat", d:"被動：全屬性+10。"},
+    {n:"寫輪眼", c:2000, type:"passive", effect:"crit_rate", d:"被動：增加20%暴擊率與命中。"},
+    {n:"戶愚呂弟肌肉", c:1800, type:"passive", effect:"stat_str", d:"被動：力量+30，體力+20。"},
+    {n:"AT力場", c:4000, type:"active", effect:"block", val:500, mp:80, d:"主動：生成500點絕對防禦護盾。"},
+    {n:"九陽神功", c:3000, type:"passive", effect:"regen", val:30, d:"被動：每回合自動回復30HP。"}
 ];
 
 // 同伴庫
@@ -277,6 +330,8 @@ function recalcStats() {
     player.maxHp = player.stats.vit * 10 + 50;
     player.maxMp = player.stats.spr * 5 + 50;
     if(player.items.includes("破碗")) player.maxHp += 20;
+    // Passive Skill Stats
+    if(player.skills.find(s=>s.n==="混元一氣功")) { /* Just base for now */ }
 }
 
 function updateUI() {
@@ -289,7 +344,7 @@ function updateUI() {
     let h = `<div class="stat-row">HP <span style="color:#ff4444">${Math.floor(player.hp)}/${player.maxHp}</span></div>`;
     h += `<div class="stat-row">MP <span style="color:#4fc3f7">${Math.floor(player.mp)}/${player.maxMp}</span></div>`;
     ["str","agi","vit","int","spr","luc"].forEach(k => {
-        let label = {str:"力",agi:"速",vit:"體",int:"智",spr:"精",luc:"運"}[k];
+        let label = {str:"力量",agi:"速度",vit:"體力",int:"智力",spr:"精神",luc:"運氣"}[k];
         h += `<div class="stat-row"><span>${label}:${player.stats[k]}</span> ${isLobby ? `<button class="plus-btn" onclick="upStat('${k}')">+</button>` : ""}</div>`;
     });
     slist.innerHTML = h;
@@ -348,14 +403,14 @@ function startMovie() {
     gameState.stage = 0;
     gameState.geneUsed = false;
     
-    // Movie Sequence Logic
+    // Movie Sequence
     if(player.movieCount === 0) {
         gameState.movieName = "生化危機一";
         gameState.maxStage = 6;
         log("目標：《生化危機一》 (新手保護)", "log-sys");
         setTimeout(()=>log("馬修·埃迪森：「新人，素質不錯。」", "log-plot"), 1000);
     } 
-    else if(player.movieCount === 2) { // 3rd movie (0,1,2)
+    else if(player.movieCount === 2) { // 3rd movie (index 2)
         gameState.movieName = "死神來了";
         gameState.maxStage = 10;
         log("目標：《死神來了》", "log-sys");
@@ -366,7 +421,6 @@ function startMovie() {
         gameState.movieName = titles[Math.floor(Math.random()*titles.length)];
         gameState.maxStage = 8;
         log(`目標：《${gameState.movieName}》`, "log-sys");
-        // Intro Text
         if(gameState.movieName==="異形") log("太空船內一片死寂，酸性血液腐蝕地板的聲音傳來...", "log-plot");
         if(gameState.movieName==="咒怨") log("這是一棟陰森的日式宅邸，閣樓傳來詭異的爬行聲...", "log-plot");
         if(gameState.movieName==="神鬼傳奇") log("哈姆納塔的風沙遮天蔽日，聖甲蟲在沙層下蠕動...", "log-plot");
@@ -383,7 +437,7 @@ function renderStage() {
 function nextStage() {
     gameState.stage++;
     
-    // Final Destination Logic (Movie 3)
+    // Final Destination Logic
     if(gameState.movieName === "死神來了") {
         if(gameState.stage > gameState.maxStage) { endMovie(); return; }
         generateDeathEvent();
@@ -393,7 +447,7 @@ function nextStage() {
     // Resident Evil 1 Logic
     if(player.movieCount === 0) {
         if(gameState.stage === 1) triggerEventFixed("雷射通道", "死亡光線襲來！", "敏捷閃避", "黑客破解");
-        else if(gameState.stage === 3) startCombat("喪屍", 60, 10); // Easy mob
+        else if(gameState.stage === 3) startCombat("喪屍", 60, 10);
         else if(gameState.stage === 5) triggerEventFixed("紅後重啟", "拔出主板？", "暴力拔除", "說服傭兵");
         else if(gameState.stage === 6) startCombat("爬行者(弱化)", 150, 20, true);
         else renderStage();
@@ -449,7 +503,7 @@ function generateDeathEvent() {
 
 function triggerEventFixed(title, desc, opt1, opt2) {
     const choices = [
-        {t:opt1, check:"str", val:10}, // Lower for tutorial
+        {t:opt1, check:"str", val:10},
         {t:opt2, check:"int", val:10},
         {t:"防禦 (體力)", check:"vit", val:10},
         {t:"相信奇蹟 (LUC)", check:"luc", val:5}
@@ -463,7 +517,6 @@ function showEventModal(title, desc, choices) {
     const box = document.getElementById('ev-choices');
     box.innerHTML = "";
     
-    // Add Chu Xuan choice if available
     if(player.teammates.some(t=>t.n==="楚軒")) {
         choices.push({t:"交給楚軒", check:"chu", val:0});
     }
@@ -487,9 +540,9 @@ function resolveEvent(c) {
     // Chu Xuan Logic
     if(c.check === 'chu') {
         log(" ", "log-txt");
-        log("楚軒推了推眼鏡：「凡人的智慧啊... 這種簡單的佈局看不出來嗎？」", "log-chu");
+        log("楚軒推了推眼鏡：「凡人的智慧啊... 這種簡單的佈局。」", "log-chu");
         log("你感到自尊心受創，HP -1。", "log-dmg");
-        log("楚軒完美解決了事件。獲得大量獎勵。", "log-luck");
+        log("楚軒完美解決了事件。獲得獎勵。", "log-luck");
         player.hp -= 1;
         player.pts += 500;
         updateUI();
@@ -498,7 +551,7 @@ function resolveEvent(c) {
         return;
     }
 
-    // Normal Checks (Bonus from Items)
+    // Normal Checks
     let pVal = player.stats[c.check];
     
     // Item Bonuses
@@ -540,15 +593,12 @@ function renderCombat() {
     const c = document.getElementById('controls');
     c.innerHTML = `<button class="act-btn" onclick="act('atk')">普通攻擊</button>`;
     
-    // Gene Lock
     if(player.skills.some(s=>s.n==="基因鎖開啟") && !gameState.geneUsed) {
         c.innerHTML += `<button class="act-btn btn-special" onclick="toggleGene()">開啟基因鎖</button>`;
     }
-    // Active Skills
     player.skills.forEach(s => {
         if(s.type === 'active') c.innerHTML += `<button class="act-btn" style="color:#4fc3f7" onclick="act('skill','${s.n}')">${s.n}</button>`;
     });
-    // Teammates
     player.teammates.forEach((t, i) => {
         c.innerHTML += `<button class="act-btn btn-team" onclick="teamAct(${i})">${t.n}</button>`;
     });
@@ -565,13 +615,16 @@ function toggleGene() {
 function act(type, arg) {
     let dmg = player.stats.str * 1.5;
     
-    // Weapon/Job Item Effects
+    // Item Effects
     if(player.items.includes("無限沙鷹")) dmg += 40;
     if(player.items.includes("高震動粒子刀")) dmg += 90;
     if(player.items.includes("衝鋒槍")) dmg += 30;
     if(player.items.includes("匕首")) dmg += 20;
     if(player.items.includes("警槍")) dmg += 20;
     if(player.items.includes("菜刀")) dmg += 15;
+    if(player.items.includes("球棒")) dmg += 15;
+    if(player.items.includes("大鐵鎚")) dmg += 25;
+    if(player.items.includes("扳手")) dmg += 10;
     
     if(type === 'skill') {
         const s = shopSkills.find(k=>k.n===arg) || player.skills.find(k=>k.n===arg);
@@ -584,18 +637,20 @@ function act(type, arg) {
         if(s.effect === 'dmg') { dmg = player.stats.str * s.val; log(`技能暴擊！`, "log-skill"); }
         if(s.effect === 'heal') { player.hp += s.val; log(`回復 ${s.val} HP`, "log-heal"); }
         if(s.effect === 'stun') { combatState.enemy.stun = s.val; log("敵人暈眩！", "log-skill"); }
+        if(s.effect === 'block') { log("絕對防禦展開！", "log-skill"); combatState.playerBuffs.dodge = 1; }
+        if(s.effect === 'crit') { dmg *= s.val; log("直死之眼！暴擊！", "log-skill"); }
     }
 
     if(player.geneActive) dmg *= 2;
     dmg *= combatState.playerBuffs.dmgMult;
     combatState.enemy.hp -= Math.floor(dmg);
-    log(`造成 ${Math.floor(dmg)} 傷害`, "log-txt");
+    log(`你造成了 ${Math.floor(dmg)} 點傷害。`, "log-txt");
     
-    // Lifesteal Passive
-    if(player.skills.some(s=>s.effect==='suck')) {
-        let heal = Math.floor(dmg * 0.3);
+    if(player.skills.some(s=>s.effect==='suck') || player.items.includes("急救包")) {
+        let heal = Math.floor(dmg * 0.1);
+        if(player.skills.some(s=>s.effect==='suck')) heal = Math.floor(dmg * 0.3);
         player.hp += heal;
-        log(`吸血: +${heal}`, "log-heal");
+        log(`恢復: +${heal}`, "log-heal");
     }
 
     if(combatState.enemy.hp <= 0) winCombat();
@@ -623,6 +678,7 @@ function enemyTurn() {
     if(player.skills.some(s=>s.effect==='dodge')) {
         if(Math.random() < 0.4) { log("閃避成功！", "log-skill"); inc = 0; }
     }
+    if(combatState.playerBuffs.dodge > 0) { inc = 0; combatState.playerBuffs.dodge = 0; }
     if(player.items.includes("防彈背心")) inc = Math.max(0, inc - 20);
 
     if(inc > 0) {
@@ -650,7 +706,7 @@ function checkDeath() {
 }
 
 function winCombat() {
-    log(`戰鬥勝利！獲得獎勵。`, "log-luck");
+    log(`擊殺了 ${combatState.enemy.name}！`, "log-luck");
     player.pts += combatState.enemy.isBoss ? 2000 : 200;
     if(combatState.enemy.isBoss) {
         if(player.movieCount === 0) {
@@ -670,8 +726,11 @@ function endMovie() {
     player.hp = player.maxHp;
     player.movieCount++;
     
-    // Add Teammate Logic
-    if(player.movieCount === 5) {
+    // Chu Xuan Logic (After 5 movies = index 5 is 6th, wait, prompt said 5th choice fixed)
+    // Let's make it so after 4 movies (entering 5th cycle) or completing 5th.
+    // "第5個選擇固定增加同伴楚軒" -> Let's interpret as after Movie #4 (5th movie pending)
+    
+    if(player.movieCount === 4) { 
         if(!player.teammates.find(t=>t.n==="楚軒")) {
             player.teammates.push({n:"楚軒", skill:{n:"智謀", type:"stun", val:2, d:"全局佈局"}});
             log("【楚軒】加入了隊伍。", "log-luck");
@@ -683,7 +742,7 @@ function endMovie() {
             player.teammates.push(mate);
             log(`${mate.n} 加入隊伍！`, "log-luck");
         } else {
-            log("獲得支線劇情 D級 x1", "log-luck");
+            log("獲得 D級支線劇情 x1", "log-luck");
         }
     }
     
