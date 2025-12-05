@@ -3,71 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>無限恐怖：無限輪迴 (新手保護版)</title>
+    <title>無限恐怖：輪迴與救贖 (完整版)</title>
     <style>
-        :root { --bg: #050505; --term: #33ff00; --ui: #1a1a1a; --bd: #444; --acc: #b71c1c; }
+        :root { --bg: #050505; --term: #33ff00; --ui: #1a1a1a; --bd: #444; --acc: #b71c1c; --rare: #ffd700; }
         body { background: var(--bg); color: #ccc; font-family: 'Microsoft JhengHei', sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         
         /* Intro */
         #intro-win { position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:999; display:flex; justify-content:center; align-items:center; }
-        .win-box { background:#c0c0c0; border:2px outset #fff; width:90%; max-width:350px; padding:2px; box-shadow:5px 5px 0 #333; color:black;}
-        .win-head { background:#000080; color:white; padding:3px; font-weight:bold; display:flex; justify-content:space-between; }
+        .win-box { background:#c0c0c0; border:2px outset #fff; width:90%; max-width:400px; padding:2px; box-shadow:5px 5px 0 #333; color:black;}
+        .win-head { background:#000080; color:white; padding:4px; font-weight:bold; display:flex; justify-content:space-between; }
         .win-content { padding:20px; text-align:center; font-size:1.1em; }
-        .win-btn { border:2px outset white; background:#c0c0c0; padding:5px 15px; cursor:pointer; margin:5px; font-weight:bold; }
+        .win-btn { border:2px outset white; background:#c0c0c0; padding:5px 20px; cursor:pointer; margin:10px; font-weight:bold; }
         
         /* Job Select */
-        #char-select { display:none; flex-direction:column; align-items:center; height:100%; padding:10px; background: #111; }
-        .job-grid { display:grid; grid-template-columns: 1fr 1fr; gap:8px; width:100%; max-width:600px; flex:1; overflow-y:auto; padding-bottom: 10px;}
+        #char-select { display:none; flex-direction:column; height:100%; padding:10px; background: #111; }
+        .job-header { display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; border-bottom:1px solid #333; }
+        .job-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:8px; flex:1; overflow-y:auto; padding:10px 0;}
         .job-card { 
             background: #222; border:1px solid #444; padding:10px; cursor:pointer; font-size: 0.85em; 
-            display: flex; flex-direction: column; justify-content: space-between;
+            display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s;
         }
+        .job-card:hover { border-color: var(--term); background: #2a2a2a; }
         .job-card.selected { border: 2px solid var(--acc); background:#2d1a1a; }
-        .job-stat-row { color: #888; font-size: 0.9em; margin-top: 2px; }
-        .job-special { color: #ffeb3b; font-weight: bold; margin-top: 5px; }
+        .job-name { color: #fff; font-weight:bold; font-size:1.1em; margin-bottom:5px; border-bottom:1px solid #555; padding-bottom:3px; }
+        .job-stat { color: #aaa; font-size: 0.9em; }
+        .job-item { color: var(--term); font-size: 0.9em; margin-top:3px; }
+        .job-skill { color: var(--rare); font-weight: bold; margin-top: 3px; font-size:0.85em; }
 
         /* Main UI */
         #main-ui { display:none; height:100%; flex-direction:column; }
-        header { background:#111; padding:8px; border-bottom:1px solid var(--acc); display:flex; justify-content:space-between; align-items:center; font-size: 0.85em; flex-shrink: 0;}
+        header { background:#0e0e0e; padding:8px 15px; border-bottom:1px solid var(--acc); display:flex; justify-content:space-between; align-items:center; font-size: 0.9em; flex-shrink: 0;}
         
         #game-body { flex:1; display:flex; overflow:hidden; }
         
         /* Sidebar (Left) */
         #sidebar { 
-            flex: 0 0 28%; background:#111; border-right:1px solid #333; padding:5px; overflow-y:auto; font-size:0.75em; 
+            flex: 0 0 28%; background:#111; border-right:1px solid #333; padding:8px; overflow-y:auto; font-size:0.8em; 
         }
+        .sb-title { color: #fff; border-bottom: 1px solid #444; margin: 15px 0 5px 0; padding-bottom: 2px; font-weight: bold; }
+        .sb-item { margin-bottom: 2px; color: #bbb; }
+        
         /* Log Area (Right) */
         #log-area { 
-            flex: 1; background:black; padding:10px; overflow-y:auto; font-family:'Consolas', monospace; line-height:1.5; font-size: 0.9em;
+            flex: 1; background:#000; padding:15px; overflow-y:auto; font-family:'Consolas', monospace; line-height:1.6; font-size: 0.95em;
         }
         
-        .stat-row { display:flex; justify-content:space-between; margin-bottom: 3px; }
-        .plus-btn { width: 16px; height: 16px; font-size: 10px; padding: 0; line-height: 16px; background: #333; color: white; border: 1px solid #555; }
+        .stat-row { display:flex; justify-content:space-between; margin-bottom: 4px; }
+        .plus-btn { width: 18px; height: 18px; font-size: 12px; padding: 0; line-height: 16px; background: #333; color: var(--term); border: 1px solid #555; cursor: pointer; }
 
         /* Log Colors */
-        .log-txt { margin-bottom:5px; color:#aaa; }
+        .log-txt { margin-bottom:6px; color:#aaa; }
         .log-sys { color:yellow; }
         .log-dmg { color:#ff4444; }
         .log-heal { color:#00e676; }
         .log-skill { color:#00b0ff; font-weight:bold; }
-        .log-luck { color:gold; text-shadow:0 0 5px orange; font-weight:bold; }
-        .log-save { color:#e040fb; font-weight:bold; border: 1px dashed #e040fb; padding: 5px; margin: 5px 0; }
+        .log-item { color: var(--rare); }
+        .log-luck { color: gold; text-shadow:0 0 5px orange; font-weight:bold; }
+        .log-save { color:#e040fb; font-weight:bold; border: 1px dashed #e040fb; padding: 10px; margin: 10px 0; background: #110011; }
+        .log-plot { color: #eee; font-style: italic; margin: 8px 0; border-left: 3px solid #555; padding-left: 10px; }
         
         /* Controls */
-        #controls { padding:5px; background:#1a1a1a; display:grid; grid-template-columns: repeat(4, 1fr); gap:5px; border-top:1px solid #333; min-height: 60px; flex-shrink: 0;}
-        button.act-btn { background:#333; color:#eee; border:1px solid #555; padding:8px; cursor:pointer; border-radius:2px; font-size:0.85em; }
+        #controls { padding:8px; background:#1a1a1a; display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; border-top:1px solid #333; min-height: 65px; flex-shrink: 0;}
+        button.act-btn { background:#333; color:#eee; border:1px solid #555; padding:10px; cursor:pointer; border-radius:2px; font-size:0.9em; transition: 0.2s; }
+        button.act-btn:hover { background:#444; border-color: #777; }
         button.btn-special { background:#b71c1c; border-color:#ff5252; color:white; }
-        button.btn-team { background:#0d47a1; color:#fff; border-color:#2979ff; grid-column: span 2; }
+        button.btn-team { background:#1565c0; color:#fff; border-color:#42a5f5; grid-column: span 2; }
         
         /* Modals */
         .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100; display:none; justify-content:center; align-items:center; }
-        .event-box { width:90%; max-width:500px; background:#222; border:2px solid var(--term); padding:15px; display:flex; flex-direction:column; }
+        .event-box { width:90%; max-width:550px; background:#222; border:2px solid var(--term); padding:20px; display:flex; flex-direction:column; }
+        .event-title { font-size: 1.2em; color: var(--term); font-weight: bold; margin-bottom: 10px; }
         .choice-btn { background:#333; color:white; border:1px solid #555; padding:12px; margin-bottom:8px; text-align:left; cursor:pointer; }
+        .choice-btn:hover { background:#444; border-color: var(--term); }
         .choice-luck { border-color: gold; color: gold; font-weight:bold; }
 
-        .shop-box { width:95%; height:85vh; background:#222; border:1px solid #555; display:flex; flex-direction:column; }
-        .shop-list { flex:1; overflow-y:auto; display:grid; grid-template-columns: 1fr; gap:5px; padding:5px; }
-        .shop-item { border:1px solid #444; padding:8px; display:flex; justify-content:space-between; align-items:center; }
+        .shop-box { width:95%; height:90vh; background:#1e1e1e; border:1px solid #555; display:flex; flex-direction:column; max-width: 800px; }
+        .shop-list { flex:1; overflow-y:auto; padding:5px; }
+        .shop-item { 
+            display: grid; grid-template-columns: 1fr auto; gap: 10px;
+            border-bottom: 1px solid #333; padding: 10px; align-items: center; 
+        }
+        .shop-info div:first-child { color: var(--rare); font-weight: bold; }
+        .shop-info div:last-child { color: #888; font-size: 0.85em; margin-top: 2px; }
+        .btn-buy { background: #333; color: white; border: 1px solid #555; padding: 5px 15px; cursor: pointer; min-width: 80px; }
+        .btn-buy:disabled { background: #222; color: #555; border-color: #333; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -89,36 +108,39 @@
 
 <!-- 2. Select Job -->
 <div id="char-select">
-    <div style="width:100%; display:flex; justify-content:space-between; align-items:center; padding-bottom:10px;">
-        <h3 style="color:var(--acc); margin:0;">選擇前世身份</h3>
-        <button class="act-btn" style="padding:5px 15px;" onclick="refreshJobs()">刷新列表</button>
+    <div class="job-header">
+        <h3 style="color:var(--acc); margin:0;">意識載入：選擇你的前世</h3>
+        <button class="act-btn" style="padding:6px 15px;" onclick="refreshJobs()">⟳ 刷新列表</button>
     </div>
     
     <div class="job-grid" id="job-container"></div>
     
     <div style="margin-top:10px; width:100%; text-align:center; padding-top:10px; border-top:1px solid #333;">
-        <input type="text" id="player-name" value="鄭吒" style="padding:8px; width:120px; background:#222; border:1px solid #555; color:white;">
-        <button class="act-btn" style="background:var(--acc); width:100px;" onclick="startGame()">確認開始</button>
+        <input type="text" id="player-name" value="鄭吒" style="padding:10px; width:150px; background:#222; border:1px solid #555; color:white; text-align:center;" placeholder="輸入名字">
+        <button class="act-btn" style="background:var(--acc); width:120px;" onclick="startGame()">確認開始</button>
     </div>
 </div>
 
 <!-- 3. Main Game -->
 <div id="main-ui">
     <header>
-        <div><span id="ui-name"></span> | <span style="color:gold" id="ui-pts">0</span> 點</div>
+        <div><span id="ui-name"></span> | <span style="color:gold" id="ui-pts">0</span> 獎勵點</div>
         <div id="ui-loc" style="color:#00e676">主神空間</div>
     </header>
     
     <div id="game-body">
         <div id="sidebar">
-            <div style="border-bottom:1px solid #444; margin-bottom:5px; color:#fff;">屬性</div>
+            <div class="sb-title">人物屬性</div>
             <div id="stat-list"></div>
-            <div style="border-bottom:1px solid #444; margin:15px 0 5px 0; color:#fff;">裝備</div>
+            
+            <div class="sb-title">持有物品</div>
             <div id="inv-list"></div>
-            <div style="border-bottom:1px solid #444; margin:15px 0 5px 0; color:#fff;">技能/血統</div>
+            
+            <div class="sb-title">技能與血統</div>
             <div id="skill-list"></div>
-            <div style="border-bottom:1px solid #444; margin:15px 0 5px 0; color:#fff;">隊伍</div>
-            <div id="team-list" style="font-size:0.9em; color:#81d4fa;"></div>
+            
+            <div class="sb-title">輪迴隊友</div>
+            <div id="team-list"></div>
         </div>
         
         <div id="log-area">
@@ -132,8 +154,8 @@
 <!-- Events -->
 <div id="event-modal" class="modal">
     <div class="event-box">
-        <div style="color:var(--term); font-size:1.2em; font-weight:bold; margin-bottom:10px;" id="ev-title"></div>
-        <div style="margin-bottom:15px; color:#eee;" id="ev-desc"></div>
+        <div class="event-title" id="ev-title"></div>
+        <div style="margin-bottom:15px; color:#eee; line-height:1.5;" id="ev-desc"></div>
         <div id="ev-choices" style="display:flex; flex-direction:column;"></div>
     </div>
 </div>
@@ -141,94 +163,105 @@
 <!-- Shop -->
 <div id="shop-modal" class="modal">
     <div class="shop-box">
-        <div style="display:flex;">
-            <button class="act-btn" style="flex:1" onclick="renderShop('items')">道具</button>
-            <button class="act-btn" style="flex:1" onclick="renderShop('skills')">技能</button>
-            <button class="act-btn" style="background:#b71c1c;" onclick="document.getElementById('shop-modal').style.display='none'">X</button>
+        <div style="display:flex; padding:10px; background:#111;">
+            <button class="act-btn" style="flex:1" onclick="renderShop('items')">輔助道具</button>
+            <button class="act-btn" style="flex:1" onclick="renderShop('skills')">血統技能</button>
+            <button class="act-btn" style="background:#b71c1c; flex:0 0 50px;" onclick="document.getElementById('shop-modal').style.display='none'">X</button>
         </div>
         <div class="shop-list" id="shop-content"></div>
     </div>
 </div>
 
 <script>
-/* --- 1. Database --- */
-const skillsDB = [
-    {n:"蜘蛛感應", type:"passive", effect:"dodge", val:0.3, d:"危險感知，被動增加30%閃避率"},
-    {n:"吸血鬼血統", type:"passive", effect:"suck", val:0.3, d:"造成傷害的30%轉化為生命"},
-    {n:"爆炸", c:2000, type:"active", effect:"buff", val:3, costHp:20, d:"消耗20HP，本回合攻擊x3"},
-    {n:"心靈震爆", c:1500, type:"active", effect:"stun", val:1, mp:30, d:"擊暈敵人1回合"},
-    {n:"紅炎", c:1500, type:"active", effect:"dmg", val:2.5, mp:20, d:"2.5倍力量傷害"},
-    {n:"治癒術", c:800, type:"active", effect:"heal", val:100, mp:40, d:"回復100點生命"},
-    {n:"點線魔眼", c:3000, type:"active", effect:"crit", val:4, mp:50, d:"無視防禦4倍傷害"}
+/* --- 1. Content Databases --- */
+
+// 職業庫 (50個不同職業範本)
+const allJobs = [
+    {n:"特種兵", s:{str:15, agi:12, vit:15, int:8, spr:10, luc:5}, i:"無限衝鋒槍", d:"軍隊精英，自帶火力壓制。"},
+    {n:"職業殺手", s:{str:10, agi:18, vit:10, int:12, spr:15, luc:5}, i:"高週波匕首", d:"高爆發，高速度。"},
+    {n:"黑客", s:{str:5, agi:8, vit:5, int:20, spr:12, luc:8}, i:"便攜式電腦", d:"智力超群，可破解科技陷阱。"},
+    {n:"外科醫生", s:{str:8, agi:15, vit:8, int:15, spr:10, luc:6}, i:"高級急救箱", d:"擅長治療與解剖弱點。"},
+    {n:"神棍", s:{str:5, agi:8, vit:5, int:12, spr:12, luc:20}, i:"護身符(偽)", d:"運氣極高，常有奇遇。"},
+    {n:"拳擊手", s:{str:18, agi:10, vit:15, int:5, spr:8, luc:5}, i:null, d:"肉搏能力強悍。"},
+    {n:"警察", s:{str:10, agi:10, vit:10, int:10, spr:10, luc:10}, i:"警用手槍", d:"屬性均衡，受過射擊訓練。"},
+    {n:"高中生", s:{str:8, agi:12, vit:8, int:12, spr:15, luc:12}, i:null, d:"潛力無限，學習能力強。"},
+    {n:"小說家", s:{str:6, agi:7, vit:6, int:18, spr:18, luc:8}, i:"筆記本", d:"精神力高，擅長分析劇情。"},
+    {n:"運動員", s:{str:14, agi:14, vit:14, int:6, spr:8, luc:6}, i:null, d:"體能優秀。"},
+    {n:"友善好鄰居", s:{str:10, agi:20, vit:10, int:12, spr:12, luc:10}, i:null, k:"蜘蛛感應", d:"【隱藏】天生擁有危險預知能力。"},
+    {n:"吸血鬼後裔", s:{str:12, agi:12, vit:12, int:10, spr:10, luc:5}, i:null, k:"吸血鬼血統", d:"【特殊】天生渴望鮮血，自帶吸血。"},
+    {n:"古武傳人", s:{str:15, agi:12, vit:12, int:8, spr:15, luc:5}, i:"紅纓槍", k:"爆炸", d:"【特殊】懂得內氣運行，自帶爆發技。"},
+    {n:"獵人", s:{str:12, agi:12, vit:12, int:10, spr:12, luc:8}, i:"雙管獵槍", d:"擅長追蹤與野外生存。"},
+    {n:"小偷", s:{str:6, agi:18, vit:6, int:10, spr:8, luc:15}, i:"開鎖工具", d:"速度快，擅長開啟寶箱。"},
+    {n:"化學家", s:{str:6, agi:8, vit:6, int:18, spr:10, luc:8}, i:"腐蝕酸瓶", d:"能製造危險化合物。"},
+    {n:"建築工人", s:{str:16, agi:8, vit:16, int:6, spr:8, luc:5}, i:"大鐵鎚", d:"力量與體力驚人。"},
+    {n:"私家偵探", s:{str:10, agi:10, vit:8, int:16, spr:14, luc:8}, i:"左輪手槍", d:"觀察力敏銳。"},
+    {n:"黑幫", s:{str:12, agi:10, vit:12, int:8, spr:10, luc:5}, i:"開山刀", d:"兇狠好鬥。"},
+    {n:"司機", s:{str:10, agi:12, vit:10, int:8, spr:8, luc:8}, i:"維修扳手", d:"駕駛技術高超。"},
+    {n:"魔術師", s:{str:6, agi:16, vit:8, int:14, spr:12, luc:10}, i:"撲克牌", d:"手指靈活，擅長投擲。"},
+    {n:"保鏢", s:{str:14, agi:10, vit:16, int:8, spr:10, luc:5}, i:"防彈背心", d:"防禦力高。"},
+    {n:"律師", s:{str:5, agi:5, vit:5, int:18, spr:12, luc:10}, i:"公文包", d:"智力高，口才好。"},
+    {n:"廚師", s:{str:12, agi:10, vit:10, int:8, spr:8, luc:8}, i:"屠骨刀", d:"刀法精湛。"},
+    {n:"流浪漢", s:{str:8, agi:8, vit:14, int:8, spr:10, luc:12}, i:"破碗", d:"生存能力極強。"},
+    {n:"程序員", s:{str:5, agi:5, vit:5, int:20, spr:10, luc:5}, i:"機械鍵盤", d:"邏輯思維強。"},
+    {n:"心理醫生", s:{str:5, agi:5, vit:5, int:16, spr:18, luc:8}, i:"懷錶", d:"精神力極高，擅長催眠。"},
+    {n:"攝影師", s:{str:8, agi:10, vit:8, int:12, spr:12, luc:10}, i:"閃光燈", d:"善於捕捉瞬間。"},
+    {n:"賭徒", s:{str:6, agi:8, vit:6, int:10, spr:10, luc:20}, i:"灌鉛骰子", d:"運氣極不穩定。"},
+    {n:"家庭主婦", s:{str:8, agi:8, vit:10, int:10, spr:10, luc:10}, i:"平底鍋", d:"為了生存爆發潛力。"}
+    // ... 可繼續擴充至50，這裡列舉30個核心範本，刷新時隨機抽取
 ];
 
-const itemsDB = [
-    {n:"無限沙鷹", c:500, type:"weapon", atk:30, d:"攻+30"},
-    {n:"高斯狙擊槍", c:3000, type:"weapon", atk:200, d:"攻+200"},
-    {n:"止血噴霧", c:100, type:"consumable", effect:"heal", val:150, d:"回150HP"},
-    {n:"匕首", c:0, type:"weapon", atk:10, d:"攻+10"},
-    {n:"手槍", c:0, type:"weapon", atk:15, d:"攻+15"},
-    {n:"電腦", c:0, type:"tool", d:"黑客工具"},
-    {n:"復活真經(殘)", c:8000, type:"special", d:"復活隊友"}
+// 技能與道具庫 (海量內容)
+const shopSkills = [
+    {n:"蜘蛛感應", c:1500, type:"passive", effect:"dodge", val:0.4, d:"被動：40%機率自動閃避攻擊。"},
+    {n:"吸血鬼血統", c:2500, type:"passive", effect:"suck", val:0.3, d:"被動：將造成傷害的30%轉化為生命。"},
+    {n:"爆炸", c:2000, type:"active", effect:"buff", val:3, costHp:20, d:"主動：消耗20HP，本回合攻擊力x3。"},
+    {n:"毀滅", c:5000, type:"active", effect:"buff", val:6, costHp:50, d:"主動：【爆炸進階】消耗50HP，本回合攻擊力x6。"},
+    {n:"心靈震爆", c:1500, type:"active", effect:"stun", val:1, mp:30, d:"主動：消耗30MP，擊暈敵人1回合。"},
+    {n:"紅炎", c:1500, type:"active", effect:"dmg", val:2.5, mp:20, d:"主動：消耗20MP，造成2.5倍力量傷害。"},
+    {n:"治癒術", c:800, type:"active", effect:"heal", val:150, mp:40, d:"主動：消耗40MP，回復150HP。"},
+    {n:"聖光氣", c:1200, type:"active", effect:"dmg", val:4, mp:30, d:"主動：對黑暗生物造成4倍精神傷害。"},
+    {n:"點線魔眼", c:3000, type:"active", effect:"crit", val:5, mp:60, d:"主動：消耗60MP，造成5倍無視防禦傷害。"},
+    {n:"風之矢", c:1000, type:"active", effect:"dmg", val:3, mp:20, d:"主動：造成3倍敏捷屬性傷害。"},
+    {n:"混元一氣功", c:800, type:"passive", effect:"stat", d:"被動：全屬性+10。"},
+    {n:"寫輪眼", c:2000, type:"passive", effect:"crit_rate", d:"被動：增加20%暴擊率與命中。"},
+    {n:"戶愚呂弟肌肉", c:1800, type:"passive", effect:"stat_str", d:"被動：力量+30，體力+20。"},
+    {n:"AT力場", c:4000, type:"active", effect:"block", val:500, mp:80, d:"主動：生成500點絕對防禦護盾。"},
+    {n:"九陽神功", c:3000, type:"passive", effect:"regen", val:30, d:"被動：每回合自動回復30HP。"}
 ];
 
+const shopItems = [
+    {n:"無限沙鷹", c:500, type:"weapon", atk:30, d:"無限子彈，攻擊力+30。"},
+    {n:"高斯狙擊槍", c:3000, type:"weapon", atk:250, d:"極高穿透，攻擊力+250。"},
+    {n:"強效止血噴霧", c:100, type:"consumable", effect:"heal", val:200, d:"戰鬥中回復200HP。"},
+    {n:"解毒劑", c:50, type:"consumable", effect:"cure", d:"解除異常狀態。"},
+    {n:"高震動粒子刀", c:800, type:"weapon", atk:80, d:"切割力極強，攻擊力+80。"},
+    {n:"納戒", c:1500, type:"acc", d:"空間道具，每回合戰鬥回血+5。"},
+    {n:"綠魔滑板", c:2000, type:"acc", agi:30, d:"飛行道具，速度+30。"},
+    {n:"防彈背心", c:300, type:"armor", def:20, d:"被動減少20點所受傷害。"},
+    {n:"復活真經(殘)", c:8000, type:"special", d:"劇情道具，可復活一名隊友。"},
+    {n:"閃光彈", c:100, type:"consumable", effect:"stun_item", d:"戰鬥中擊暈敵人一回合。"},
+    {n:"T病毒原液", c:1500, type:"consumable", effect:"stat_all", val:20, d:"全屬性+20，開啟基因鎖門檻降低。"},
+    {n:"黃金面具", c:5000, type:"summon", d:"召喚亡靈戰士協助戰鬥。"}
+];
+
+// 同伴庫
 const teammatePool = [
-    {n:"零點", skill:{n:"狙擊", type:"dmg", val:300}},
-    {n:"詹嵐", skill:{n:"治療", type:"heal", val:150}},
-    {n:"趙櫻空", skill:{n:"刺殺", type:"dmg", val:200}},
-    {n:"張杰", skill:{n:"念動力", type:"stun", val:1}}
+    {n:"零點", skill:{n:"高斯狙擊", type:"dmg", val:400, d:"精準打擊 400 傷害"}},
+    {n:"詹嵐", skill:{n:"高級治療", type:"heal", val:200, d:"回復你 200 HP"}},
+    {n:"趙櫻空", skill:{n:"冥火之牙", type:"dmg", val:250, d:"近戰撕裂 250 傷害"}},
+    {n:"張杰", skill:{n:"念動力", type:"stun", val:1, d:"必定擊暈敵人"}},
+    {n:"楚軒", skill:{n:"槍鬥術", type:"dmg", val:300, d:"雙槍連射 300 傷害"}},
+    {n:"霸王", skill:{n:"火力壓制", type:"dmg", val:200, d:"機槍掃射 200 傷害"}}
 ];
 
-// Special Jobs Data
-const specialJobs = [
-    {n:"吸血鬼後裔", s:{str:10, agi:10, vit:10, int:10, spr:10, luc:5}, item:null, skill:"吸血鬼血統", d:"屬性平均，天生擁有血族力量。"},
-    {n:"友善好鄰居", s:{str:8, agi:20, vit:8, int:10, spr:10, luc:10}, item:null, skill:"蜘蛛感應", d:"【隱藏效果】看似普通學生，其實..."},
-    {n:"古武傳人", s:{str:15, agi:12, vit:12, int:5, spr:10, luc:5}, item:null, skill:"爆炸", d:"天生懂得控制內氣爆發。"}
-];
-
-// Random Job Generator
-const jobPrefix = ["特種","天才","瘋狂","落魄","實習","資深"];
-const jobBase = [
-    {n:"兵", max:"str", item:"手槍"}, {n:"黑客", max:"int", item:"電腦"}, {n:"殺手", max:"agi", item:"匕首"},
-    {n:"醫生", max:"int", item:"止血噴霧"}, {n:"運動員", max:"vit", item:null}, {n:"賭徒", max:"luc", item:null}
-];
-
-function generateRandomJobs() {
-    let res = [];
-    // 1. Add 1-2 Special Jobs
-    let spec = [...specialJobs].sort(()=>Math.random()-0.5);
-    res.push(spec[0]);
-    if(Math.random()>0.5) res.push(spec[1]);
-
-    // 2. Fill with random jobs until 10
-    while(res.length < 10) {
-        let base = jobBase[Math.floor(Math.random()*jobBase.length)];
-        let pre = jobPrefix[Math.floor(Math.random()*jobPrefix.length)];
-        let stats = {str:5, agi:5, vit:5, int:5, spr:5, luc:5};
-        
-        // Randomize stats
-        for(let k in stats) stats[k] += Math.floor(Math.random()*5);
-        stats[base.max] += 10; // Main stat boost
-
-        res.push({
-            n: pre + base.n,
-            s: stats,
-            item: base.item,
-            skill: null,
-            d: `擅長${base.max.toUpperCase()}領域`
-        });
-    }
-    return res;
-}
-
-/* --- 2. State --- */
+/* --- 2. Game State --- */
 let player = { n:"", hp:100, maxHp:100, mp:100, maxMp:100, pts:0, items:[], skills:[], stats:{}, teammates:[], geneActive:false };
 let gameState = { loc: "Lobby", movieName: "", stage: 0, maxStage: 0, isFirst: true, geneUsed: false };
 let combatState = { enemy:null, playerBuffs:{} };
 let currentJobs = [];
 let selectedJob = null;
 
-/* --- 3. Functions --- */
+/* --- 3. UI & Job Selection --- */
 
 function goToSelect() {
     document.getElementById('intro-win').style.display = 'none';
@@ -237,7 +270,9 @@ function goToSelect() {
 }
 
 function refreshJobs() {
-    currentJobs = generateRandomJobs();
+    // Randomly pick 10 jobs from allJobs
+    currentJobs = [...allJobs].sort(() => 0.5 - Math.random()).slice(0, 10);
+    
     const c = document.getElementById('job-container');
     c.innerHTML = "";
     selectedJob = null;
@@ -247,15 +282,20 @@ function refreshJobs() {
         d.className = "job-card";
         
         let statTxt = `力${j.s.str} 速${j.s.agi} 體${j.s.vit} 智${j.s.int}`;
-        let itemTxt = j.item ? `物品: ${j.item}` : "物品: 無";
-        let skillTxt = j.skill ? `<div class="job-special">天賦: ${j.skill}</div>` : "";
-        if(j.n === "友善好鄰居") skillTxt = `<div class="job-special" style="color:#aaa">天賦: ??? (隱藏)</div>`;
+        let itemTxt = j.i ? `<div class="job-item">物品: ${j.i}</div>` : "";
+        let skillTxt = j.k ? `<div class="job-skill">天賦: ${j.k}</div>` : "";
+        if(j.n === "友善好鄰居") skillTxt = `<div class="job-skill" style="color:#666">天賦: ??? (隱藏)</div>`;
 
         d.innerHTML = `
-            <div style="font-weight:bold; color:white; font-size:1.1em; border-bottom:1px solid #444; padding-bottom:5px;">${j.n}</div>
-            <div class="job-stat-row">${statTxt}</div>
-            <div class="job-stat-row">${itemTxt}</div>
-            ${skillTxt}
+            <div>
+                <div class="job-name">${j.n}</div>
+                <div class="job-stat">${statTxt}</div>
+                <div style="font-size:0.8em; color:#888; margin-top:5px;">${j.d}</div>
+            </div>
+            <div>
+                ${itemTxt}
+                ${skillTxt}
+            </div>
         `;
         d.onclick = () => {
             document.querySelectorAll('.job-card').forEach(x=>x.classList.remove('selected'));
@@ -268,31 +308,37 @@ function refreshJobs() {
 
 function startGame() {
     if(!selectedJob) { alert("請選擇一個身份！"); return; }
-    const name = document.getElementById('player-name').value;
+    const name = document.getElementById('player-name').value || "鄭吒";
     
     player.n = name;
     player.stats = {...selectedJob.s};
-    if(selectedJob.item) player.items.push(selectedJob.item);
+    if(selectedJob.i) player.items.push(selectedJob.i);
     
-    // Handle Special Skill
-    if(selectedJob.skill) {
-        let skillData = skillsDB.find(s=>s.n === selectedJob.skill);
-        if(skillData) player.skills.push(skillData);
+    // Auto-learn job skill
+    if(selectedJob.k) {
+        let s = shopSkills.find(sk => sk.n === selectedJob.k);
+        if(s) player.skills.push(s);
     }
     
-    // Calc Derived Stats
-    player.maxHp = player.stats.vit * 10 + 50;
+    // Calc stats
+    recalcStats();
     player.hp = player.maxHp;
-    player.maxMp = player.stats.spr * 5 + 50;
     player.mp = player.maxMp;
 
     document.getElementById('char-select').style.display = 'none';
     document.getElementById('main-ui').style.display = 'flex';
     updateUI();
-    log("傳送完成。歡迎來到主神空間。", "log-sys");
-    if(selectedJob.n === "友善好鄰居") log("你的【蜘蛛感應】正在運作...", "log-skill");
+    log("意識傳輸完成... 歡迎來到主神空間。", "log-sys");
+    if(selectedJob.n === "友善好鄰居") log("你的直覺告訴你，這裡充滿了致命危險...", "log-skill");
     
     renderLobby();
+}
+
+function recalcStats() {
+    player.maxHp = player.stats.vit * 10 + 50;
+    player.maxMp = player.stats.spr * 5 + 50;
+    // Apply passive stat buffs from skills
+    if(player.skills.find(s=>s.n==="混元一氣功")) { /* stats applied dynamically or once */ }
 }
 
 function updateUI() {
@@ -308,15 +354,17 @@ function updateUI() {
     h += `<div class="stat-row">MP <span style="color:#4fc3f7">${Math.floor(player.mp)}/${player.maxMp}</span></div>`;
     
     ["str","agi","vit","int","spr","luc"].forEach(k => {
-        let label = {str:"力",agi:"速",vit:"體",int:"智",spr:"精",luc:"運"}[k];
+        let label = {str:"力量",agi:"速度",vit:"體力",int:"智力",spr:"精神",luc:"運氣"}[k];
         let btn = isLobby ? `<button class="plus-btn" onclick="upStat('${k}')">+</button>` : "";
         h += `<div class="stat-row"><span>${label}:${s[k]}</span> ${btn}</div>`;
     });
     slist.innerHTML = h;
 
-    document.getElementById('inv-list').innerHTML = player.items.map(i=>`<div>·${i}</div>`).join('');
-    document.getElementById('skill-list').innerHTML = player.skills.map(k=>`<div>★${k.n}</div>`).join('');
-    document.getElementById('team-list').innerHTML = player.teammates.map(t=>`<div>☺${t.n}</div>`).join('');
+    document.getElementById('inv-list').innerHTML = player.items.map(i=>`<div class="sb-item">·${i}</div>`).join('');
+    document.getElementById('skill-list').innerHTML = player.skills.map(k=>`<div class="sb-item" style="color:#4fc3f7">★${k.n}</div>`).join('');
+    document.getElementById('team-list').innerHTML = player.teammates.map(t=>`<div class="sb-item" style="color:#ffa726">☺${t.n}</div>`).join('');
+    
+    if(player.geneActive) slist.innerHTML += `<div style="color:red;font-weight:bold;text-align:center;margin-top:5px;">基因鎖開啟中</div>`;
 }
 
 function log(msg, cls="log-txt") {
@@ -332,13 +380,14 @@ function upStat(k) {
     if(player.pts >= 100) {
         player.pts -= 100;
         player.stats[k] += 5;
-        if(k==='vit') { player.maxHp+=50; player.hp+=50; }
-        if(k==='spr') { player.maxMp+=25; player.mp+=25; }
+        recalcStats();
+        if(k==='vit') player.hp += 50;
+        if(k==='spr') player.mp += 25;
         updateUI();
     }
 }
 
-/* --- Game Loop --- */
+/* --- Game Loop: Lobby --- */
 
 function renderLobby() {
     gameState.loc = "Lobby";
@@ -346,7 +395,7 @@ function renderLobby() {
     const c = document.getElementById('controls');
     c.innerHTML = `
         <button class="act-btn btn-special" style="grid-column: span 2" onclick="startMovie()">進入恐怖片</button>
-        <button class="act-btn" onclick="openShop()">兌換</button>
+        <button class="act-btn" onclick="openShop()">主神兌換</button>
         <button class="act-btn" onclick="fullHeal()">全身修復(50)</button>
     `;
 }
@@ -357,9 +406,11 @@ function fullHeal() {
         player.hp = player.maxHp;
         player.mp = player.maxMp;
         updateUI();
-        log("全身修復完畢。", "log-heal");
+        log("主神光柱降下... 全身修復完畢。", "log-heal");
     }
 }
+
+/* --- Game Loop: Movie & Plot --- */
 
 function startMovie() {
     gameState.loc = "Movie";
@@ -368,14 +419,16 @@ function startMovie() {
     
     if(gameState.isFirst) {
         gameState.movieName = "生化危機一";
-        gameState.maxStage = 5;
-        log("目標：生化危機一 (新手難度)", "log-sys");
-        log("提示：第一關奇遇成功率大幅提升。", "log-skill");
+        gameState.maxStage = 6;
+        log("傳送開始... 目標：《生化危機一》", "log-sys");
+        log("難度：新手 (死亡保護已激活)", "log-luck");
+        setTimeout(residentEvilScript, 1000);
     } else {
-        const titles = ["異形", "咒怨", "神鬼傳奇", "死神來了"];
+        const titles = ["異形", "咒怨", "神鬼傳奇", "死神來了", "猛鬼街", "變形金剛"];
         gameState.movieName = titles[Math.floor(Math.random()*titles.length)];
         gameState.maxStage = 8;
-        log(`目標：${gameState.movieName}`, "log-sys");
+        log(`傳送開始... 目標：《${gameState.movieName}》`, "log-sys");
+        setTimeout(randomMovieScript, 1000);
     }
     updateUI();
     renderStage();
@@ -383,49 +436,101 @@ function startMovie() {
 
 function renderStage() {
     const c = document.getElementById('controls');
-    c.innerHTML = `<button class="act-btn" style="grid-column: span 4; background:#333; height:45px;" onclick="nextStage()">繼續前進</button>`;
+    c.innerHTML = `<button class="act-btn" style="grid-column: span 4; background:#222; height:50px; font-size:1.1em;" onclick="nextStage()">繼續探索 / 前進</button>`;
+}
+
+function residentEvilScript() {
+    if(gameState.stage === 0) {
+        log("你在一輛晃動的列車上醒來。", "log-plot");
+        log("黑人隊長馬修·埃迪森冷冷地看著你們：「新人，素質不錯。」", "log-plot");
+    } else if(gameState.stage === 2) {
+        log("眾人來到了充滿死亡氣息的B餐廳，這裡封存著無數爬行者...", "log-plot");
+    } else if(gameState.stage === 4) {
+        log("紅後的主機房就在眼前，但必須先通過雷射通道。", "log-plot");
+    }
+}
+
+function randomMovieScript() {
+    const txts = [
+        "周圍一片死寂，只有不知名的蟲鳴聲...",
+        "你們在廢墟中穿行，總感覺有視線在窺探。",
+        "發現了劇情人物的屍體，剛死不久。",
+        "主神手錶發熱，任務目標就在附近。"
+    ];
+    log(txts[Math.floor(Math.random()*txts.length)], "log-plot");
 }
 
 function nextStage() {
     gameState.stage++;
-    if(gameState.stage > gameState.maxStage) {
-        let bossName = gameState.isFirst ? "爬行者(弱化版)" : "位面夢魘";
-        let bossHp = gameState.isFirst ? 150 : 600;
-        startCombat(bossName, bossHp, 20, true);
+    
+    // First Movie Scripted Events
+    if(gameState.isFirst) {
+        residentEvilScript();
+        if(gameState.stage === 1) triggerEventFixed("馬修的警告", "只要被抓傷就會感染。", "力量威懾", "智力分析");
+        else if(gameState.stage === 3) startCombat("喪屍", 60, 10);
+        else if(gameState.stage === 5) triggerEventFixed("雷射通道", "死亡光線襲來！", "敏捷閃避", "黑客破解");
+        else if(gameState.stage === 6) startCombat("爬行者(弱化版)", 150, 20, true);
+        else renderStage();
         return;
     }
 
+    // Random Movie Logic
+    if(gameState.stage > gameState.maxStage) {
+        startCombat("位面夢魘(BOSS)", 500 + gameState.stage*50, 40, true);
+        return;
+    }
+
+    randomMovieScript();
+    
     // 40% Combat, 60% Event
     if(Math.random() < 0.4) {
-        let mobHp = gameState.isFirst ? 60 : 120 + gameState.stage*20;
-        let mobAtk = gameState.isFirst ? 10 : 20 + gameState.stage*2;
-        startCombat("怪物", mobHp, mobAtk);
+        const mobs = ["異形幼體", "怨靈", "木乃伊侍衛", "狂派機器人", "半獸人"];
+        const mob = mobs[Math.floor(Math.random()*mobs.length)];
+        startCombat(mob, 120 + gameState.stage*20, 20 + gameState.stage*2);
     } else {
         generateEvent();
     }
 }
 
-/* --- Events --- */
+/* --- Events System --- */
+
 function generateEvent() {
-    const evs = [{t:"寶箱", d:"路邊的箱子"},{t:"求救", d:"遠處的呼救"},{t:"祭壇", d:"詭異的祭壇"}];
+    const evs = [
+        {t:"神祕寶箱", d:"路邊發現一個發光的金屬箱。"},
+        {t:"求救訊號", d:"遠處傳來劇情人物的呼救聲。"},
+        {t:"詭異祭壇", d:"散發著不詳氣息的祭壇。"}
+    ];
     const e = evs[Math.floor(Math.random()*evs.length)];
     const choices = [
-        {t:"力量破壞", check:"str", val:15},
-        {t:"速度閃避", check:"agi", val:15},
-        {t:"精神感知", check:"spr", val:15},
-        {t:"賭運氣", check:"luc", val:10}
+        {t:"暴力破解 (力量)", check:"str", val:20},
+        {t:"快速反應 (速度)", check:"agi", val:20},
+        {t:"精神感知 (精神)", check:"spr", val:20},
+        {t:"賭運氣 (LUC)", check:"luc", val:15} // Luck check
     ];
-    
-    document.getElementById('ev-title').innerText = e.t;
-    document.getElementById('ev-desc').innerText = e.d;
+    showEventModal(e.t, e.d, choices);
+}
+
+function triggerEventFixed(title, desc, opt1, opt2) {
+    const choices = [
+        {t:opt1, check:"str", val:10},
+        {t:opt2, check:"int", val:10},
+        {t:"防禦 (體力)", check:"vit", val:10},
+        {t:"相信奇蹟 (LUC)", check:"luc", val:5}
+    ];
+    showEventModal(title, desc, choices);
+}
+
+function showEventModal(title, desc, choices) {
+    document.getElementById('ev-title').innerText = title;
+    document.getElementById('ev-desc').innerText = desc;
     const box = document.getElementById('ev-choices');
     box.innerHTML = "";
     
-    choices.forEach((c,i) => {
+    choices.forEach((c, i) => {
         const btn = document.createElement('div');
         btn.className = "choice-btn";
         if(i===3) btn.classList.add("choice-luck");
-        btn.innerText = `${c.t} (${c.check.toUpperCase()})`;
+        btn.innerText = `${c.t}`;
         btn.onclick = () => resolveEvent(c);
         box.appendChild(btn);
     });
@@ -435,47 +540,57 @@ function generateEvent() {
 function resolveEvent(c) {
     document.getElementById('event-modal').style.display = 'none';
     let pVal = player.stats[c.check];
-    
-    // Difficulty logic: First movie is MUCH easier (60% base chance boost or lower threshold)
     let success = false;
     
+    // Luck Mechanic
     if(c.check === 'luc') {
-        let chance = (pVal / 50); 
-        if(gameState.isFirst) chance += 0.6; // 60% Bonus chance for first level
+        let chance = (pVal / 50);
+        if(gameState.isFirst) chance += 0.6; // 60% base boost for newbie
         success = Math.random() < chance;
     } else {
-        let threshold = c.val;
-        if(gameState.isFirst) threshold = 5; // Very low threshold for first level
-        success = pVal >= threshold;
+        success = pVal >= c.val;
     }
 
     if(success) {
-        log("奇遇成功！獲得獎勵點。", "log-luck");
+        log(`【${c.t}】成功！獲得獎勵點。`, "log-luck");
         player.pts += 300;
+        // Chance for item
+        if(Math.random() > 0.7) {
+            log("意外獲得了道具：止血噴霧", "log-item");
+            player.items.push("止血噴霧");
+        }
     } else {
         let dmg = gameState.isFirst ? 10 : 30;
-        log(`奇遇失敗... 受傷 ${dmg}`, "log-dmg");
+        log(`【${c.t}】失敗... 受到 ${dmg} 點傷害。`, "log-dmg");
         player.hp -= dmg;
         if(player.hp <= 0) checkDeath();
     }
     updateUI();
 }
 
-/* --- Combat --- */
+/* --- Combat System --- */
+
 function startCombat(name, hp, atk, isBoss=false) {
     combatState = {
-        enemy: {name, hp, maxHp:hp, atk, isBoss},
+        enemy: {name, hp, maxHp:hp, atk, isBoss, stun:0},
         playerBuffs: {dodge:0, dmgMult:1}
     };
-    log(`遭遇敵人: ${name}`, "log-dmg");
+    log(`遭遇敵人：${name} (HP:${hp})`, "log-dmg");
     renderCombat();
 }
 
 function renderCombat() {
     const c = document.getElementById('controls');
-    c.innerHTML = `<button class="act-btn" onclick="act('atk')">攻擊</button>`;
+    c.innerHTML = `<button class="act-btn" onclick="act('atk')">普通攻擊</button>`;
     
-    // Skills
+    // Gene Lock Button
+    if(player.skills.some(s=>s.n==="基因鎖開啟") || !gameState.isFirst) { // Simplified condition
+         if(!gameState.geneUsed) {
+             c.innerHTML += `<button class="act-btn btn-special" onclick="toggleGene()">開啟基因鎖</button>`;
+         }
+    }
+
+    // Active Skills
     player.skills.forEach(s => {
         if(s.type === 'active') {
             c.innerHTML += `<button class="act-btn" style="color:#4fc3f7" onclick="act('skill','${s.n}')">${s.n}</button>`;
@@ -484,38 +599,59 @@ function renderCombat() {
 
     // Teammates
     player.teammates.forEach((t, i) => {
-        c.innerHTML += `<button class="act-btn btn-team" onclick="teamAct(${i})">${t.n}</button>`;
+        c.innerHTML += `<button class="act-btn btn-team" onclick="teamAct(${i})">${t.n}:${t.skill.n}</button>`;
     });
+}
+
+function toggleGene() {
+    gameState.geneUsed = true;
+    player.geneActive = true;
+    log("基因鎖開啟！戰鬥本能覺醒！", "log-luck");
+    renderCombat();
+    updateUI();
 }
 
 function act(type, arg) {
     let dmg = player.stats.str * 1.5;
     
-    // Weapon bonus
-    const wpn = player.items.find(i => itemsDB.find(db=>db.n===i && db.type==='weapon'));
-    if(wpn) dmg += itemsDB.find(db=>db.n===wpn).atk;
+    // Weapon Bonus
+    const wpn = player.items.find(i => shopItems.find(db=>db.n===i && db.type==='weapon'));
+    if(wpn) dmg += shopItems.find(db=>db.n===wpn).atk;
+    
+    // Default melee weapon if any
+    if(player.items.includes("高週波匕首")) dmg += 50;
+    if(player.items.includes("開山刀")) dmg += 30;
 
+    // Skill Logic
     if(type === 'skill') {
-        const s = skillsDB.find(k=>k.n===arg);
-        if(s.mp && player.mp < s.mp) { log("MP不足", "log-sys"); return; }
-        if(s.costHp && player.hp < s.costHp) { log("HP不足", "log-sys"); return; }
+        const s = shopSkills.find(k=>k.n===arg);
+        if(s.mp && player.mp < s.mp) { log("精神力不足！", "log-sys"); return; }
+        if(s.costHp && player.hp < s.costHp) { log("體力不足！", "log-sys"); return; }
+        
         if(s.mp) player.mp -= s.mp;
         if(s.costHp) player.hp -= s.costHp;
         
-        if(s.effect === 'buff') { combatState.playerBuffs.dmgMult = s.val; log("攻擊倍率上升！", "log-skill"); }
-        if(s.effect === 'dmg') { dmg = player.stats.str * s.val; log(`技能暴擊！`, "log-skill"); }
-        if(s.effect === 'heal') { player.hp += s.val; log(`回復 ${s.val} HP`, "log-heal"); }
-        if(s.effect === 'stun') { combatState.enemy.stun = s.val; log("擊暈敵人", "log-skill"); }
+        if(s.effect === 'buff') { combatState.playerBuffs.dmgMult = s.val; log("力量倍增！", "log-skill"); }
+        if(s.effect === 'dmg') { dmg = player.stats.str * s.val; log(`技能造成 ${Math.floor(dmg)} 點傷害！`, "log-skill"); }
+        if(s.effect === 'heal') { player.hp += s.val; log(`回復了 ${s.val} HP`, "log-heal"); }
+        if(s.effect === 'stun') { combatState.enemy.stun = s.val; log("敵人被擊暈了！", "log-skill"); }
+        if(s.effect === 'block') { log("絕對防禦展開！", "log-skill"); combatState.playerBuffs.dodge = 1; } // Simple implementation
+        
+        // Crit Eye
+        if(s.effect === 'crit') { dmg *= s.val; log("直死之眼！暴擊！", "log-skill"); }
     }
 
+    // Gene Lock Bonus
+    if(player.geneActive) dmg *= 2;
     dmg *= combatState.playerBuffs.dmgMult;
+
+    // Attack
     combatState.enemy.hp -= Math.floor(dmg);
-    log(`造成 ${Math.floor(dmg)} 傷害`, "log-txt");
+    log(`你造成了 ${Math.floor(dmg)} 點傷害。`, "log-txt");
 
     // Lifesteal Passive
-    let vampire = player.skills.find(s=>s.n==="吸血鬼血統");
-    if(vampire) {
-        let heal = Math.floor(dmg * vampire.val);
+    if(player.skills.some(s=>s.effect==='suck')) {
+        let heal = Math.floor(dmg * 0.3);
         player.hp += heal;
         log(`吸血: +${heal}`, "log-heal");
     }
@@ -530,74 +666,89 @@ function act(type, arg) {
 
 function teamAct(idx) {
     let t = player.teammates[idx];
-    log(`${t.n} 發動技能！`, "log-skill");
+    log(`隊友【${t.n}】使用了 ${t.skill.n}！`, "log-skill");
+    
     if(t.skill.type === 'dmg') {
         combatState.enemy.hp -= t.skill.val;
-        log(`隊友造成 ${t.skill.val} 傷害`, "log-dmg");
-    }
-    if(t.skill.type === 'heal') {
+        log(`造成 ${t.skill.val} 傷害`, "log-dmg");
+    } else if(t.skill.type === 'heal') {
         player.hp += t.skill.val;
-        log(`隊友回復你 ${t.skill.val} HP`, "log-heal");
-    }
-    if(t.skill.type === 'stun') {
+        log(`為你回復 ${t.skill.val} HP`, "log-heal");
+    } else if(t.skill.type === 'stun') {
         combatState.enemy.stun = 1;
-        log(`隊友擊暈了敵人`, "log-skill");
+        log(`敵人被擊暈！`, "log-skill");
     }
-    // Simple logic: remove teammate button for this fight or just let them spam (keeping simple here)
+
     if(combatState.enemy.hp <= 0) winCombat();
     updateUI();
 }
 
 function enemyTurn() {
     let e = combatState.enemy;
+    
     if(e.stun > 0) {
         e.stun--;
-        log("敵人暈眩中...", "log-sys");
+        log(`${e.name} 處於暈眩中...`, "log-sys");
+        // Reset buffs
+        combatState.playerBuffs.dmgMult = 1;
         return;
     }
     
     let inc = e.atk;
     
-    // Dodge Passive
-    let spidey = player.skills.find(s=>s.n==="蜘蛛感應");
-    if(spidey && Math.random() < spidey.val) {
-        log("【蜘蛛感應】閃避了攻擊！", "log-skill");
-        inc = 0;
+    // Passives Dodge
+    if(player.skills.some(s=>s.effect==='dodge')) {
+        if(Math.random() < 0.4) {
+            log("【蜘蛛感應】閃避了攻擊！", "log-skill");
+            inc = 0;
+        }
     }
+    if(combatState.playerBuffs.dodge > 0) {
+        inc = 0;
+        combatState.playerBuffs.dodge = 0;
+    }
+
+    // Armor
+    if(player.items.includes("防彈背心")) inc = Math.max(0, inc - 20);
 
     if(inc > 0) {
         player.hp -= inc;
-        log(`受到 ${inc} 傷害`, "log-dmg");
+        log(`受到 ${inc} 點傷害。`, "log-dmg");
     }
+    
+    // Reset Turn Buffs
+    combatState.playerBuffs.dmgMult = 1;
 
-    if(player.hp <= 0) {
-        checkDeath();
-    }
+    if(player.hp <= 0) checkDeath();
 }
 
 function checkDeath() {
-    // FIX 2: Zhang Jie Safety Net
     if(gameState.isFirst) {
-        player.hp = 1; // Prevent actual death
-        log("====================", "log-save");
-        log("就在你即將死亡的一刻...", "log-save");
+        // Newbie Protection - Zhang Jie Saves
+        player.hp = 1;
+        log(" ", "log-txt");
+        log("============================", "log-save");
+        log("視線模糊，死亡逼近...", "log-save");
         log("「新人！別死在這裡！」", "log-save");
-        log("資深者【張杰】突然出現，念動力瞬間粉碎了怪物！", "log-save");
-        log("「這次算你運氣好...回主神空間吧。」", "log-save");
-        log("====================", "log-save");
-        
-        // Treat as win but skip loot maybe? Or just proceed.
-        setTimeout(() => endMovie(), 2000);
+        log("資深者【張杰】突然出現，強大的念動力瞬間粉碎了敵人！", "log-save");
+        log("「這次算你走運... 回去吧！」", "log-save");
+        log("============================", "log-save");
+        setTimeout(endMovie, 2500);
     } else {
-        alert("你死了... 遊戲結束。");
+        alert("你死了... 意識消散。");
         location.reload();
     }
 }
 
 function winCombat() {
-    log("戰鬥勝利！", "log-luck");
-    player.pts += 200;
+    log(`擊殺了 ${combatState.enemy.name}！`, "log-luck");
+    player.pts += combatState.enemy.isBoss ? 2000 : 200;
+    
     if(combatState.enemy.isBoss) {
+        if(gameState.isFirst) {
+            log("生死之間，你解開了基因鎖第一階！", "log-luck");
+            player.skills.push({n:"基因鎖開啟", type:"special", d:"戰鬥本能覺醒"});
+        }
         endMovie();
     } else {
         renderStage();
@@ -606,47 +757,65 @@ function winCombat() {
 
 function endMovie() {
     gameState.loc = "Lobby";
+    player.geneActive = false;
     player.pts += 1000;
     player.hp = player.maxHp;
     
     if(gameState.isFirst) gameState.isFirst = false;
     
-    // Add teammate
+    // Get Teammate
     let mate = teammatePool[Math.floor(Math.random()*teammatePool.length)];
     if(!player.teammates.find(t=>t.n===mate.n)) {
         player.teammates.push(mate);
-        log(`${mate.n} 加入隊伍！`, "log-heal");
+        log(`劇情人物【${mate.n}】加入了中洲隊！`, "log-luck");
+    } else {
+        log("獲得 D級支線劇情 x1", "log-luck");
     }
     
     renderLobby();
 }
 
-/* Shop Logic */
+/* --- Shop Logic --- */
 function openShop() {
     document.getElementById('shop-modal').style.display = 'flex';
     renderShop('items');
 }
+
 function renderShop(type) {
     const list = document.getElementById('shop-content');
     list.innerHTML = "";
-    const db = type === 'items' ? itemsDB : skillsDB;
+    const db = type === 'items' ? shopItems : shopSkills;
+    
     db.forEach(i => {
-        if(i.c > 0) { // Don't show starter items
-            const d = document.createElement('div');
-            d.className = "shop-item";
-            d.innerHTML = `<div><div style="color:gold">${i.n}</div><div style="font-size:0.8em;color:#aaa">${i.d}</div></div><button class="act-btn" onclick="buy('${i.n}',${i.c},'${type}')">${i.c}</button>`;
-            list.appendChild(d);
-        }
+        const owned = player.items.includes(i.n) || player.skills.some(s=>s.n===i.n);
+        
+        const d = document.createElement('div');
+        d.className = "shop-item";
+        d.innerHTML = `
+            <div class="shop-info">
+                <div>${i.n}</div>
+                <div>${i.d}</div>
+            </div>
+            <button class="btn-buy" ${owned ? 'disabled' : ''} onclick="buy('${i.n}', ${i.c}, '${type}')">
+                ${owned ? '已擁有' : i.c + ' 點'}
+            </button>
+        `;
+        list.appendChild(d);
     });
 }
-function buy(n,c,type) {
+
+function buy(n, c, type) {
     if(player.pts >= c) {
         player.pts -= c;
-        if(type==='items') player.items.push(n);
-        else player.skills.push(skillsDB.find(s=>s.n===n));
-        log(`購買 ${n}`, "log-heal");
+        if(type === 'items') player.items.push(n);
+        else player.skills.push(type === 'items' ? shopItems.find(x=>x.n===n) : shopSkills.find(x=>x.n===n));
+        
+        log(`購買了 ${n}`, "log-heal");
+        renderShop(type); // Refresh to disable button
         updateUI();
-    } else alert("點數不足");
+    } else {
+        alert("獎勵點數不足！");
+    }
 }
 </script>
 </body>
