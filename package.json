@@ -1,0 +1,16 @@
+{
+  "name": "infinite-horror-card-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:audio": "node scripts/generate-audio-assets.mjs",
+    "dev": "vite --host 127.0.0.1",
+    "preview:static": "node scripts/serve.mjs",
+    "check": "node scripts/smoke-test.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "vite": "^7.0.0"
+  }
+}
