@@ -1,0 +1,23 @@
+(function (global) {
+  global.MainGodAudioManifest = {
+    events: {
+      "card.draw": { src: "./src/assets/audio/card-draw.wav", volume: 0.58, rateJitter: 0.04 },
+      "card.reward": { src: "./src/assets/audio/card-reward.wav", volume: 0.62, rateJitter: 0.03 },
+      "card.play.attack": { src: "./src/assets/audio/card-play-attack.wav", volume: 0.64, rateJitter: 0.05 },
+      "card.play.guard": { src: "./src/assets/audio/card-play-guard.wav", volume: 0.5, rateJitter: 0.03 },
+      "card.play.support": { src: "./src/assets/audio/card-play-support.wav", volume: 0.48, rateJitter: 0.03 },
+      "card.play.tactic": { src: "./src/assets/audio/card-play-tactic.wav", volume: 0.46, rateJitter: 0.05 },
+      "combat.hit.light": { src: "./src/assets/audio/combat-hit-light.wav", volume: 0.58, rateJitter: 0.07 },
+      "combat.hit.heavy": { src: "./src/assets/audio/combat-hit-heavy.wav", volume: 0.7, rateJitter: 0.04 },
+      "combat.hit.aoe": { src: "./src/assets/audio/combat-hit-aoe.wav", volume: 0.68, rateJitter: 0.04 },
+      "combat.enemy.break": { src: "./src/assets/audio/combat-enemy-break.wav", volume: 0.7, rateJitter: 0.03 },
+      "combat.victory": { src: "./src/assets/audio/combat-victory.wav", volume: 0.66, rateJitter: 0 },
+      "combat.defeat": { src: "./src/assets/audio/combat-defeat.wav", volume: 0.62, rateJitter: 0 }
+    },
+    music: {
+      "music.hub": { src: "./src/assets/audio/music-hub.wav", volume: 0.34 },
+      "music.map": { src: "./src/assets/audio/music-map.wav", volume: 0.32 },
+      "music.combat": { src: "./src/assets/audio/music-combat.wav", volume: 0.38 }
+    }
+  };
+})(globalThis);

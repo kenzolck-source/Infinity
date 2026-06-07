@@ -1,0 +1,1515 @@
+{
+  "cards": [
+    {
+      "id": "combat-knife",
+      "name": "軍用匕首",
+      "category": "general",
+      "type": "attack",
+      "rarity": "starter",
+      "cost": 1,
+      "damage": 8,
+      "text": "造成 8 點傷害。",
+      "upgrade": {
+        "damage": 12
+      },
+      "tags": [
+        "攻擊",
+        "近戰"
+      ]
+    },
+    {
+      "id": "guard-stance",
+      "name": "防護姿態",
+      "category": "general",
+      "type": "guard",
+      "rarity": "starter",
+      "cost": 1,
+      "blockAll": 6,
+      "text": "全隊獲得 6 護甲。",
+      "upgrade": {
+        "blockAll": 9
+      },
+      "tags": [
+        "防護",
+        "全隊"
+      ]
+    },
+    {
+      "id": "adrenaline-rush",
+      "name": "腎上腺素",
+      "category": "general",
+      "type": "tactic",
+      "rarity": "starter",
+      "cost": 0,
+      "gainEnergy": 1,
+      "draw": 1,
+      "addStress": 4,
+      "exhaust": true,
+      "text": "獲得 1 能量，抽 1 張牌；全隊壓力 +4，耗盡。",
+      "upgrade": {
+        "addStress": 1
+      },
+      "tags": [
+        "戰術",
+        "耗盡"
+      ]
+    },
+    {
+      "id": "wide-burst",
+      "name": "橫掃火力",
+      "category": "general",
+      "type": "attack",
+      "rarity": "common",
+      "cost": 2,
+      "damageAll": 9,
+      "text": "對所有敵人造成 9 點傷害。",
+      "upgrade": {
+        "damageAll": 13
+      },
+      "tags": [
+        "攻擊",
+        "群體"
+      ]
+    },
+    {
+      "id": "emergency-dodge",
+      "name": "緊急迴避",
+      "category": "general",
+      "type": "guard",
+      "rarity": "common",
+      "cost": 1,
+      "blockAll": 8,
+      "text": "全隊獲得 8 護甲。",
+      "upgrade": {
+        "blockAll": 11
+      },
+      "tags": [
+        "防護",
+        "全隊"
+      ]
+    },
+    {
+      "id": "focus-fire",
+      "name": "集中射擊",
+      "category": "general",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 2,
+      "damage": 18,
+      "text": "造成 18 點傷害。",
+      "upgrade": {
+        "damage": 25
+      },
+      "tags": [
+        "攻擊",
+        "遠程"
+      ]
+    },
+    {
+      "id": "field-medicine",
+      "name": "戰地醫療",
+      "category": "general",
+      "type": "support",
+      "rarity": "common",
+      "cost": 1,
+      "healLowest": 9,
+      "reduceStress": 4,
+      "text": "治療生命最低隊員 9 點，全隊壓力 -4。",
+      "upgrade": {
+        "healLowest": 14,
+        "reduceStress": 6
+      },
+      "tags": [
+        "治療",
+        "支援"
+      ]
+    },
+    {
+      "id": "team-tactics",
+      "name": "團隊戰術",
+      "category": "general",
+      "type": "tactic",
+      "rarity": "common",
+      "cost": 1,
+      "draw": 2,
+      "blockAll": 2,
+      "text": "抽 2 張牌，全隊獲得 2 護甲。",
+      "upgrade": {
+        "blockAll": 5
+      },
+      "tags": [
+        "戰術",
+        "抽牌"
+      ]
+    },
+    {
+      "id": "psychic-barrier",
+      "name": "精神屏障",
+      "category": "general",
+      "type": "guard",
+      "rarity": "uncommon",
+      "cost": 1,
+      "blockAll": 10,
+      "text": "全隊獲得 10 護甲。",
+      "upgrade": {
+        "blockAll": 14
+      },
+      "tags": [
+        "精神",
+        "防護"
+      ]
+    },
+    {
+      "id": "main-god-repair",
+      "name": "主神修復",
+      "category": "general",
+      "type": "support",
+      "rarity": "uncommon",
+      "cost": 2,
+      "healLowest": 12,
+      "reduceStress": 10,
+      "text": "治療生命最低隊員 12 點，全隊壓力 -10。",
+      "upgrade": {
+        "healLowest": 18,
+        "reduceStress": 14
+      },
+      "tags": [
+        "治療",
+        "主神"
+      ]
+    },
+    {
+      "id": "desperate-counter",
+      "name": "絕境反擊",
+      "category": "general",
+      "type": "attack",
+      "rarity": "rare",
+      "cost": 3,
+      "damage": 30,
+      "blockAll": 6,
+      "text": "造成 30 點傷害，全隊獲得 6 護甲。",
+      "upgrade": {
+        "damage": 40,
+        "blockAll": 9
+      },
+      "tags": [
+        "攻擊",
+        "反擊"
+      ]
+    },
+    {
+      "id": "gene-lock",
+      "name": "基因鎖",
+      "category": "general",
+      "type": "tactic",
+      "rarity": "rare",
+      "cost": 1,
+      "gainEnergy": 2,
+      "draw": 1,
+      "addStress": 10,
+      "exhaust": true,
+      "text": "獲得 2 能量，抽 1 張牌；全隊壓力 +10，耗盡。",
+      "upgrade": {
+        "cost": 0,
+        "addStress": 6
+      },
+      "tags": [
+        "基因鎖",
+        "耗盡"
+      ]
+    },
+    {
+      "id": "cold-command",
+      "name": "冷靜指揮",
+      "category": "general",
+      "type": "tactic",
+      "rarity": "uncommon",
+      "cost": 1,
+      "draw": 2,
+      "reduceStress": 3,
+      "text": "抽 2 張牌，全隊壓力 -3。",
+      "upgrade": {
+        "draw": 3,
+        "reduceStress": 5
+      },
+      "tags": [
+        "戰術",
+        "支援"
+      ]
+    },
+    {
+      "id": "water-breathing-surface-slash",
+      "name": "水之呼吸·水面斬",
+      "category": "general",
+      "type": "attack",
+      "rarity": "common",
+      "cost": 1,
+      "damage": 12,
+      "weakTarget": 2,
+      "text": "造成 12 傷害，並使目標虛弱 2 點。",
+      "upgrade": {
+        "damage": 17,
+        "weakTarget": 4
+      },
+      "tags": [
+        "鬼滅之刃",
+        "水之呼吸"
+      ],
+      "sourceId": "demon-slayer",
+      "sourceName": "鬼滅之刃"
+    },
+    {
+      "id": "water-breathing-waterfall",
+      "name": "水之呼吸·瀧壺",
+      "category": "general",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 2,
+      "damageAll": 10,
+      "blockAll": 4,
+      "text": "對所有敵人造成 10 傷害，全隊獲得 4 護甲。",
+      "upgrade": {
+        "damageAll": 14,
+        "blockAll": 7
+      },
+      "tags": [
+        "鬼滅之刃",
+        "水之呼吸"
+      ],
+      "sourceId": "demon-slayer",
+      "sourceName": "鬼滅之刃"
+    },
+    {
+      "id": "flame-breathing-unknown-fire",
+      "name": "炎之呼吸·不知火",
+      "category": "general",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 2,
+      "damage": 20,
+      "burnTarget": 4,
+      "text": "造成 20 傷害，並施加 4 燃燒。",
+      "upgrade": {
+        "damage": 27,
+        "burnTarget": 7
+      },
+      "tags": [
+        "鬼滅之刃",
+        "炎之呼吸"
+      ],
+      "sourceId": "demon-slayer",
+      "sourceName": "鬼滅之刃"
+    },
+    {
+      "id": "thunder-breathing-thunderclap",
+      "name": "雷之呼吸·霹靂一閃",
+      "category": "general",
+      "type": "attack",
+      "rarity": "rare",
+      "cost": 2,
+      "damage": 24,
+      "pierce": true,
+      "draw": 1,
+      "text": "穿透護甲造成 24 傷害，抽 1 張牌。",
+      "upgrade": {
+        "damage": 32,
+        "draw": 2
+      },
+      "tags": [
+        "鬼滅之刃",
+        "雷之呼吸"
+      ],
+      "sourceId": "demon-slayer",
+      "sourceName": "鬼滅之刃"
+    },
+    {
+      "id": "ff7-braver",
+      "name": "FF7·勇猛斬",
+      "category": "general",
+      "type": "attack",
+      "rarity": "common",
+      "cost": 1,
+      "damage": 14,
+      "text": "造成 14 傷害。",
+      "upgrade": {
+        "damage": 20
+      },
+      "tags": [
+        "Final Fantasy VII",
+        "極限技"
+      ],
+      "sourceId": "ff7",
+      "sourceName": "Final Fantasy VII"
+    },
+    {
+      "id": "ff7-cross-slash",
+      "name": "FF7·凶斬",
+      "category": "general",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 2,
+      "damage": 18,
+      "stunTarget": 1,
+      "text": "造成 18 傷害，封鎖目標下一次行動。",
+      "upgrade": {
+        "damage": 24
+      },
+      "tags": [
+        "Final Fantasy VII",
+        "極限技"
+      ],
+      "sourceId": "ff7",
+      "sourceName": "Final Fantasy VII"
+    },
+    {
+      "id": "ff7-blade-beam",
+      "name": "FF7·破晄擊",
+      "category": "general",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 2,
+      "damageAll": 11,
+      "pierce": true,
+      "text": "穿透護甲，對所有敵人造成 11 傷害。",
+      "upgrade": {
+        "damageAll": 16
+      },
+      "tags": [
+        "Final Fantasy VII",
+        "劍技"
+      ],
+      "sourceId": "ff7",
+      "sourceName": "Final Fantasy VII"
+    },
+    {
+      "id": "ff7-omnislash",
+      "name": "FF7·超究武神霸斬",
+      "category": "general",
+      "type": "attack",
+      "rarity": "rare",
+      "cost": 3,
+      "damageAll": 24,
+      "exhaust": true,
+      "text": "對所有敵人造成 24 傷害，耗盡。",
+      "upgrade": {
+        "damageAll": 32
+      },
+      "tags": [
+        "Final Fantasy VII",
+        "極限技"
+      ],
+      "sourceId": "ff7",
+      "sourceName": "Final Fantasy VII"
+    },
+    {
+      "id": "yanyun-nameless-spear",
+      "name": "燕雲·無名槍法",
+      "category": "general",
+      "type": "attack",
+      "rarity": "common",
+      "cost": 1,
+      "damage": 11,
+      "pierce": true,
+      "text": "穿透護甲造成 11 傷害。",
+      "upgrade": {
+        "damage": 16
+      },
+      "tags": [
+        "燕雲十六聲",
+        "槍法"
+      ],
+      "sourceId": "yanyun",
+      "sourceName": "燕雲十六聲"
+    },
+    {
+      "id": "yanyun-jiefu-blade",
+      "name": "燕雲·嗟夫刀法",
+      "category": "general",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 2,
+      "damage": 19,
+      "blockAll": 3,
+      "text": "造成 19 傷害，全隊獲得 3 護甲。",
+      "upgrade": {
+        "damage": 26,
+        "blockAll": 6
+      },
+      "tags": [
+        "燕雲十六聲",
+        "刀法"
+      ],
+      "sourceId": "yanyun",
+      "sourceName": "燕雲十六聲"
+    },
+    {
+      "id": "yanyun-drunken-spring",
+      "name": "燕雲·醉夢遊春",
+      "category": "general",
+      "type": "attack",
+      "rarity": "rare",
+      "cost": 2,
+      "damageAll": 12,
+      "evadeAll": 1,
+      "text": "對所有敵人造成 12 傷害，全隊獲得 1 次閃避。",
+      "upgrade": {
+        "damageAll": 17
+      },
+      "tags": [
+        "燕雲十六聲",
+        "傘武學"
+      ],
+      "sourceId": "yanyun",
+      "sourceName": "燕雲十六聲"
+    },
+    {
+      "id": "yanyun-millet-cloud",
+      "name": "燕雲·粟子行雲",
+      "category": "general",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 1,
+      "damage": 10,
+      "draw": 1,
+      "text": "造成 10 傷害，抽 1 張牌。",
+      "upgrade": {
+        "damage": 15,
+        "draw": 2
+      },
+      "tags": [
+        "燕雲十六聲",
+        "繩鏢"
+      ],
+      "sourceId": "yanyun",
+      "sourceName": "燕雲十六聲"
+    },
+    {
+      "id": "jy-dragon-palms",
+      "name": "降龍十八掌",
+      "category": "general",
+      "type": "attack",
+      "rarity": "rare",
+      "cost": 3,
+      "damageAll": 22,
+      "weakAll": 3,
+      "text": "對所有敵人造成 22 傷害，並使其虛弱 3 點。",
+      "upgrade": {
+        "damageAll": 30,
+        "weakAll": 5
+      },
+      "tags": [
+        "金庸武俠",
+        "掌法"
+      ],
+      "sourceId": "jinyong",
+      "sourceName": "金庸武俠"
+    },
+    {
+      "id": "jy-dugu-nine-swords",
+      "name": "獨孤九劍",
+      "category": "general",
+      "type": "attack",
+      "rarity": "rare",
+      "cost": 2,
+      "damage": 24,
+      "pierce": true,
+      "draw": 1,
+      "text": "穿透護甲造成 24 傷害，抽 1 張牌。",
+      "upgrade": {
+        "damage": 32,
+        "draw": 2
+      },
+      "tags": [
+        "金庸武俠",
+        "劍法"
+      ],
+      "sourceId": "jinyong",
+      "sourceName": "金庸武俠"
+    },
+    {
+      "id": "jy-six-meridian-sword",
+      "name": "六脈神劍",
+      "category": "general",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 2,
+      "damageAll": 13,
+      "pierce": true,
+      "text": "穿透護甲，對所有敵人造成 13 傷害。",
+      "upgrade": {
+        "damageAll": 18
+      },
+      "tags": [
+        "金庸武俠",
+        "指法"
+      ],
+      "sourceId": "jinyong",
+      "sourceName": "金庸武俠"
+    },
+    {
+      "id": "jy-ecstasy-palms",
+      "name": "黯然銷魂掌",
+      "category": "general",
+      "type": "attack",
+      "rarity": "rare",
+      "cost": 2,
+      "damage": 20,
+      "weakTarget": 5,
+      "text": "造成 20 傷害，使目標虛弱 5 點。",
+      "upgrade": {
+        "damage": 28,
+        "weakTarget": 8
+      },
+      "tags": [
+        "金庸武俠",
+        "掌法"
+      ],
+      "sourceId": "jinyong",
+      "sourceName": "金庸武俠"
+    },
+    {
+      "id": "jy-dog-beating-staff",
+      "name": "打狗棒法",
+      "category": "general",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 1,
+      "damage": 9,
+      "stunTarget": 1,
+      "text": "造成 9 傷害，封鎖目標下一次行動。",
+      "upgrade": {
+        "damage": 14
+      },
+      "tags": [
+        "金庸武俠",
+        "棒法"
+      ],
+      "sourceId": "jinyong",
+      "sourceName": "金庸武俠"
+    },
+    {
+      "id": "jy-nine-yin-claw",
+      "name": "九陰白骨爪",
+      "category": "general",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 2,
+      "damage": 16,
+      "poisonTarget": 4,
+      "text": "造成 16 傷害，並施加 4 中毒。",
+      "upgrade": {
+        "damage": 22,
+        "poisonTarget": 7
+      },
+      "tags": [
+        "金庸武俠",
+        "爪法"
+      ],
+      "sourceId": "jinyong",
+      "sourceName": "金庸武俠"
+    },
+    {
+      "id": "jy-yiyang-finger",
+      "name": "一陽指",
+      "category": "general",
+      "type": "attack",
+      "rarity": "common",
+      "cost": 1,
+      "damage": 10,
+      "stunTarget": 1,
+      "text": "造成 10 傷害，封鎖目標下一次行動。",
+      "upgrade": {
+        "damage": 15
+      },
+      "tags": [
+        "金庸武俠",
+        "指法"
+      ],
+      "sourceId": "jinyong",
+      "sourceName": "金庸武俠"
+    },
+    {
+      "id": "jy-taiji-sword",
+      "name": "太極劍",
+      "category": "general",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 2,
+      "damage": 12,
+      "blockAll": 10,
+      "text": "造成 12 傷害，全隊獲得 10 護甲。",
+      "upgrade": {
+        "damage": 17,
+        "blockAll": 14
+      },
+      "tags": [
+        "金庸武俠",
+        "劍法"
+      ],
+      "sourceId": "jinyong",
+      "sourceName": "金庸武俠"
+    },
+    {
+      "id": "blood-awakening",
+      "name": "血統覺醒",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 2,
+      "damage": 18,
+      "gainEnergy": 1,
+      "addStress": 8,
+      "text": "造成 18 點傷害，獲得 1 能量；全隊壓力 +8。",
+      "upgrade": {
+        "damage": 26,
+        "addStress": 4
+      },
+      "tags": [
+        "鄭吒",
+        "專屬"
+      ]
+    },
+    {
+      "id": "mentor-demo",
+      "name": "引導者示範",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 0,
+      "damage": 24,
+      "blockAll": 8,
+      "exhaust": true,
+      "text": "造成 24 點傷害，全隊獲得 8 護甲，耗盡。",
+      "upgrade": {
+        "damage": 32,
+        "blockAll": 12
+      },
+      "tags": [
+        "張杰",
+        "專屬"
+      ]
+    },
+    {
+      "id": "mental-link",
+      "name": "精神鏈接",
+      "category": "signature",
+      "type": "support",
+      "rarity": "signature",
+      "cost": 1,
+      "blockAll": 3,
+      "draw": 1,
+      "reduceStress": 4,
+      "text": "全隊獲得 3 護甲，抽 1 張牌，壓力 -4。",
+      "upgrade": {
+        "blockAll": 6,
+        "reduceStress": 7
+      },
+      "tags": [
+        "詹嵐",
+        "專屬"
+      ]
+    },
+    {
+      "id": "sniper-line",
+      "name": "零點狙擊",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 2,
+      "damage": 22,
+      "text": "造成 22 點傷害。",
+      "upgrade": {
+        "damage": 32
+      },
+      "tags": [
+        "零點",
+        "專屬"
+      ]
+    },
+    {
+      "id": "reckless-charge",
+      "name": "冒險突進",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 1,
+      "damage": 13,
+      "addStress": 3,
+      "text": "造成 13 點傷害；全隊壓力 +3。",
+      "upgrade": {
+        "damage": 19,
+        "addStress": 1
+      },
+      "tags": [
+        "李蕭毅",
+        "專屬"
+      ]
+    },
+    {
+      "id": "iron-guard",
+      "name": "鐵壁守護",
+      "category": "signature",
+      "type": "guard",
+      "rarity": "signature",
+      "cost": 1,
+      "blockAll": 9,
+      "text": "全隊獲得 9 護甲。",
+      "upgrade": {
+        "blockAll": 14
+      },
+      "tags": [
+        "牟剛",
+        "專屬"
+      ]
+    },
+    {
+      "id": "survival-instinct",
+      "name": "求生本能",
+      "category": "signature",
+      "type": "tactic",
+      "rarity": "signature",
+      "cost": 0,
+      "draw": 1,
+      "gainEnergy": 1,
+      "exhaust": true,
+      "text": "抽 1 張牌並獲得 1 能量，耗盡。",
+      "upgrade": {
+        "draw": 2
+      },
+      "tags": [
+        "李帥西",
+        "專屬"
+      ]
+    },
+    {
+      "id": "strategist-calculation",
+      "name": "楚軒推演",
+      "category": "signature",
+      "type": "tactic",
+      "rarity": "signature",
+      "cost": 0,
+      "draw": 2,
+      "exhaust": true,
+      "text": "抽 2 張牌，耗盡。",
+      "upgrade": {
+        "draw": 3
+      },
+      "tags": [
+        "楚軒",
+        "專屬"
+      ]
+    },
+    {
+      "id": "shadow-step",
+      "name": "影步刺殺",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 1,
+      "damage": 10,
+      "draw": 1,
+      "text": "造成 10 點傷害，抽 1 張牌。",
+      "upgrade": {
+        "damage": 16
+      },
+      "tags": [
+        "趙櫻空",
+        "專屬"
+      ]
+    },
+    {
+      "id": "suppressive-fire",
+      "name": "重火力壓制",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 2,
+      "damageAll": 12,
+      "blockAll": 4,
+      "text": "對所有敵人造成 12 點傷害，全隊獲得 4 護甲。",
+      "upgrade": {
+        "damageAll": 17,
+        "blockAll": 7
+      },
+      "tags": [
+        "霸王",
+        "專屬"
+      ]
+    },
+    {
+      "id": "crisis-preview",
+      "name": "危機預演",
+      "category": "signature",
+      "type": "tactic",
+      "rarity": "signature",
+      "cost": 1,
+      "draw": 1,
+      "blockAll": 5,
+      "text": "抽 1 張牌，全隊獲得 5 護甲。",
+      "upgrade": {
+        "draw": 2,
+        "blockAll": 7
+      },
+      "tags": [
+        "蕭宏律",
+        "專屬"
+      ]
+    },
+    {
+      "id": "artifact-reading",
+      "name": "古物解讀",
+      "category": "signature",
+      "type": "support",
+      "rarity": "signature",
+      "cost": 1,
+      "draw": 2,
+      "blockAll": 3,
+      "text": "抽 2 張牌，全隊獲得 3 護甲。",
+      "upgrade": {
+        "cost": 0,
+        "blockAll": 5
+      },
+      "tags": [
+        "齊騰一",
+        "專屬"
+      ]
+    },
+    {
+      "id": "wind-arrow",
+      "name": "風之矢",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 2,
+      "damage": 25,
+      "text": "對一名敵人造成 25 點傷害。",
+      "upgrade": {
+        "damage": 34
+      },
+      "tags": [
+        "張恆",
+        "專屬"
+      ]
+    },
+    {
+      "id": "soul-volley",
+      "name": "靈魂齊射",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 2,
+      "damageAll": 14,
+      "text": "對所有敵人造成 14 點傷害。",
+      "upgrade": {
+        "damageAll": 20
+      },
+      "tags": [
+        "銘煙薇",
+        "專屬"
+      ]
+    },
+    {
+      "id": "flying-needle",
+      "name": "飛針渡厄",
+      "category": "signature",
+      "type": "support",
+      "rarity": "signature",
+      "cost": 1,
+      "damage": 8,
+      "healLowest": 8,
+      "text": "造成 8 點傷害，治療生命比例最低的隊員 8 點生命。",
+      "upgrade": {
+        "damage": 12,
+        "healLowest": 12
+      },
+      "tags": [
+        "程嘯",
+        "專屬"
+      ]
+    },
+    {
+      "id": "demolition-charge",
+      "name": "定向爆破",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 2,
+      "damageAll": 16,
+      "exhaust": true,
+      "text": "對所有敵人造成 16 點傷害，耗盡。",
+      "upgrade": {
+        "damageAll": 23
+      },
+      "tags": [
+        "王俠",
+        "專屬"
+      ]
+    },
+    {
+      "id": "mecha-deploy",
+      "name": "機甲展開",
+      "category": "signature",
+      "type": "tactic",
+      "rarity": "signature",
+      "cost": 1,
+      "blockAll": 7,
+      "gainEnergy": 1,
+      "text": "全隊獲得 7 護甲，獲得 1 點能量。",
+      "upgrade": {
+        "blockAll": 11
+      },
+      "tags": [
+        "羅甘道",
+        "專屬"
+      ]
+    },
+    {
+      "id": "clear-mind",
+      "name": "澄明心境",
+      "category": "signature",
+      "type": "support",
+      "rarity": "signature",
+      "cost": 1,
+      "draw": 2,
+      "reduceStress": 6,
+      "text": "抽 2 張牌，全隊壓力 -6。",
+      "upgrade": {
+        "cost": 0,
+        "reduceStress": 8
+      },
+      "tags": [
+        "劉鬱",
+        "專屬"
+      ]
+    },
+    {
+      "id": "rapid-adaptation",
+      "name": "高速適應",
+      "category": "signature",
+      "type": "tactic",
+      "rarity": "signature",
+      "cost": 1,
+      "draw": 2,
+      "gainEnergy": 1,
+      "text": "抽 2 張牌，獲得 1 點能量。",
+      "upgrade": {
+        "draw": 3
+      },
+      "tags": [
+        "林俊天",
+        "專屬"
+      ]
+    },
+    {
+      "id": "sand-burial",
+      "name": "黃沙埋葬",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 2,
+      "damageAll": 12,
+      "blockAll": 5,
+      "text": "對所有敵人造成 12 點傷害，全隊獲得 5 護甲。",
+      "upgrade": {
+        "damageAll": 18,
+        "blockAll": 8
+      },
+      "tags": [
+        "伊莫頓",
+        "專屬"
+      ]
+    },
+    {
+      "id": "black-flame-annihilation",
+      "name": "原暗·黑炎寂滅",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 3,
+      "damage": 28,
+      "ownerStressDamageRatio": 0.25,
+      "ownerStressDamageCap": 20,
+      "burnTarget": 6,
+      "addStress": 10,
+      "text": "造成 28 傷害，依複製體鄭吒壓力追加最多 20 傷害，並施加 6 燃燒；全隊壓力 +10。",
+      "upgrade": {
+        "damage": 36,
+        "burnTarget": 9,
+        "addStress": 6
+      },
+      "tags": [
+        "複製體鄭吒",
+        "黑炎"
+      ]
+    },
+    {
+      "id": "causality-bullet",
+      "name": "因果率彈道",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 1,
+      "damage": 15,
+      "pierce": true,
+      "stunTarget": 1,
+      "draw": 2,
+      "exhaust": true,
+      "text": "穿透護甲造成 15 傷害，封鎖目標下一次行動並抽 2 張牌，耗盡。",
+      "upgrade": {
+        "damage": 22,
+        "cost": 0
+      },
+      "tags": [
+        "複製體楚軒",
+        "因果律"
+      ]
+    },
+    {
+      "id": "spatial-sever",
+      "name": "心靈之光·空裂",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 2,
+      "damage": 20,
+      "pierce": true,
+      "executeBelow": 0.35,
+      "executeDamage": 16,
+      "evadeOwner": 1,
+      "text": "穿透護甲造成 20 傷害；目標生命低於 35% 時追加 16 傷害，趙綴空獲得 1 次閃避。",
+      "upgrade": {
+        "damage": 27,
+        "executeDamage": 24
+      },
+      "tags": [
+        "趙綴空",
+        "空間"
+      ]
+    },
+    {
+      "id": "eva-rampage",
+      "name": "初號機暴走",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 2,
+      "damageAll": 14,
+      "blockAll": 8,
+      "gainEnergy": 1,
+      "addStress": 8,
+      "text": "對所有敵人造成 14 傷害，全隊獲得 8 護甲與 1 能量；全隊壓力 +8。",
+      "upgrade": {
+        "damageAll": 20,
+        "blockAll": 12,
+        "addStress": 4
+      },
+      "tags": [
+        "複製體羅甘道",
+        "機甲"
+      ]
+    },
+    {
+      "id": "psychic-crush",
+      "name": "念動力壓殺",
+      "category": "signature",
+      "type": "tactic",
+      "rarity": "signature",
+      "cost": 1,
+      "damage": 8,
+      "weakTarget": 8,
+      "stunTarget": 1,
+      "text": "造成 8 傷害，使目標虛弱 8 點並封鎖下一次行動。",
+      "upgrade": {
+        "damage": 14,
+        "weakTarget": 12
+      },
+      "tags": [
+        "湯姆",
+        "念動力"
+      ]
+    },
+    {
+      "id": "human-completion",
+      "name": "人類補全陣式",
+      "category": "signature",
+      "type": "support",
+      "rarity": "signature",
+      "cost": 2,
+      "healAll": 8,
+      "blockAll": 8,
+      "reduceStress": 6,
+      "draw": 2,
+      "exhaust": true,
+      "text": "全隊恢復 8 生命、獲得 8 護甲、壓力 -6，抽 2 張牌，耗盡。",
+      "upgrade": {
+        "healAll": 12,
+        "blockAll": 12,
+        "reduceStress": 10
+      },
+      "tags": [
+        "亞當",
+        "補全"
+      ]
+    },
+    {
+      "id": "immortal-sword-array",
+      "name": "誅仙劍陣",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 3,
+      "damageAll": 18,
+      "burnAll": 6,
+      "exhaust": true,
+      "text": "對所有敵人造成 18 傷害並施加 6 燃燒，耗盡。",
+      "upgrade": {
+        "damageAll": 26,
+        "burnAll": 9
+      },
+      "tags": [
+        "羅應龍",
+        "劍陣"
+      ]
+    },
+    {
+      "id": "heaven-cleaver",
+      "name": "斬天拔刀式",
+      "category": "signature",
+      "type": "attack",
+      "rarity": "signature",
+      "cost": 2,
+      "damage": 27,
+      "pierce": true,
+      "blockAll": 4,
+      "text": "穿透護甲造成 27 傷害，全隊獲得 4 護甲。",
+      "upgrade": {
+        "damage": 38,
+        "blockAll": 7
+      },
+      "tags": [
+        "宋天",
+        "斬艦刀"
+      ]
+    },
+    {
+      "id": "probability-swindle",
+      "name": "概率欺詐",
+      "category": "signature",
+      "type": "tactic",
+      "rarity": "signature",
+      "cost": 0,
+      "draw": 3,
+      "gainEnergy": 1,
+      "addStress": 6,
+      "exhaust": true,
+      "text": "抽 3 張牌並獲得 1 能量；全隊壓力 +6，耗盡。",
+      "upgrade": {
+        "draw": 4,
+        "addStress": 3
+      },
+      "tags": [
+        "尼奧斯",
+        "概率"
+      ]
+    },
+    {
+      "id": "absolute-zero-domain",
+      "name": "絕對零度領域",
+      "category": "signature",
+      "type": "guard",
+      "rarity": "signature",
+      "cost": 2,
+      "damageAll": 10,
+      "blockAll": 8,
+      "weakAll": 5,
+      "text": "對所有敵人造成 10 傷害並使其虛弱 5 點，全隊獲得 8 護甲。",
+      "upgrade": {
+        "damageAll": 15,
+        "blockAll": 12,
+        "weakAll": 8
+      },
+      "tags": [
+        "崗尼爾",
+        "冰霜"
+      ]
+    },
+    {
+      "id": "curse-panic",
+      "name": "恐慌殘響",
+      "category": "curse",
+      "type": "curse",
+      "rarity": "curse",
+      "cost": 99,
+      "unplayable": true,
+      "onDrawStress": 5,
+      "text": "抽到時全隊壓力 +5；無法打出。",
+      "tags": [
+        "詛咒"
+      ]
+    },
+    {
+      "id": "curse-drain",
+      "name": "生命流失",
+      "category": "curse",
+      "type": "curse",
+      "rarity": "curse",
+      "cost": 99,
+      "unplayable": true,
+      "onDrawDamage": 2,
+      "text": "抽到時全隊失去 2 生命；無法打出。",
+      "tags": [
+        "詛咒"
+      ]
+    }
+  ],
+  "equipment": [
+    {
+      "id": "infinite-desert-eagle",
+      "name": "無限子彈沙漠之鷹",
+      "rarity": "uncommon",
+      "effect": "attackBonus",
+      "amount": 2,
+      "upgradedAmount": 4,
+      "weaponClass": "firearm",
+      "text": "持有者存活時，所有攻擊牌傷害 +2。"
+    },
+    {
+      "id": "gauss-pistol",
+      "name": "高斯手槍",
+      "rarity": "rare",
+      "effect": "firstAttackBonus",
+      "amount": 7,
+      "upgradedAmount": 11,
+      "weaponClass": "firearm",
+      "text": "每回合第一張攻擊牌額外造成 7 點傷害。"
+    },
+    {
+      "id": "na-ring",
+      "name": "納戒",
+      "rarity": "rare",
+      "effect": "openingDraw",
+      "amount": 1,
+      "upgradedAmount": 2,
+      "text": "每場戰鬥第一回合額外抽 1 張牌。"
+    },
+    {
+      "id": "jade-amulet",
+      "name": "防護玉佩",
+      "rarity": "rare",
+      "effect": "turnBlock",
+      "amount": 3,
+      "upgradedAmount": 5,
+      "text": "回合開始時全隊獲得 3 護甲。"
+    },
+    {
+      "id": "book-of-the-dead",
+      "name": "亡靈聖經",
+      "rarity": "legendary",
+      "effect": "turnStressRelief",
+      "amount": 2,
+      "upgradedAmount": 4,
+      "text": "回合開始時全隊壓力 -2。"
+    },
+    {
+      "id": "incendiary-magazine",
+      "name": "煉金燃燒彈匣",
+      "rarity": "rare",
+      "effect": "firstAttackBurn",
+      "amount": 4,
+      "upgradedAmount": 7,
+      "weaponClass": "firearm",
+      "text": "每回合第一張攻擊牌使命中的敵人燃燒 4 點。"
+    },
+    {
+      "id": "medical-nanites",
+      "name": "醫療奈米機群",
+      "rarity": "rare",
+      "effect": "turnHealLowest",
+      "amount": 3,
+      "upgradedAmount": 5,
+      "text": "回合開始時治療生命比例最低的隊員 3 點。"
+    },
+    {
+      "id": "phase-cloak",
+      "name": "相位隱匿斗篷",
+      "rarity": "legendary",
+      "effect": "openingEvade",
+      "amount": 1,
+      "upgradedAmount": 2,
+      "text": "每場戰鬥第一回合，全隊獲得 1 次閃避。"
+    },
+    {
+      "id": "armor-piercing-core",
+      "name": "高密度破甲核心",
+      "rarity": "legendary",
+      "effect": "firstAttackPierce",
+      "amount": 3,
+      "upgradedAmount": 6,
+      "weaponClass": "firearm",
+      "text": "每回合第一張攻擊牌穿透護甲，並額外造成 3 點傷害。"
+    },
+    {
+      "id": "tactical-battery",
+      "name": "戰術能量電池",
+      "rarity": "rare",
+      "effect": "openingEnergy",
+      "amount": 1,
+      "upgradedAmount": 2,
+      "text": "每場戰鬥第一回合額外獲得 1 點能量。"
+    },
+    {
+      "id": "avalon-sheath",
+      "name": "阿瓦隆劍鞘",
+      "rarity": "legendary",
+      "effect": "turnStressRelief",
+      "amount": 3,
+      "upgradedAmount": 5,
+      "text": "回合開始時全隊壓力 -3。",
+      "sourceId": "anime-artifacts",
+      "sourceName": "動漫神器"
+    },
+    {
+      "id": "ea-sword-rupture",
+      "name": "乖離劍 Ea",
+      "rarity": "legendary",
+      "effect": "attackBonus",
+      "amount": 5,
+      "upgradedAmount": 8,
+      "text": "持有者存活時，所有攻擊牌傷害 +5。",
+      "sourceId": "anime-artifacts",
+      "sourceName": "動漫神器"
+    },
+    {
+      "id": "gates-of-babylon-key",
+      "name": "王之財寶鑰匙",
+      "rarity": "legendary",
+      "effect": "openingDraw",
+      "amount": 2,
+      "upgradedAmount": 3,
+      "text": "每場戰鬥第一回合額外抽 2 張牌。",
+      "sourceId": "anime-artifacts",
+      "sourceName": "動漫神器"
+    },
+    {
+      "id": "zangetsu-blade",
+      "name": "斬月",
+      "rarity": "rare",
+      "effect": "firstAttackBonus",
+      "amount": 10,
+      "upgradedAmount": 15,
+      "text": "每回合第一張攻擊牌額外造成 10 點傷害。",
+      "sourceId": "anime-artifacts",
+      "sourceName": "動漫神器"
+    },
+    {
+      "id": "enma-blade",
+      "name": "閻魔",
+      "rarity": "rare",
+      "effect": "firstAttackPierce",
+      "amount": 5,
+      "upgradedAmount": 8,
+      "text": "每回合第一張攻擊牌穿透護甲，並額外造成 5 點傷害。",
+      "sourceId": "anime-artifacts",
+      "sourceName": "動漫神器"
+    },
+    {
+      "id": "pan-gu-axe",
+      "name": "盤古斧",
+      "rarity": "legendary",
+      "effect": "attackBonus",
+      "amount": 6,
+      "upgradedAmount": 9,
+      "text": "持有者存活時，所有攻擊牌傷害 +6。",
+      "sourceId": "novel-artifacts",
+      "sourceName": "小說神器"
+    },
+    {
+      "id": "xuan-yuan-sword",
+      "name": "軒轅劍",
+      "rarity": "legendary",
+      "effect": "firstAttackBonus",
+      "amount": 12,
+      "upgradedAmount": 18,
+      "text": "每回合第一張攻擊牌額外造成 12 點傷害。",
+      "sourceId": "novel-artifacts",
+      "sourceName": "小說神器"
+    },
+    {
+      "id": "donghuang-bell",
+      "name": "東皇鐘",
+      "rarity": "legendary",
+      "effect": "turnBlock",
+      "amount": 7,
+      "upgradedAmount": 10,
+      "text": "回合開始時全隊獲得 7 護甲。",
+      "sourceId": "novel-artifacts",
+      "sourceName": "小說神器"
+    },
+    {
+      "id": "haotian-tower",
+      "name": "昊天塔",
+      "rarity": "legendary",
+      "effect": "openingEnergy",
+      "amount": 2,
+      "upgradedAmount": 3,
+      "text": "每場戰鬥第一回合額外獲得 2 點能量。",
+      "sourceId": "novel-artifacts",
+      "sourceName": "小說神器"
+    },
+    {
+      "id": "zhuxian-sword",
+      "name": "誅仙劍",
+      "rarity": "legendary",
+      "effect": "firstAttackPierce",
+      "amount": 7,
+      "upgradedAmount": 11,
+      "text": "每回合第一張攻擊牌穿透護甲，並額外造成 7 點傷害。",
+      "sourceId": "novel-artifacts",
+      "sourceName": "小說神器"
+    },
+    {
+      "id": "heaven-sword",
+      "name": "倚天劍",
+      "rarity": "rare",
+      "effect": "firstAttackPierce",
+      "amount": 4,
+      "upgradedAmount": 7,
+      "text": "每回合第一張攻擊牌穿透護甲，並額外造成 4 點傷害。",
+      "sourceId": "wuxia-artifacts",
+      "sourceName": "武俠神兵"
+    },
+    {
+      "id": "dragon-saber",
+      "name": "屠龍刀",
+      "rarity": "rare",
+      "effect": "firstAttackBonus",
+      "amount": 9,
+      "upgradedAmount": 14,
+      "text": "每回合第一張攻擊牌額外造成 9 點傷害。",
+      "sourceId": "wuxia-artifacts",
+      "sourceName": "武俠神兵"
+    },
+    {
+      "id": "soft-hedgehog-armor",
+      "name": "軟蝟甲",
+      "rarity": "rare",
+      "effect": "turnBlock",
+      "amount": 5,
+      "upgradedAmount": 8,
+      "text": "回合開始時全隊獲得 5 護甲。",
+      "sourceId": "wuxia-artifacts",
+      "sourceName": "武俠神兵"
+    },
+    {
+      "id": "black-iron-heavy-sword",
+      "name": "玄鐵重劍",
+      "rarity": "legendary",
+      "effect": "attackBonus",
+      "amount": 4,
+      "upgradedAmount": 7,
+      "text": "持有者存活時，所有攻擊牌傷害 +4。",
+      "sourceId": "wuxia-artifacts",
+      "sourceName": "武俠神兵"
+    }
+  ]
+}

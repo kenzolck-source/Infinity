@@ -1,0 +1,1202 @@
+[
+  {
+    "kind": "skill",
+    "id": "combat-knife",
+    "fileName": "skill-combat-knife.png",
+    "name": "軍用匕首",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "攻擊",
+      "近戰"
+    ],
+    "text": "造成 8 點傷害。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "guard-stance",
+    "fileName": "skill-guard-stance.png",
+    "name": "防護姿態",
+    "type": "guard",
+    "category": "general",
+    "tags": [
+      "防護",
+      "全隊"
+    ],
+    "text": "全隊獲得 6 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "adrenaline-rush",
+    "fileName": "skill-adrenaline-rush.png",
+    "name": "腎上腺素",
+    "type": "tactic",
+    "category": "general",
+    "tags": [
+      "戰術",
+      "耗盡"
+    ],
+    "text": "獲得 1 能量，抽 1 張牌；全隊壓力 +4，耗盡。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "wide-burst",
+    "fileName": "skill-wide-burst.png",
+    "name": "橫掃火力",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "攻擊",
+      "群體"
+    ],
+    "text": "對所有敵人造成 9 點傷害。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "emergency-dodge",
+    "fileName": "skill-emergency-dodge.png",
+    "name": "緊急迴避",
+    "type": "guard",
+    "category": "general",
+    "tags": [
+      "防護",
+      "全隊"
+    ],
+    "text": "全隊獲得 8 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "focus-fire",
+    "fileName": "skill-focus-fire.png",
+    "name": "集中射擊",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "攻擊",
+      "遠程"
+    ],
+    "text": "造成 18 點傷害。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "field-medicine",
+    "fileName": "skill-field-medicine.png",
+    "name": "戰地醫療",
+    "type": "support",
+    "category": "general",
+    "tags": [
+      "治療",
+      "支援"
+    ],
+    "text": "治療生命最低隊員 9 點，全隊壓力 -4。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "team-tactics",
+    "fileName": "skill-team-tactics.png",
+    "name": "團隊戰術",
+    "type": "tactic",
+    "category": "general",
+    "tags": [
+      "戰術",
+      "抽牌"
+    ],
+    "text": "抽 2 張牌，全隊獲得 2 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "psychic-barrier",
+    "fileName": "skill-psychic-barrier.png",
+    "name": "精神屏障",
+    "type": "guard",
+    "category": "general",
+    "tags": [
+      "精神",
+      "防護"
+    ],
+    "text": "全隊獲得 10 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "main-god-repair",
+    "fileName": "skill-main-god-repair.png",
+    "name": "主神修復",
+    "type": "support",
+    "category": "general",
+    "tags": [
+      "治療",
+      "主神"
+    ],
+    "text": "治療生命最低隊員 12 點，全隊壓力 -10。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "desperate-counter",
+    "fileName": "skill-desperate-counter.png",
+    "name": "絕境反擊",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "攻擊",
+      "反擊"
+    ],
+    "text": "造成 30 點傷害，全隊獲得 6 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "gene-lock",
+    "fileName": "skill-gene-lock.png",
+    "name": "基因鎖",
+    "type": "tactic",
+    "category": "general",
+    "tags": [
+      "基因鎖",
+      "耗盡"
+    ],
+    "text": "獲得 2 能量，抽 1 張牌；全隊壓力 +10，耗盡。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "cold-command",
+    "fileName": "skill-cold-command.png",
+    "name": "冷靜指揮",
+    "type": "tactic",
+    "category": "general",
+    "tags": [
+      "戰術",
+      "支援"
+    ],
+    "text": "抽 2 張牌，全隊壓力 -3。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "water-breathing-surface-slash",
+    "fileName": "skill-water-breathing-surface-slash.png",
+    "name": "水之呼吸·水面斬",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "鬼滅之刃",
+      "水之呼吸"
+    ],
+    "text": "造成 12 傷害，並使目標虛弱 2 點。",
+    "sourceName": "鬼滅之刃"
+  },
+  {
+    "kind": "skill",
+    "id": "water-breathing-waterfall",
+    "fileName": "skill-water-breathing-waterfall.png",
+    "name": "水之呼吸·瀧壺",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "鬼滅之刃",
+      "水之呼吸"
+    ],
+    "text": "對所有敵人造成 10 傷害，全隊獲得 4 護甲。",
+    "sourceName": "鬼滅之刃"
+  },
+  {
+    "kind": "skill",
+    "id": "flame-breathing-unknown-fire",
+    "fileName": "skill-flame-breathing-unknown-fire.png",
+    "name": "炎之呼吸·不知火",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "鬼滅之刃",
+      "炎之呼吸"
+    ],
+    "text": "造成 20 傷害，並施加 4 燃燒。",
+    "sourceName": "鬼滅之刃"
+  },
+  {
+    "kind": "skill",
+    "id": "thunder-breathing-thunderclap",
+    "fileName": "skill-thunder-breathing-thunderclap.png",
+    "name": "雷之呼吸·霹靂一閃",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "鬼滅之刃",
+      "雷之呼吸"
+    ],
+    "text": "穿透護甲造成 24 傷害，抽 1 張牌。",
+    "sourceName": "鬼滅之刃"
+  },
+  {
+    "kind": "skill",
+    "id": "ff7-braver",
+    "fileName": "skill-ff7-braver.png",
+    "name": "FF7·勇猛斬",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "Final Fantasy VII",
+      "極限技"
+    ],
+    "text": "造成 14 傷害。",
+    "sourceName": "Final Fantasy VII"
+  },
+  {
+    "kind": "skill",
+    "id": "ff7-cross-slash",
+    "fileName": "skill-ff7-cross-slash.png",
+    "name": "FF7·凶斬",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "Final Fantasy VII",
+      "極限技"
+    ],
+    "text": "造成 18 傷害，封鎖目標下一次行動。",
+    "sourceName": "Final Fantasy VII"
+  },
+  {
+    "kind": "skill",
+    "id": "ff7-blade-beam",
+    "fileName": "skill-ff7-blade-beam.png",
+    "name": "FF7·破晄擊",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "Final Fantasy VII",
+      "劍技"
+    ],
+    "text": "穿透護甲，對所有敵人造成 11 傷害。",
+    "sourceName": "Final Fantasy VII"
+  },
+  {
+    "kind": "skill",
+    "id": "ff7-omnislash",
+    "fileName": "skill-ff7-omnislash.png",
+    "name": "FF7·超究武神霸斬",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "Final Fantasy VII",
+      "極限技"
+    ],
+    "text": "對所有敵人造成 24 傷害，耗盡。",
+    "sourceName": "Final Fantasy VII"
+  },
+  {
+    "kind": "skill",
+    "id": "yanyun-nameless-spear",
+    "fileName": "skill-yanyun-nameless-spear.png",
+    "name": "燕雲·無名槍法",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "燕雲十六聲",
+      "槍法"
+    ],
+    "text": "穿透護甲造成 11 傷害。",
+    "sourceName": "燕雲十六聲"
+  },
+  {
+    "kind": "skill",
+    "id": "yanyun-jiefu-blade",
+    "fileName": "skill-yanyun-jiefu-blade.png",
+    "name": "燕雲·嗟夫刀法",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "燕雲十六聲",
+      "刀法"
+    ],
+    "text": "造成 19 傷害，全隊獲得 3 護甲。",
+    "sourceName": "燕雲十六聲"
+  },
+  {
+    "kind": "skill",
+    "id": "yanyun-drunken-spring",
+    "fileName": "skill-yanyun-drunken-spring.png",
+    "name": "燕雲·醉夢遊春",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "燕雲十六聲",
+      "傘武學"
+    ],
+    "text": "對所有敵人造成 12 傷害，全隊獲得 1 次閃避。",
+    "sourceName": "燕雲十六聲"
+  },
+  {
+    "kind": "skill",
+    "id": "yanyun-millet-cloud",
+    "fileName": "skill-yanyun-millet-cloud.png",
+    "name": "燕雲·粟子行雲",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "燕雲十六聲",
+      "繩鏢"
+    ],
+    "text": "造成 10 傷害，抽 1 張牌。",
+    "sourceName": "燕雲十六聲"
+  },
+  {
+    "kind": "skill",
+    "id": "jy-dragon-palms",
+    "fileName": "skill-jy-dragon-palms.png",
+    "name": "降龍十八掌",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "金庸武俠",
+      "掌法"
+    ],
+    "text": "對所有敵人造成 22 傷害，並使其虛弱 3 點。",
+    "sourceName": "金庸武俠"
+  },
+  {
+    "kind": "skill",
+    "id": "jy-dugu-nine-swords",
+    "fileName": "skill-jy-dugu-nine-swords.png",
+    "name": "獨孤九劍",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "金庸武俠",
+      "劍法"
+    ],
+    "text": "穿透護甲造成 24 傷害，抽 1 張牌。",
+    "sourceName": "金庸武俠"
+  },
+  {
+    "kind": "skill",
+    "id": "jy-six-meridian-sword",
+    "fileName": "skill-jy-six-meridian-sword.png",
+    "name": "六脈神劍",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "金庸武俠",
+      "指法"
+    ],
+    "text": "穿透護甲，對所有敵人造成 13 傷害。",
+    "sourceName": "金庸武俠"
+  },
+  {
+    "kind": "skill",
+    "id": "jy-ecstasy-palms",
+    "fileName": "skill-jy-ecstasy-palms.png",
+    "name": "黯然銷魂掌",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "金庸武俠",
+      "掌法"
+    ],
+    "text": "造成 20 傷害，使目標虛弱 5 點。",
+    "sourceName": "金庸武俠"
+  },
+  {
+    "kind": "skill",
+    "id": "jy-dog-beating-staff",
+    "fileName": "skill-jy-dog-beating-staff.png",
+    "name": "打狗棒法",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "金庸武俠",
+      "棒法"
+    ],
+    "text": "造成 9 傷害，封鎖目標下一次行動。",
+    "sourceName": "金庸武俠"
+  },
+  {
+    "kind": "skill",
+    "id": "jy-nine-yin-claw",
+    "fileName": "skill-jy-nine-yin-claw.png",
+    "name": "九陰白骨爪",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "金庸武俠",
+      "爪法"
+    ],
+    "text": "造成 16 傷害，並施加 4 中毒。",
+    "sourceName": "金庸武俠"
+  },
+  {
+    "kind": "skill",
+    "id": "jy-yiyang-finger",
+    "fileName": "skill-jy-yiyang-finger.png",
+    "name": "一陽指",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "金庸武俠",
+      "指法"
+    ],
+    "text": "造成 10 傷害，封鎖目標下一次行動。",
+    "sourceName": "金庸武俠"
+  },
+  {
+    "kind": "skill",
+    "id": "jy-taiji-sword",
+    "fileName": "skill-jy-taiji-sword.png",
+    "name": "太極劍",
+    "type": "attack",
+    "category": "general",
+    "tags": [
+      "金庸武俠",
+      "劍法"
+    ],
+    "text": "造成 12 傷害，全隊獲得 10 護甲。",
+    "sourceName": "金庸武俠"
+  },
+  {
+    "kind": "skill",
+    "id": "blood-awakening",
+    "fileName": "skill-blood-awakening.png",
+    "name": "血統覺醒",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "鄭吒",
+      "專屬"
+    ],
+    "text": "造成 18 點傷害，獲得 1 能量；全隊壓力 +8。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "mentor-demo",
+    "fileName": "skill-mentor-demo.png",
+    "name": "引導者示範",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "張杰",
+      "專屬"
+    ],
+    "text": "造成 24 點傷害，全隊獲得 8 護甲，耗盡。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "mental-link",
+    "fileName": "skill-mental-link.png",
+    "name": "精神鏈接",
+    "type": "support",
+    "category": "signature",
+    "tags": [
+      "詹嵐",
+      "專屬"
+    ],
+    "text": "全隊獲得 3 護甲，抽 1 張牌，壓力 -4。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "sniper-line",
+    "fileName": "skill-sniper-line.png",
+    "name": "零點狙擊",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "零點",
+      "專屬"
+    ],
+    "text": "造成 22 點傷害。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "reckless-charge",
+    "fileName": "skill-reckless-charge.png",
+    "name": "冒險突進",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "李蕭毅",
+      "專屬"
+    ],
+    "text": "造成 13 點傷害；全隊壓力 +3。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "iron-guard",
+    "fileName": "skill-iron-guard.png",
+    "name": "鐵壁守護",
+    "type": "guard",
+    "category": "signature",
+    "tags": [
+      "牟剛",
+      "專屬"
+    ],
+    "text": "全隊獲得 9 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "survival-instinct",
+    "fileName": "skill-survival-instinct.png",
+    "name": "求生本能",
+    "type": "tactic",
+    "category": "signature",
+    "tags": [
+      "李帥西",
+      "專屬"
+    ],
+    "text": "抽 1 張牌並獲得 1 能量，耗盡。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "strategist-calculation",
+    "fileName": "skill-strategist-calculation.png",
+    "name": "楚軒推演",
+    "type": "tactic",
+    "category": "signature",
+    "tags": [
+      "楚軒",
+      "專屬"
+    ],
+    "text": "抽 2 張牌，耗盡。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "shadow-step",
+    "fileName": "skill-shadow-step.png",
+    "name": "影步刺殺",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "趙櫻空",
+      "專屬"
+    ],
+    "text": "造成 10 點傷害，抽 1 張牌。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "suppressive-fire",
+    "fileName": "skill-suppressive-fire.png",
+    "name": "重火力壓制",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "霸王",
+      "專屬"
+    ],
+    "text": "對所有敵人造成 12 點傷害，全隊獲得 4 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "crisis-preview",
+    "fileName": "skill-crisis-preview.png",
+    "name": "危機預演",
+    "type": "tactic",
+    "category": "signature",
+    "tags": [
+      "蕭宏律",
+      "專屬"
+    ],
+    "text": "抽 1 張牌，全隊獲得 5 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "artifact-reading",
+    "fileName": "skill-artifact-reading.png",
+    "name": "古物解讀",
+    "type": "support",
+    "category": "signature",
+    "tags": [
+      "齊騰一",
+      "專屬"
+    ],
+    "text": "抽 2 張牌，全隊獲得 3 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "wind-arrow",
+    "fileName": "skill-wind-arrow.png",
+    "name": "風之矢",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "張恆",
+      "專屬"
+    ],
+    "text": "對一名敵人造成 25 點傷害。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "soul-volley",
+    "fileName": "skill-soul-volley.png",
+    "name": "靈魂齊射",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "銘煙薇",
+      "專屬"
+    ],
+    "text": "對所有敵人造成 14 點傷害。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "flying-needle",
+    "fileName": "skill-flying-needle.png",
+    "name": "飛針渡厄",
+    "type": "support",
+    "category": "signature",
+    "tags": [
+      "程嘯",
+      "專屬"
+    ],
+    "text": "造成 8 點傷害，治療生命比例最低的隊員 8 點生命。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "demolition-charge",
+    "fileName": "skill-demolition-charge.png",
+    "name": "定向爆破",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "王俠",
+      "專屬"
+    ],
+    "text": "對所有敵人造成 16 點傷害，耗盡。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "mecha-deploy",
+    "fileName": "skill-mecha-deploy.png",
+    "name": "機甲展開",
+    "type": "tactic",
+    "category": "signature",
+    "tags": [
+      "羅甘道",
+      "專屬"
+    ],
+    "text": "全隊獲得 7 護甲，獲得 1 點能量。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "clear-mind",
+    "fileName": "skill-clear-mind.png",
+    "name": "澄明心境",
+    "type": "support",
+    "category": "signature",
+    "tags": [
+      "劉鬱",
+      "專屬"
+    ],
+    "text": "抽 2 張牌，全隊壓力 -6。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "rapid-adaptation",
+    "fileName": "skill-rapid-adaptation.png",
+    "name": "高速適應",
+    "type": "tactic",
+    "category": "signature",
+    "tags": [
+      "林俊天",
+      "專屬"
+    ],
+    "text": "抽 2 張牌，獲得 1 點能量。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "sand-burial",
+    "fileName": "skill-sand-burial.png",
+    "name": "黃沙埋葬",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "伊莫頓",
+      "專屬"
+    ],
+    "text": "對所有敵人造成 12 點傷害，全隊獲得 5 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "black-flame-annihilation",
+    "fileName": "skill-black-flame-annihilation.png",
+    "name": "原暗·黑炎寂滅",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "複製體鄭吒",
+      "黑炎"
+    ],
+    "text": "造成 28 傷害，依複製體鄭吒壓力追加最多 20 傷害，並施加 6 燃燒；全隊壓力 +10。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "causality-bullet",
+    "fileName": "skill-causality-bullet.png",
+    "name": "因果率彈道",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "複製體楚軒",
+      "因果律"
+    ],
+    "text": "穿透護甲造成 15 傷害，封鎖目標下一次行動並抽 2 張牌，耗盡。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "spatial-sever",
+    "fileName": "skill-spatial-sever.png",
+    "name": "心靈之光·空裂",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "趙綴空",
+      "空間"
+    ],
+    "text": "穿透護甲造成 20 傷害；目標生命低於 35% 時追加 16 傷害，趙綴空獲得 1 次閃避。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "eva-rampage",
+    "fileName": "skill-eva-rampage.png",
+    "name": "初號機暴走",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "複製體羅甘道",
+      "機甲"
+    ],
+    "text": "對所有敵人造成 14 傷害，全隊獲得 8 護甲與 1 能量；全隊壓力 +8。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "psychic-crush",
+    "fileName": "skill-psychic-crush.png",
+    "name": "念動力壓殺",
+    "type": "tactic",
+    "category": "signature",
+    "tags": [
+      "湯姆",
+      "念動力"
+    ],
+    "text": "造成 8 傷害，使目標虛弱 8 點並封鎖下一次行動。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "human-completion",
+    "fileName": "skill-human-completion.png",
+    "name": "人類補全陣式",
+    "type": "support",
+    "category": "signature",
+    "tags": [
+      "亞當",
+      "補全"
+    ],
+    "text": "全隊恢復 8 生命、獲得 8 護甲、壓力 -6，抽 2 張牌，耗盡。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "immortal-sword-array",
+    "fileName": "skill-immortal-sword-array.png",
+    "name": "誅仙劍陣",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "羅應龍",
+      "劍陣"
+    ],
+    "text": "對所有敵人造成 18 傷害並施加 6 燃燒，耗盡。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "heaven-cleaver",
+    "fileName": "skill-heaven-cleaver.png",
+    "name": "斬天拔刀式",
+    "type": "attack",
+    "category": "signature",
+    "tags": [
+      "宋天",
+      "斬艦刀"
+    ],
+    "text": "穿透護甲造成 27 傷害，全隊獲得 4 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "probability-swindle",
+    "fileName": "skill-probability-swindle.png",
+    "name": "概率欺詐",
+    "type": "tactic",
+    "category": "signature",
+    "tags": [
+      "尼奧斯",
+      "概率"
+    ],
+    "text": "抽 3 張牌並獲得 1 能量；全隊壓力 +6，耗盡。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "absolute-zero-domain",
+    "fileName": "skill-absolute-zero-domain.png",
+    "name": "絕對零度領域",
+    "type": "guard",
+    "category": "signature",
+    "tags": [
+      "崗尼爾",
+      "冰霜"
+    ],
+    "text": "對所有敵人造成 10 傷害並使其虛弱 5 點，全隊獲得 8 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "curse-panic",
+    "fileName": "skill-curse-panic.png",
+    "name": "恐慌殘響",
+    "type": "curse",
+    "category": "curse",
+    "tags": [
+      "詛咒"
+    ],
+    "text": "抽到時全隊壓力 +5；無法打出。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "curse-drain",
+    "fileName": "skill-curse-drain.png",
+    "name": "生命流失",
+    "type": "curse",
+    "category": "curse",
+    "tags": [
+      "詛咒"
+    ],
+    "text": "抽到時全隊失去 2 生命；無法打出。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "cursed-cache",
+    "fileName": "skill-cursed-cache.png",
+    "name": "Cursed Cache",
+    "type": "tactic",
+    "category": "extra",
+    "tags": [
+      "舊技能資產"
+    ],
+    "text": "既有技能素材，重製為專屬暗黑卡圖。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "gauss-pistol",
+    "fileName": "skill-gauss-pistol.png",
+    "name": "Gauss Pistol",
+    "type": "tactic",
+    "category": "extra",
+    "tags": [
+      "舊技能資產"
+    ],
+    "text": "既有技能素材，重製為專屬暗黑卡圖。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "medical-stimulant",
+    "fileName": "skill-medical-stimulant.png",
+    "name": "Medical Stimulant",
+    "type": "tactic",
+    "category": "extra",
+    "tags": [
+      "舊技能資產"
+    ],
+    "text": "既有技能素材，重製為專屬暗黑卡圖。",
+    "sourceName": ""
+  },
+  {
+    "kind": "skill",
+    "id": "soul-anchor",
+    "fileName": "skill-soul-anchor.png",
+    "name": "Soul Anchor",
+    "type": "tactic",
+    "category": "extra",
+    "tags": [
+      "舊技能資產"
+    ],
+    "text": "既有技能素材，重製為專屬暗黑卡圖。",
+    "sourceName": ""
+  },
+  {
+    "kind": "equipment",
+    "id": "infinite-desert-eagle",
+    "fileName": "equipment-infinite-desert-eagle.png",
+    "name": "無限子彈沙漠之鷹",
+    "effect": "attackBonus",
+    "weaponClass": "firearm",
+    "text": "持有者存活時，所有攻擊牌傷害 +2。",
+    "sourceName": ""
+  },
+  {
+    "kind": "equipment",
+    "id": "gauss-pistol",
+    "fileName": "equipment-gauss-pistol.png",
+    "name": "高斯手槍",
+    "effect": "firstAttackBonus",
+    "weaponClass": "firearm",
+    "text": "每回合第一張攻擊牌額外造成 7 點傷害。",
+    "sourceName": ""
+  },
+  {
+    "kind": "equipment",
+    "id": "na-ring",
+    "fileName": "equipment-na-ring.png",
+    "name": "納戒",
+    "effect": "openingDraw",
+    "weaponClass": "",
+    "text": "每場戰鬥第一回合額外抽 1 張牌。",
+    "sourceName": ""
+  },
+  {
+    "kind": "equipment",
+    "id": "jade-amulet",
+    "fileName": "equipment-jade-amulet.png",
+    "name": "防護玉佩",
+    "effect": "turnBlock",
+    "weaponClass": "",
+    "text": "回合開始時全隊獲得 3 護甲。",
+    "sourceName": ""
+  },
+  {
+    "kind": "equipment",
+    "id": "book-of-the-dead",
+    "fileName": "equipment-book-of-the-dead.png",
+    "name": "亡靈聖經",
+    "effect": "turnStressRelief",
+    "weaponClass": "",
+    "text": "回合開始時全隊壓力 -2。",
+    "sourceName": ""
+  },
+  {
+    "kind": "equipment",
+    "id": "incendiary-magazine",
+    "fileName": "equipment-incendiary-magazine.png",
+    "name": "煉金燃燒彈匣",
+    "effect": "firstAttackBurn",
+    "weaponClass": "firearm",
+    "text": "每回合第一張攻擊牌使命中的敵人燃燒 4 點。",
+    "sourceName": ""
+  },
+  {
+    "kind": "equipment",
+    "id": "medical-nanites",
+    "fileName": "equipment-medical-nanites.png",
+    "name": "醫療奈米機群",
+    "effect": "turnHealLowest",
+    "weaponClass": "",
+    "text": "回合開始時治療生命比例最低的隊員 3 點。",
+    "sourceName": ""
+  },
+  {
+    "kind": "equipment",
+    "id": "phase-cloak",
+    "fileName": "equipment-phase-cloak.png",
+    "name": "相位隱匿斗篷",
+    "effect": "openingEvade",
+    "weaponClass": "",
+    "text": "每場戰鬥第一回合，全隊獲得 1 次閃避。",
+    "sourceName": ""
+  },
+  {
+    "kind": "equipment",
+    "id": "armor-piercing-core",
+    "fileName": "equipment-armor-piercing-core.png",
+    "name": "高密度破甲核心",
+    "effect": "firstAttackPierce",
+    "weaponClass": "firearm",
+    "text": "每回合第一張攻擊牌穿透護甲，並額外造成 3 點傷害。",
+    "sourceName": ""
+  },
+  {
+    "kind": "equipment",
+    "id": "tactical-battery",
+    "fileName": "equipment-tactical-battery.png",
+    "name": "戰術能量電池",
+    "effect": "openingEnergy",
+    "weaponClass": "",
+    "text": "每場戰鬥第一回合額外獲得 1 點能量。",
+    "sourceName": ""
+  },
+  {
+    "kind": "equipment",
+    "id": "avalon-sheath",
+    "fileName": "equipment-avalon-sheath.png",
+    "name": "阿瓦隆劍鞘",
+    "effect": "turnStressRelief",
+    "weaponClass": "",
+    "text": "回合開始時全隊壓力 -3。",
+    "sourceName": "動漫神器"
+  },
+  {
+    "kind": "equipment",
+    "id": "ea-sword-rupture",
+    "fileName": "equipment-ea-sword-rupture.png",
+    "name": "乖離劍 Ea",
+    "effect": "attackBonus",
+    "weaponClass": "",
+    "text": "持有者存活時，所有攻擊牌傷害 +5。",
+    "sourceName": "動漫神器"
+  },
+  {
+    "kind": "equipment",
+    "id": "gates-of-babylon-key",
+    "fileName": "equipment-gates-of-babylon-key.png",
+    "name": "王之財寶鑰匙",
+    "effect": "openingDraw",
+    "weaponClass": "",
+    "text": "每場戰鬥第一回合額外抽 2 張牌。",
+    "sourceName": "動漫神器"
+  },
+  {
+    "kind": "equipment",
+    "id": "zangetsu-blade",
+    "fileName": "equipment-zangetsu-blade.png",
+    "name": "斬月",
+    "effect": "firstAttackBonus",
+    "weaponClass": "",
+    "text": "每回合第一張攻擊牌額外造成 10 點傷害。",
+    "sourceName": "動漫神器"
+  },
+  {
+    "kind": "equipment",
+    "id": "enma-blade",
+    "fileName": "equipment-enma-blade.png",
+    "name": "閻魔",
+    "effect": "firstAttackPierce",
+    "weaponClass": "",
+    "text": "每回合第一張攻擊牌穿透護甲，並額外造成 5 點傷害。",
+    "sourceName": "動漫神器"
+  },
+  {
+    "kind": "equipment",
+    "id": "pan-gu-axe",
+    "fileName": "equipment-pan-gu-axe.png",
+    "name": "盤古斧",
+    "effect": "attackBonus",
+    "weaponClass": "",
+    "text": "持有者存活時，所有攻擊牌傷害 +6。",
+    "sourceName": "小說神器"
+  },
+  {
+    "kind": "equipment",
+    "id": "xuan-yuan-sword",
+    "fileName": "equipment-xuan-yuan-sword.png",
+    "name": "軒轅劍",
+    "effect": "firstAttackBonus",
+    "weaponClass": "",
+    "text": "每回合第一張攻擊牌額外造成 12 點傷害。",
+    "sourceName": "小說神器"
+  },
+  {
+    "kind": "equipment",
+    "id": "donghuang-bell",
+    "fileName": "equipment-donghuang-bell.png",
+    "name": "東皇鐘",
+    "effect": "turnBlock",
+    "weaponClass": "",
+    "text": "回合開始時全隊獲得 7 護甲。",
+    "sourceName": "小說神器"
+  },
+  {
+    "kind": "equipment",
+    "id": "haotian-tower",
+    "fileName": "equipment-haotian-tower.png",
+    "name": "昊天塔",
+    "effect": "openingEnergy",
+    "weaponClass": "",
+    "text": "每場戰鬥第一回合額外獲得 2 點能量。",
+    "sourceName": "小說神器"
+  },
+  {
+    "kind": "equipment",
+    "id": "zhuxian-sword",
+    "fileName": "equipment-zhuxian-sword.png",
+    "name": "誅仙劍",
+    "effect": "firstAttackPierce",
+    "weaponClass": "",
+    "text": "每回合第一張攻擊牌穿透護甲，並額外造成 7 點傷害。",
+    "sourceName": "小說神器"
+  },
+  {
+    "kind": "equipment",
+    "id": "heaven-sword",
+    "fileName": "equipment-heaven-sword.png",
+    "name": "倚天劍",
+    "effect": "firstAttackPierce",
+    "weaponClass": "",
+    "text": "每回合第一張攻擊牌穿透護甲，並額外造成 4 點傷害。",
+    "sourceName": "武俠神兵"
+  },
+  {
+    "kind": "equipment",
+    "id": "dragon-saber",
+    "fileName": "equipment-dragon-saber.png",
+    "name": "屠龍刀",
+    "effect": "firstAttackBonus",
+    "weaponClass": "",
+    "text": "每回合第一張攻擊牌額外造成 9 點傷害。",
+    "sourceName": "武俠神兵"
+  },
+  {
+    "kind": "equipment",
+    "id": "soft-hedgehog-armor",
+    "fileName": "equipment-soft-hedgehog-armor.png",
+    "name": "軟蝟甲",
+    "effect": "turnBlock",
+    "weaponClass": "",
+    "text": "回合開始時全隊獲得 5 護甲。",
+    "sourceName": "武俠神兵"
+  },
+  {
+    "kind": "equipment",
+    "id": "black-iron-heavy-sword",
+    "fileName": "equipment-black-iron-heavy-sword.png",
+    "name": "玄鐵重劍",
+    "effect": "attackBonus",
+    "weaponClass": "",
+    "text": "持有者存活時，所有攻擊牌傷害 +4。",
+    "sourceName": "武俠神兵"
+  }
+]
