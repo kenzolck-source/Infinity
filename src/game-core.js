@@ -679,9 +679,9 @@
     state.deck.forEach((entry) => { if (entry.acquiredRunId === state.run.id) entry.acquiredRunId = null; });
     state.equipmentInventory.forEach((entry) => { if (entry.acquiredRunId === state.run.id) entry.acquiredRunId = null; });
     if (!state.campaign.completedScenarios.includes(scenarioId)) state.campaign.completedScenarios.push(scenarioId);
-    const nextScenario = { alien: "juon", juon: "mummy-curse", "mummy-curse": "jurassic-island", "jurassic-island": "abyssal-ark", "abyssal-ark": "evernight-castle", "evernight-castle": "demon-frontier", "demon-frontier": "main-god-trial", "main-god-trial": "rumbling-finale", "rumbling-finale": "infinity-castle", "infinity-castle": "devil-may-cry-5" }[scenarioId];
+    const nextScenario = { alien: "juon", juon: "mummy-curse", "mummy-curse": "jurassic-island", "jurassic-island": "abyssal-ark", "abyssal-ark": "evernight-castle", "evernight-castle": "demon-frontier", "demon-frontier": "main-god-trial", "main-god-trial": "starship-troopers", "starship-troopers": "avp-pyramid", "avp-pyramid": "nightmare-elm", "nightmare-elm": "lotr-war", "lotr-war": "rumbling-finale", "rumbling-finale": "infinity-castle", "infinity-castle": "naruto-final-valley", "naruto-final-valley": "bleach-false-karakura", "bleach-false-karakura": "gintama-yoshiwara", "gintama-yoshiwara": "gintama-final-war", "gintama-final-war": "avengers-new-york", "avengers-new-york": "batman-v-superman", "batman-v-superman": "devil-may-cry-5", "devil-may-cry-5": "final-destination", "final-destination": "jinyong-heroic-peak" }[scenarioId];
     if (nextScenario && !state.campaign.unlockedScenarios.includes(nextScenario)) state.campaign.unlockedScenarios.push(nextScenario);
-    if (scenarioId === "infinity-castle") state.campaign.infiniteUnlocked = true;
+    if (scenarioId === "batman-v-superman") state.campaign.infiniteUnlocked = true;
     if (state.run.sourceScenarioId === "infinite") state.campaign.infiniteTier += 1;
     const sideStoryReward = Number(economy.scenarioSideStoryRewards?.[scenarioId] || 0);
     if (sideStoryReward) state.sideStories += sideStoryReward;
@@ -1464,10 +1464,22 @@
     if (campaign.completedScenarios.includes("abyssal-ark")) unlock("evernight-castle");
     if (campaign.completedScenarios.includes("evernight-castle")) unlock("demon-frontier");
     if (campaign.completedScenarios.includes("demon-frontier")) unlock("main-god-trial");
-    if (campaign.completedScenarios.includes("main-god-trial")) unlock("rumbling-finale");
+    if (campaign.completedScenarios.includes("main-god-trial")) unlock("starship-troopers");
+    if (campaign.completedScenarios.includes("starship-troopers")) unlock("avp-pyramid");
+    if (campaign.completedScenarios.includes("avp-pyramid")) unlock("nightmare-elm");
+    if (campaign.completedScenarios.includes("nightmare-elm")) unlock("lotr-war");
+    if (campaign.completedScenarios.includes("lotr-war")) unlock("rumbling-finale");
     if (campaign.completedScenarios.includes("rumbling-finale")) unlock("infinity-castle");
-    if (campaign.completedScenarios.includes("infinity-castle")) unlock("devil-may-cry-5");
-    if (campaign.completedScenarios.includes("infinity-castle")) campaign.infiniteUnlocked = true;
+    if (campaign.completedScenarios.includes("infinity-castle")) unlock("naruto-final-valley");
+    if (campaign.completedScenarios.includes("naruto-final-valley")) unlock("bleach-false-karakura");
+    if (campaign.completedScenarios.includes("bleach-false-karakura")) unlock("gintama-yoshiwara");
+    if (campaign.completedScenarios.includes("gintama-yoshiwara")) unlock("gintama-final-war");
+    if (campaign.completedScenarios.includes("gintama-final-war")) unlock("avengers-new-york");
+    if (campaign.completedScenarios.includes("avengers-new-york")) unlock("batman-v-superman");
+    if (campaign.completedScenarios.includes("batman-v-superman")) unlock("devil-may-cry-5");
+    if (campaign.completedScenarios.includes("devil-may-cry-5")) unlock("final-destination");
+    if (campaign.completedScenarios.includes("final-destination")) unlock("jinyong-heroic-peak");
+    if (campaign.completedScenarios.includes("batman-v-superman")) campaign.infiniteUnlocked = true;
   }
 
   function clearCombatPiles(state) {

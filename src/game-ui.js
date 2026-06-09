@@ -159,7 +159,7 @@
     return `
       <section class="scenario-intro-layout">
         <div class="scenario-intro-hero">
-          ${renderOpeningHeroArt(opening)}
+          ${renderOpeningHeroArt(opening, state.run.scenarioId)}
           <div class="scenario-intro-copy">
             <span class="eyebrow">${state.run.sourceScenarioId === "infinite" ? `無限輪迴 · 階級 ${state.campaign.infiniteTier}` : "主神投放"}</span>
             <h2>${scenario.name}</h2>
@@ -476,7 +476,8 @@
     const scenario = core.scenariosById[id];
     const complete = state.campaign.completedScenarios.includes(id);
     const bossEnemyId = scenario.boss ? core.encountersById[scenario.boss]?.enemies?.[0] : null;
-    return `<button class="scenario-card" data-action="begin-scenario" data-scenario-id="${id}">${bossEnemyId ? image(enemyArt(bossEnemyId), "", "scenario-art") : ""}<span class="eyebrow">${complete ? "已通關 · 可重玩" : "主線劇本"}</span><strong>${scenario.name}</strong><p>${scenario.subtitle}</p></button>`;
+    const artSrc = scenarioArt(id) || (bossEnemyId ? enemyArt(bossEnemyId) : "");
+    return `<button class="scenario-card" data-action="begin-scenario" data-scenario-id="${id}">${artSrc ? image(artSrc, "", "scenario-art") : ""}<span class="eyebrow">${complete ? "已通關 · 可重玩" : "主線劇本"}</span><strong>${scenario.name}</strong><p>${scenario.subtitle}</p></button>`;
   }
 
   function renderDeploymentHub() {
@@ -921,9 +922,32 @@
     return `<img src="${src}" alt="${alt}" class="${className}" onerror="this.onerror=null;this.src='./src/assets/main-god-space.svg'" />`;
   }
 
-  function renderOpeningHeroArt(opening) {
+  function renderOpeningHeroArt(opening, scenarioId) {
+    const storyArt = scenarioArt(scenarioId);
+    if (storyArt) return image(storyArt, "", "scenario-intro-art scenario-wide-art");
     const firstPanel = opening.panels?.[0];
     return image(firstPanel?.enemyId ? enemyArt(firstPanel.enemyId) : "./src/assets/main-god-space.svg", "", "scenario-intro-art");
+  }
+
+  function scenarioArt(id) {
+    const art = {
+      "main-god-trial": "./src/assets/generated/scenario-main-god-trial.png",
+      "starship-troopers": "./src/assets/generated/scenario-starship-troopers.png",
+      "avp-pyramid": "./src/assets/generated/scenario-avp-pyramid.png",
+      "nightmare-elm": "./src/assets/generated/scenario-nightmare-elm.png",
+      "lotr-war": "./src/assets/generated/scenario-lotr-war.png",
+      "rumbling-finale": "./src/assets/generated/scenario-rumbling-finale.png",
+      "infinity-castle": "./src/assets/generated/scenario-infinity-castle.png",
+      "naruto-final-valley": "./src/assets/generated/scenario-naruto-final-valley.png",
+      "bleach-false-karakura": "./src/assets/generated/scenario-bleach-false-karakura.png",
+      "gintama-yoshiwara": "./src/assets/generated/scenario-gintama-yoshiwara.png",
+      "gintama-final-war": "./src/assets/generated/scenario-gintama-final-war.png",
+      "avengers-new-york": "./src/assets/generated/scenario-avengers-new-york.png",
+      "batman-v-superman": "./src/assets/generated/scenario-batman-v-superman.png",
+      "final-destination": "./src/assets/generated/scenario-final-destination.png",
+      "jinyong-heroic-peak": "./src/assets/generated/scenario-jinyong-heroic-peak.png"
+    };
+    return art[id] || "";
   }
 
   function characterArt(id) {
@@ -955,10 +979,10 @@
       "void-assassin": "grudge-shadow",
       "causality-commander": "night-sovereign",
       "devil-zheng-avatar": "night-sovereign",
-      "white-light-oracle": "pressure-wraith",
-      "erasure-guardian": "trench-warden",
-      "cycle-arbiter": "leviathan-core",
-      "main-god-avatar": "leviathan-core"
+      "war-zetsu-swarm": "ten-tails-remnant",
+      "susanoo-guardian": "final-valley-sasuke",
+      "arrancar-warrior": "hollow-echo-swarm",
+      "hogyoku-aizen": "transcendent-aizen",
     };
     return `./src/assets/generated/enemy-${aliases[id] || id}.png`;
   }
@@ -985,7 +1009,7 @@
   }
 
   function powerName(power) {
-    return { "battle-instinct": "戰鬥本能：攻擊 +2", warded: "古物護佑：開場護甲 +4", "book-of-amun-ra": "復活真經殘頁：開場護甲 +6", "electric-fence": "高壓電網：每回合護甲 +2", "pressure-suit": "壓力密封服：每回合護甲 +2", "silvered-weapons": "鍍銀武裝：攻擊 +3", "black-flame-overclock": "黑炎超載：攻擊 +5", "main-god-calibration": "主神白光校準：每回合護甲 +4", "thunder-spear-route": "雷槍與立體機動線：攻擊 +4", "nichirin-counteroffensive": "赫刀連攜：攻擊 +6", "stylish-combo-rating": "Stylish連段評級：攻擊 +5" }[power.id] || power.id;
+    return { "battle-instinct": "戰鬥本能：攻擊 +2", warded: "古物護佑：開場護甲 +4", "book-of-amun-ra": "復活真經殘頁：開場護甲 +6", "electric-fence": "高壓電網：每回合護甲 +2", "pressure-suit": "壓力密封服：每回合護甲 +2", "silvered-weapons": "鍍銀武裝：攻擊 +3", "black-flame-overclock": "黑炎超載：攻擊 +5", "main-god-calibration": "主神白光校準：每回合護甲 +4", "federal-fireline": "聯邦火力校準：攻擊 +4", "predator-hunt-mark": "獵人熱視標記：攻擊 +4", "lucid-anchor": "清醒錨點：每回合護甲 +3", "mithril-stand": "秘銀遠征誓約：開場護甲 +12", "thunder-spear-route": "雷槍與立體機動線：攻擊 +4", "nichirin-counteroffensive": "赫刀連攜：攻擊 +6", "kurama-chakra-link": "九尾查克拉連結：攻擊 +5", "mugetsu-final-window": "無月出刀窗口：攻擊 +6", "yorozuya-last-stand": "萬事屋逆境連攜：每回合護甲 +4", "joyo-final-blade-line": "攘夷終局斬線：攻擊 +5", "avengers-assemble-protocol": "復仇者集結：攻擊 +4", "justice-dawn-truce": "正義黎明停戰：攻擊 +4", "stylish-combo-rating": "Stylish連段評級：攻擊 +5", "premonition-loop": "死亡設計預判：每回合護甲 +3", "wulin-manual-focus": "武林盟誓：攻擊 +4" }[power.id] || power.id;
   }
 
   function intentText(intent) {
