@@ -1,0 +1,71 @@
+[
+  {
+    "index": 1,
+    "grid": 2,
+    "assets": [
+      { "fileName": "scenario-alien.png", "name": "異形 · 深空獵殺主場景" },
+      { "fileName": "scenario-juon.png", "name": "咒怨 · 怨念宅邸主場景" },
+      { "fileName": "scenario-mummy-curse.png", "name": "神鬼傳奇 · 亡者都城主場景" },
+      { "fileName": "scenario-jurassic-island.png", "name": "侏羅紀公園 · 失控樂園主場景" }
+    ]
+  },
+  {
+    "index": 2,
+    "grid": 2,
+    "assets": [
+      { "fileName": "scenario-abyssal-ark.png", "name": "深海寂號 · 沉沒研究站主場景" },
+      { "fileName": "scenario-evernight-castle.png", "name": "永夜古堡 · 血月獵宴主場景" },
+      { "fileName": "scenario-demon-frontier.png", "name": "惡魔邊境 · 複製體交鋒主場景" },
+      { "fileName": "scenario-devil-may-cry-5.png", "name": "Devil May Cry 5 · Qliphoth魔樹主場景" }
+    ]
+  },
+  {
+    "index": 3,
+    "grid": 2,
+    "assets": [
+      { "fileName": "enemy-mummy-scarab.png", "name": "聖甲蟲潮" },
+      { "fileName": "enemy-mummy-guard.png", "name": "木乃伊守衛" },
+      { "fileName": "enemy-desert-priest.png", "name": "沙漠祭司" },
+      { "fileName": "enemy-anubis-guardian.png", "name": "阿努比斯守門者" }
+    ]
+  },
+  {
+    "index": 4,
+    "grid": 2,
+    "assets": [
+      { "fileName": "enemy-immortal-priest.png", "name": "不死祭司" },
+      { "fileName": "enemy-compy-pack.png", "name": "美頜龍群" },
+      { "fileName": "enemy-raptor-stalker.png", "name": "迅猛龍伏擊者" },
+      { "fileName": "enemy-dilophosaurus.png", "name": "雙脊龍毒襲" }
+    ]
+  },
+  {
+    "index": 5,
+    "grid": 2,
+    "assets": [
+      { "fileName": "enemy-triceratops-bull.png", "name": "三角龍暴衝" },
+      { "fileName": "enemy-tyrannosaurus-rex.png", "name": "暴龍雨夜" },
+      { "fileName": "enemy-black-flame-shard.png", "name": "黑炎裂片" },
+      { "fileName": "enemy-causality-sniper.png", "name": "因果狙擊手" }
+    ]
+  },
+  {
+    "index": 6,
+    "grid": 2,
+    "assets": [
+      { "fileName": "enemy-void-assassin.png", "name": "虛空刺客" },
+      { "fileName": "enemy-causality-commander.png", "name": "因果指揮官" },
+      { "fileName": "enemy-devil-zheng-avatar.png", "name": "惡魔鄭吒黑炎化身" },
+      { "fileName": "enemy-war-zetsu-swarm.png", "name": "白絕戰場群" }
+    ]
+  },
+  {
+    "index": 7,
+    "grid": 2,
+    "assets": [
+      { "fileName": "enemy-susanoo-guardian.png", "name": "須佐能乎守衛" },
+      { "fileName": "enemy-arrancar-warrior.png", "name": "破面戰士" },
+      { "fileName": "enemy-hogyoku-aizen.png", "name": "崩玉藍染" }
+    ]
+  }
+]

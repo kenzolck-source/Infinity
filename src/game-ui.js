@@ -29,7 +29,8 @@
   }
 
   function render() {
-    app.innerHTML = `<main class="shell screen-${state.screen}">${renderHeader()}${renderScreen()}</main>`;
+    const header = state.screen === "onboarding" ? "" : renderHeader();
+    app.innerHTML = `<main class="shell screen-${state.screen}">${header}${renderScreen()}</main>`;
     bindActions();
     audio?.syncMusic(state.screen);
   }
@@ -41,7 +42,7 @@
       <header class="topbar">
         <div class="brand">
           <img src="./src/assets/main-god-space.svg" alt="" class="brand-mark" />
-          <div><h1>主神空間</h1><p>${scenario ? scenario.name : state.campaign.tutorialComplete ? "中洲隊整備區" : "生化危機 · 引導開始"}</p></div>
+          <div><h1>主神空間</h1><p>${scenario ? scenario.name : state.campaign.tutorialComplete ? `${escapeHtml(state.teamName || "中洲隊")}整備區` : "生化危機 · 引導開始"}</p></div>
         </div>
         <div class="topbar-status">
           <div class="resource-strip">
@@ -73,6 +74,7 @@
   }
 
   function renderScreen() {
+    if (state.screen === "onboarding") return renderOnboarding();
     if (state.screen === "story") return renderStory();
     if (state.screen === "recruit") return renderRecruit();
     if (state.screen === "scenario-intro") return renderScenarioIntro();
@@ -87,10 +89,181 @@
     return renderHub();
   }
 
+  function renderOnboarding() {
+    const stage = state.onboarding?.stage || "invite";
+    if (stage === "ordinary-ending") return renderOrdinaryEnding();
+    if (stage === "name") return renderOnboardingName();
+    if (stage === "gender") return renderOnboardingGender();
+    if (stage === "profession") return renderOnboardingProfession();
+    if (stage === "personality") return renderOnboardingPersonality();
+    if (stage === "confirm") return renderOnboardingConfirm();
+    return renderMainGodInvite();
+  }
+
+  function renderMainGodInvite() {
+    return `
+      <section class="onboarding-screen win98-screen">
+        <div class="desktop-noise"></div>
+        <div class="win98-dialog">
+          <div class="win98-titlebar"><span>MainGod.exe</span><button aria-label="關閉" disabled>×</button></div>
+          <div class="win98-body">
+            <div class="win98-icon">?</div>
+            <p>想知道生存的意義嗎? 想要真正的活著嗎 ?</p>
+          </div>
+          <div class="win98-actions">
+            <button data-action="main-god-invite" data-answer="yes">Yes</button>
+            <button data-action="main-god-invite" data-answer="no">No</button>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderOrdinaryEnding() {
+    return `
+      <section class="onboarding-screen ordinary-ending-screen">
+        <div class="ordinary-ending-copy">
+          <span class="eyebrow">普通人結局</span>
+          <h2>視窗關閉了。</h2>
+          <p>螢幕恢復原本的亮度，房間安靜得像什麼都沒發生。第二天照常到來，新聞照常播放，疲憊照常留在身上。你偶爾會想起那兩句話，但世界沒有回答。</p>
+          <button class="primary-action" data-action="restart-onboarding">重新看向螢幕</button>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderOnboardingName() {
+    const draftName = escapeHtml(state.onboarding?.draft?.name || "");
+    return `
+      <section class="onboarding-screen creator-screen">
+        <div class="creator-window compact">
+          <div class="creator-step"><span>Step 1</span><strong>輸入你的名字</strong></div>
+          <h2>白光之前，你叫什麼？</h2>
+          <label class="creator-field">
+            <span>姓名</span>
+            <input id="player-name-input" type="text" maxlength="12" value="${draftName}" placeholder="無名者" autocomplete="off" />
+          </label>
+          <div class="creator-actions">
+            <button class="primary-action" data-action="player-name">下一步</button>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderOnboardingGender() {
+    return `
+      <section class="onboarding-screen creator-screen">
+        <div class="creator-window compact">
+          <div class="creator-step"><span>Step 2</span><strong>選擇性別</strong></div>
+          <h2>${escapeHtml(playerDraftName())}</h2>
+          <div class="gender-choice-grid">
+            <button class="choice-card" data-action="player-gender" data-gender="male"><strong>男</strong></button>
+            <button class="choice-card" data-action="player-gender" data-gender="female"><strong>女</strong></button>
+          </div>
+          <div class="creator-actions"><button class="secondary-action" data-action="onboarding-back" data-stage="name">返回</button></div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderOnboardingProfession() {
+    const gender = state.onboarding?.draft?.gender || "male";
+    return `
+      <section class="onboarding-screen creator-screen">
+        <div class="creator-window wide">
+          <div class="creator-step"><span>Step 3</span><strong>選擇職業</strong></div>
+          <div class="screen-title"><h2>主神正在翻閱你的人生。</h2></div>
+          <div class="profession-grid">
+            ${data.playerProfessions.map((profession) => renderProfessionChoice(profession, gender)).join("")}
+          </div>
+          <div class="creator-actions"><button class="secondary-action" data-action="onboarding-back" data-stage="gender">返回</button></div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderProfessionChoice(profession, gender) {
+    const cards = profession.cardIds.map((cardId) => core.cardsById[cardId]).filter(Boolean);
+    return `
+      <button class="profession-card archetype-${profession.archetype}" data-action="player-profession" data-profession-id="${profession.id}">
+        ${image(professionArt(profession.id, gender), `${profession.name}插畫`, "profession-art")}
+        <span class="eyebrow">${profession.archetype}型</span>
+        <strong>${escapeHtml(profession.name)}</strong>
+        <p>${escapeHtml(profession.passiveText)}</p>
+        <small>${cards.map((card) => escapeHtml(card.name)).join(" · ")}</small>
+      </button>
+    `;
+  }
+
+  function renderOnboardingPersonality() {
+    return `
+      <section class="onboarding-screen creator-screen">
+        <div class="creator-window wide">
+          <div class="creator-step"><span>Step 4</span><strong>選擇性格</strong></div>
+          <div class="screen-title"><h2>恐懼逼近時，你會變成什麼樣子？</h2></div>
+          <div class="personality-grid">
+            ${data.playerPersonalities.map((personality) => {
+              const card = core.cardsById[personality.cardId];
+              return `<button class="personality-card" data-action="player-personality" data-personality-id="${personality.id}">
+                <strong>${escapeHtml(personality.name)}</strong>
+                <p>${escapeHtml(personality.text)}</p>
+                <small class="sealed-skill-name">${escapeHtml(card.name)}</small>
+              </button>`;
+            }).join("")}
+          </div>
+          <div class="creator-actions"><button class="secondary-action" data-action="onboarding-back" data-stage="profession">返回</button></div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderOnboardingConfirm() {
+    const draft = state.onboarding?.draft || {};
+    const profession = data.playerProfessions.find((item) => item.id === draft.professionId) || data.playerProfessions[0];
+    const personality = data.playerPersonalities.find((item) => item.id === draft.personalityId) || data.playerPersonalities[0];
+    const gender = draft.gender || "male";
+    const cardIds = [...profession.cardIds, personality.cardId];
+    return `
+      <section class="onboarding-screen creator-screen">
+        <div class="creator-window wide confirm-window">
+          <div class="creator-step"><span>Step 5</span><strong>確認投放資料</strong></div>
+          <div class="confirm-layout">
+            <article class="confirm-hero">
+              ${image(professionArt(profession.id, gender), `${profession.name}插畫`, "confirm-portrait")}
+              <div>
+                <span class="eyebrow">${profession.archetype}型 · ${gender === "female" ? "女" : "男"}</span>
+                <h2>${escapeHtml(playerDraftName())}</h2>
+                <p>${escapeHtml(profession.name)} · ${escapeHtml(personality.name)}</p>
+              </div>
+            </article>
+            <section class="confirm-cards">
+              ${cardIds.map((cardId) => renderOnboardingCardPreview(cardId)).join("")}
+            </section>
+          </div>
+          <div class="creator-actions">
+            <button class="secondary-action" data-action="onboarding-back" data-stage="personality">返回</button>
+            <button class="primary-action" data-action="confirm-player">確認，進入生化危機</button>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderOnboardingCardPreview(cardId) {
+    const card = core.cardsById[cardId];
+    return `<article class="skill-card onboarding-skill-card hidden-card ${card.type}"><strong>${escapeHtml(card.name)}</strong></article>`;
+  }
+
+  function playerDraftName() {
+    return state.onboarding?.draft?.name || state.playerProfile?.name || "無名者";
+  }
+
   function renderStory() {
     const kind = state.pending?.kind;
+    const playerName = escapeHtml(state.playerProfile?.name || state.party.find((member) => member.id === "player-avatar")?.name || "你");
     if (kind === "tutorial-choice-1") {
-      return renderChoiceScreen("蜂巢岔路", "警報聲越來越近。張杰停下腳步，讓鄭吒決定下一步。", [
+      return renderChoiceScreen("蜂巢岔路", `警報聲越來越近。張杰停下腳步，讓${playerName}決定下一步。`, [
         { id: "search", title: "搜索醫療站", text: "獲得「戰地醫療」，但必須繞過黑暗實驗室。" },
         { id: "rush", title: "直衝封鎖門", text: "立刻獲得 50 獎勵點，繼續前進。" }
       ]);
@@ -107,7 +280,7 @@
         <div class="story-copy">
           <span class="eyebrow">新手劇本 · 生化危機</span>
           <h2>活下去，然後再問問題。</h2>
-          <p>冰冷車廂駛向蜂巢。鄭吒身邊只有強得不可思議的引導者張杰。三場戰鬥之後，真正的輪迴才會開始。</p>
+          <p>冰冷車廂駛向蜂巢。${playerName}身邊只有強得不可思議的引導者張杰。三場戰鬥之後，真正的輪迴才會開始。</p>
           <button class="primary-action" data-action="story-option" data-option-id="start">進入蜂巢</button>
         </div>
         <div class="tutorial-duo">${state.party.map(renderPortraitCard).join("")}</div>
@@ -131,15 +304,15 @@
     const scenario = core.scenariosById[state.pending.scenarioId];
     return `
       <section class="choice-screen">
-        <div class="screen-title"><span class="eyebrow">${scenario.name} · 投放前集結</span><h2>從三人中邀請一人加入</h2><p>被選中的角色會永久加入中洲隊。首次進入異形時，另外一人也會跟隨加入。</p></div>
+        <div class="screen-title"><span class="eyebrow">${scenario.name} · 投放前集結</span><h2>從三人中邀請一人加入</h2><p>被選中的角色會永久加入${escapeHtml(state.teamName || "中洲隊")}。首次進入異形時，另外一人也會跟隨加入。</p></div>
         <div class="recruit-grid">
           ${state.pending.candidates.map((id) => {
             const member = core.charactersById[id];
             return `<button class="recruit-card faction-${member.factionId || "main"}" data-action="recruit" data-character-id="${id}">
-              ${image(characterArt(id), `${member.name}插畫`, "recruit-art")}
-              <span class="faction-badge">${member.faction || "中洲隊"}</span>
+              ${image(characterArt(id), `${escapeHtml(member.name)}插畫`, "recruit-art")}
+              <span class="faction-badge">${escapeHtml(memberFactionName(member))}</span>
               <span class="energy-badge">+${member.energyContribution} 能量</span>
-              <h3>${member.name}</h3><p>${member.role}</p><p class="trait">${member.passiveText}</p>
+              <h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.role)}</p><p class="trait">${escapeHtml(member.passiveText)}</p>
             </button>`;
           }).join("")}
         </div>
@@ -264,9 +437,9 @@
   function renderCombatCharacter(member) {
     return `
       <article class="combat-character faction-${member.factionId || "main"} ${core.isAlive(member) ? "" : "down"}">
-        ${image(characterArt(member.id), `${member.name}插畫`, "combat-character-art")}
+        ${image(characterArt(member.id), `${escapeHtml(member.name)}插畫`, "combat-character-art")}
         <div class="combat-character-copy">
-          <div class="character-top"><div><span class="faction-inline faction-${member.factionId || "main"}">${member.faction || "中洲隊"}</span><h3>${member.name}</h3><p>${member.role} · +${member.energyContribution} 能量</p></div>${member.block ? `<span class="block-badge">${member.block}</span>` : ""}</div>
+          <div class="character-top"><div><span class="faction-inline faction-${member.factionId || "main"}">${escapeHtml(memberFactionName(member))}</span><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.role)} · +${member.energyContribution} 能量</p></div>${member.block ? `<span class="block-badge">${member.block}</span>` : ""}</div>
           ${renderMeter("生命", member.hp, member.maxHp, "hp")}
           ${renderMeter("壓力", member.stress, 100, "stress")}
           ${renderCharacterStatuses(member)}
@@ -294,10 +467,10 @@
     const bloodline = owner ? core.bloodlinesByCharacterId[owner.id] : null;
     const bloodlineUnlocked = Boolean(bloodline && (bloodline.tutorialOnly || state.permanentUpgrades.bloodlines.includes(owner.id)));
     return `
-      <button class="skill-card ${card.type} ${card.rarity}" data-action="play-card" data-card-uid="${instance.uid}" ${disabled ? "disabled" : ""}>
-        ${image(skillArt(card.id), `${card.name}插畫`, "skill-art")}
+      <button class="skill-card ${card.type} ${card.rarity} rarity-${cardRarityTier(card)}" data-action="play-card" data-card-uid="${instance.uid}" ${disabled ? "disabled" : ""}>
+        ${renderCardArtFrame(card)}
         <span class="cost">${card.unplayable ? "!" : cost}</span><strong>${card.name}</strong>
-        <span class="card-type">${cardTypeLabel(card)}${owner ? ` · ${owner.name}專屬` : ""}</span>
+        <span class="card-type">${cardRarityLabel(card)} · ${cardTypeLabel(card)}${owner ? ` · ${owner.name}專屬` : ""}</span>
         <p>${card.text}</p>${bloodlineUnlocked ? `<p class="card-bloodline">血統附加：${bloodline.text}</p>` : ""}<span class="tags">${card.tags.join(" / ")}</span>
       </button>
     `;
@@ -314,10 +487,13 @@
   }
 
   function renderRewardCard(card) {
+    const ownership = cardOwnershipState(card.id);
     return `
-      <button class="skill-card reward-card ${card.type} ${card.rarity}" data-action="combat-reward" data-reward-id="${card.id}">
-        ${image(skillArt(card.id), `${card.name}插畫`, "skill-art")}<span class="cost">${card.cost}</span><strong>${card.name}</strong>
-        <span class="card-type">${cardTypeLabel(card)}</span><p>${card.text}</p><span class="tags">${card.tags.join(" / ")}</span>
+      <button class="skill-card reward-card ${card.type} ${card.rarity} rarity-${cardRarityTier(card)} ownership-${ownership.status}" data-action="combat-reward" data-reward-id="${card.id}">
+        ${renderCardArtFrame(card)}<span class="cost">${card.cost}</span><strong>${card.name}</strong>
+        <span class="card-type">${cardRarityLabel(card)} · ${cardTypeLabel(card)}</span>
+        ${ownership.status === "upgrade" ? `<span class="ownership-chip upgrade-ready">選擇後強化+</span>` : ""}
+        <p>${card.text}</p><span class="tags">${card.tags.join(" / ")}</span>
       </button>
     `;
   }
@@ -326,9 +502,18 @@
     return `
       <section class="reward-layout">
         <div class="screen-title"><span class="eyebrow">Boss 戰利品</span><h2>從三項稀有戰利品中選擇一項</h2></div>
-        <div class="choice-grid">${state.rewardChoices.map((reward) => `<button class="loot-card" data-action="boss-reward" data-reward-id="${reward.id}">${image(reward.kind === "equipment" ? equipmentArt(reward.itemId) : reward.kind === "card" ? skillArt(reward.itemId) : "./src/assets/main-god-space.svg", "", "loot-art")}<span class="eyebrow">${rewardKindLabel(reward.kind)}</span><strong>${reward.name}</strong><p>${reward.text}</p></button>`).join("")}</div>
+        <div class="choice-grid">${state.rewardChoices.map(renderBossRewardChoice).join("")}</div>
       </section>
     `;
+  }
+
+  function renderBossRewardChoice(reward) {
+    if (reward.kind === "card") {
+      const card = core.cardsById[reward.itemId];
+      const ownership = cardOwnershipState(card.id);
+      return `<button class="loot-card boss-card-reward rarity-${cardRarityTier(card)} ownership-${ownership.status}" data-action="boss-reward" data-reward-id="${reward.id}">${renderCardArtFrame(card, "loot-art")}<span class="eyebrow">${rewardKindLabel(reward.kind)} · ${cardRarityLabel(card)}</span><strong>${reward.name}</strong>${ownership.status === "upgrade" ? `<span class="ownership-chip upgrade-ready">領取後強化+</span>` : ""}<p>${reward.text}</p></button>`;
+    }
+    return `<button class="loot-card" data-action="boss-reward" data-reward-id="${reward.id}">${image(reward.kind === "equipment" ? equipmentArt(reward.itemId) : "./src/assets/main-god-space.svg", "", "loot-art")}<span class="eyebrow">${rewardKindLabel(reward.kind)}</span><strong>${reward.name}</strong><p>${reward.text}</p></button>`;
   }
 
   function renderTreasure() {
@@ -359,7 +544,7 @@
           <button class="choice-card danger" data-action="event" data-option-id="curse-story"><strong>觸碰支線線索</strong><p>獲得 ${data.economy?.curseStoryReward || 900} 獎勵點，但加入一張隨機詛咒。</p></button>
           <button class="choice-card" data-action="event" data-option-id="temporary-power"><strong>接受危險強化</strong><p>本次遠征所有攻擊牌傷害 +2。</p></button>
           ${scenario?.scenarioPower ? `<button class="choice-card scenario-choice" data-action="event" data-option-id="scenario-power"><strong>${scenario.scenarioPowerName}</strong><p>${scenario.scenarioPowerText}</p></button>` : ""}
-          ${candidate ? `<button class="choice-card" data-action="event" data-option-id="recruit"><strong>救出 ${candidate.name}</strong><p>${candidate.role}將永久加入隊伍。</p></button>` : ""}
+          ${candidate ? `<button class="choice-card" data-action="event" data-option-id="recruit"><strong>救出 ${escapeHtml(candidate.name)}</strong><p>${escapeHtml(candidate.role)}將永久加入隊伍。</p></button>` : ""}
           ${core.getAliveActiveParty(state).some((member) => member.passiveId === "artifact-sense") ? `<button class="choice-card" data-action="event" data-option-id="qi-insight"><strong>齊騰一：解讀痕跡</strong><p>獲得 1 支線劇情，本次遠征開場全隊獲得 4 護甲。</p></button>` : ""}
         </div>
       </section>
@@ -375,7 +560,7 @@
         <div class="screen-title"><span class="eyebrow">整頓</span><h2>小王戰後的喘息</h2><p>可調整裝備，然後選擇恢復全隊或升級一項。</p></div>
         <button class="choice-card heal-choice" data-action="camp" data-camp-action="heal"><strong>主神急救</strong><p>全體出戰角色恢復 30% 最大生命並降低 15 壓力。</p></button>
         <section class="panel"><h3>升級一般牌</h3><div class="compact-grid">${unupgradedCards.map((entry) => `<button class="compact-choice" data-action="camp" data-camp-action="upgrade-deck" data-target-id="${entry.instanceId}">${core.cardsById[entry.cardId].name} → ${core.cardsById[entry.cardId].name}+</button>`).join("") || "<p>沒有可升級的一般牌。</p>"}</div></section>
-        <section class="panel"><h3>升級專屬牌或裝備</h3><div class="compact-grid">${unupgradedSignatures.map((member) => `<button class="compact-choice" data-action="camp" data-camp-action="upgrade-signature" data-target-id="${member.id}">${member.name} · ${core.cardsById[member.signatureCardId].name}+</button>`).join("")}${unupgradedEquipment.map((entry) => `<button class="compact-choice" data-action="camp" data-camp-action="upgrade-equipment" data-target-id="${entry.instanceId}">${core.equipmentById[entry.equipmentId].name}+</button>`).join("")}</div></section>
+        <section class="panel"><h3>升級專屬牌或裝備</h3><div class="compact-grid">${unupgradedSignatures.map((member) => `<button class="compact-choice" data-action="camp" data-camp-action="upgrade-signature" data-target-id="${member.id}">${escapeHtml(member.name)} · ${escapeHtml(core.cardsById[member.signatureCardId].name)}+</button>`).join("")}${unupgradedEquipment.map((entry) => `<button class="compact-choice" data-action="camp" data-camp-action="upgrade-equipment" data-target-id="${entry.instanceId}">${escapeHtml(core.equipmentById[entry.equipmentId].name)}+</button>`).join("")}</div></section>
         ${renderEquipmentManagement()}
       </section>
     `;
@@ -383,13 +568,18 @@
 
   function renderHub() {
     const tab = state.hubTab || "deployment";
+    const teamName = escapeHtml(state.teamName || "中洲隊");
     return `
       <section class="hub-layout">
         <section class="hub-command">
           <div class="hub-command-copy">
             <span class="eyebrow">輪迴者整備中樞</span>
-            <h2>主神空間</h2>
-            <p>「主神全隊恢復，獎勵點數由我這裡扣除！」</p>
+            <h2>${teamName}</h2>
+            <p>主神空間已開放改名權限，隊伍代號會顯示在部署與名冊中。</p>
+            <div class="team-rename">
+              <input id="team-name-input" type="text" maxlength="16" value="${teamName}" aria-label="隊伍名稱" />
+              <button data-action="rename-team">改名</button>
+            </div>
           </div>
           <div class="hub-command-metrics">
             <div><span>出戰隊員</span><strong>${core.getActiveParty(state).length}<small>/6</small></strong></div>
@@ -422,7 +612,7 @@
       </section>
       <section class="panel">
         <div class="section-heading"><div><span class="eyebrow">主神兌換</span><h2>共用攻擊卡牌</h2></div><p>${state.rewardPoints} 獎勵點 · 按分類展開</p></div>
-        <div class="shop-source-list">${renderCardShopSections(cardEntries)}</div>
+        ${renderCardShopSections(cardEntries)}
       </section>
       <section class="panel">
         <div class="section-heading"><div><span class="eyebrow">主神兌換</span><h2>裝備與神器</h2></div><p>${equipmentEntries.length} 件唯一裝備 · 按分類展開</p></div>
@@ -441,17 +631,32 @@
     const knownIds = new Set(sources.map((source) => source.id));
     const sections = sources.map((source) => renderCardShopSection(source, entries.filter((entry) => (core.cardsById[entry.itemId]?.sourceId || "main-god") === source.id))).join("");
     const unknownEntries = entries.filter((entry) => !knownIds.has(core.cardsById[entry.itemId]?.sourceId || "main-god"));
-    return sections + (unknownEntries.length ? renderCardShopSection({ id: "other", name: "其他來源", description: "尚未歸類的卡牌。" }, unknownEntries) : "");
+    return `<div class="shop-cover-grid">${sections}${unknownEntries.length ? renderCardShopSection({ id: "other", name: "其他來源", description: "尚未歸類的卡牌。" }, unknownEntries) : ""}</div>`;
   }
 
   function renderCardShopSection(source, entries) {
     if (!entries.length) return "";
+    const status = sourceCardStatus(entries);
     return `
-      <details class="shop-source-section">
-        <summary><span><strong>${source.name}</strong><small>${source.description || ""}</small></span><em>${entries.length} 張</em></summary>
-        <div class="shop-grid shop-section-grid">${entries.map(renderShopItem).join("")}</div>
+      <details class="shop-cover-section">
+        <summary class="source-cover-card">
+          ${image(sourceCoverArt(source.id), "", "source-cover-art")}
+          <span class="source-cover-shade"></span>
+          <span class="source-cover-copy"><span class="eyebrow">技能來源</span><strong>${source.name}</strong><small>${source.description || ""}</small><em>${status}</em></span>
+        </summary>
+        <div class="shop-drawer">
+          <div class="subsection-heading"><strong>${source.name}</strong><span>${status}</span></div>
+          <div class="shop-grid shop-section-grid">${entries.map(renderShopItem).join("")}</div>
+        </div>
       </details>
     `;
+  }
+
+  function sourceCardStatus(entries) {
+    const owned = entries.filter((entry) => cardOwnershipState(entry.itemId).status !== "new").length;
+    const upgradable = entries.filter((entry) => cardOwnershipState(entry.itemId).status === "upgrade").length;
+    const maxed = entries.filter((entry) => cardOwnershipState(entry.itemId).status === "max").length;
+    return `${entries.length} 張 · 已有 ${owned} · 可強化 ${upgradable} · 最高級 ${maxed}`;
   }
 
   function renderEquipmentShopSections(entries) {
@@ -520,7 +725,7 @@
       </section>
       <section class="main-god-console roster-console">
         <section class="panel browser-column">
-          <div class="section-heading"><div><span class="eyebrow">角色名冊</span><h2>按陣營折疊管理</h2></div><p>展開隊伍分組即可升級角色、專屬牌與血統。</p></div>
+          <div class="section-heading"><div><span class="eyebrow">角色名冊</span><h2>按隊伍與原作來源整備</h2></div><p>展開 hero shot 分類後即可升級角色、專屬牌與血統。</p></div>
           ${renderCharacterBrowser(state.party, "roster")}
         </section>
         <aside class="side-stack roster-side">
@@ -534,6 +739,7 @@
 
   function renderCharacterBrowser(members, mode) {
     if (!members.length) return `<p class="empty-state">目前沒有可顯示的角色。</p>`;
+    if (mode === "roster") return renderRosterSourceBrowser(members);
     return `<div class="management-group-list">${groupMembersByFaction(members).map((group, index) => `
       <details class="management-group faction-${group.id}" ${index < 2 ? "open" : ""}>
         <summary><span><strong>${group.name}</strong><small>${group.members.length} 名角色 · ${group.activeCount} 名出戰</small></span><em>${group.energy} 能量</em></summary>
@@ -542,7 +748,24 @@
     `).join("")}</div>`;
   }
 
-  function renderManagementCharacter(member, mode) {
+  function renderRosterSourceBrowser(members) {
+    const groups = groupMembersByRosterSource(members);
+    return `<div class="roster-source-grid">${groups.map((group, index) => `
+      <details class="roster-source-section faction-${group.factionId || group.id}" ${index < 2 ? "open" : ""}>
+        <summary class="roster-source-hero">
+          ${image(rosterHeroArt(group), "", "roster-source-art")}
+          <span class="roster-source-shade"></span>
+          <span class="roster-source-copy"><span class="eyebrow">角色整備</span><strong>${group.name}</strong><small>${group.description || ""}</small><em>${group.members.length} 名 · 出戰 ${group.activeCount} · 能量 ${group.energy}</em></span>
+        </summary>
+        <div class="roster-source-drawer">
+          <div class="subsection-heading"><strong>${group.name}</strong><span>${group.members.length} 名角色 · ${group.activeCount} 名出戰</span></div>
+          <div class="roster-character-grid">${group.members.map((member) => renderManagementCharacter(member, "roster", group)).join("")}</div>
+        </div>
+      </details>
+    `).join("")}</div>`;
+  }
+
+  function renderManagementCharacter(member, mode, rosterSource = null) {
     const signature = core.cardsById[member.signatureCardId];
     const level = Number(state.permanentUpgrades.characters[member.id] || 0);
     const signatureUpgraded = state.permanentUpgrades.signatures.includes(member.id);
@@ -551,20 +774,22 @@
     const canUpgradeBloodline = bloodline && !bloodline.tutorialOnly && canAffordUpgradeCost(bloodline);
     const energy = member.energyContribution + (member.passiveId === "low-health-energy" && member.hp <= member.maxHp / 2 ? 1 : 0);
     const loadout = getMemberLoadout(member);
+    const factionLabel = mode === "roster" && rosterSource ? rosterSource.name : memberFactionName(member);
+    const sourceSuffix = mode === "roster" && rosterSource && member.faction && member.faction !== factionLabel && (member.factionId || "main") !== "main" ? ` · ${escapeHtml(member.faction)}` : "";
     return `
       <article class="mini-character-card faction-${member.factionId || "main"} ${member.active ? "active-member" : "reserve-member"}">
-        ${image(characterArt(member.id), `${member.name}`, "mini-character-art")}
+        ${image(characterArt(member.id), `${escapeHtml(member.name)}`, "mini-character-art")}
         <div class="mini-character-copy">
           <div class="mini-character-head">
-            <div><span class="faction-inline faction-${member.factionId || "main"}">${member.faction || "中洲隊"}</span><h3>${member.name}</h3><p>${member.role}</p></div>
+            <div><span class="faction-inline faction-${member.factionId || "main"}">${escapeHtml(factionLabel)}</span><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.role)}${sourceSuffix}</p></div>
             <span class="energy-badge">+${energy}</span>
           </div>
           <div class="mini-stat-row"><span>HP ${member.hp}/${member.maxHp}</span><span>壓力 ${member.stress}</span><span>Lv.${level}</span></div>
           <div class="loadout-chip">${loadout.item ? `${loadout.item.name}${loadout.entry.upgraded ? "+" : ""}` : "未裝備"}</div>
           <details class="mini-details">
             <summary>能力詳情</summary>
-            <p>${member.passiveText}</p>
-            <p>專屬牌：${signature.name}${signatureUpgraded ? "+" : ""}</p>
+            <p>${escapeHtml(member.passiveText)}</p>
+            <p>專屬牌：${escapeHtml(signature.name)}${signatureUpgraded ? "+" : ""}</p>
             ${bloodline ? `<p class="${bloodlineUnlocked ? "unlocked" : ""}">血統：${bloodline.name} · ${bloodline.text}</p>` : ""}
           </details>
           ${mode === "roster" ? `<div class="inline-actions roster-actions">
@@ -581,10 +806,10 @@
     const loadout = getMemberLoadout(member);
     return `
       <article class="squad-slot faction-${member.factionId || "main"}">
-        ${image(characterArt(member.id), `${member.name}`, "squad-art")}
+        ${image(characterArt(member.id), `${escapeHtml(member.name)}`, "squad-art")}
         <div>
-          <div class="squad-head"><strong>${member.name}</strong><span>+${member.energyContribution} 能量</span></div>
-          <p>${member.role}</p>
+          <div class="squad-head"><strong>${escapeHtml(member.name)}</strong><span>+${member.energyContribution} 能量</span></div>
+          <p>${escapeHtml(member.role)}</p>
           <div class="squad-equipment">${loadout.item ? `${loadout.item.name}${loadout.entry.upgraded ? "+" : ""}` : "未裝備"}</div>
         </div>
         <button data-action="toggle-active" data-character-id="${member.id}" ${core.getActiveParty(state).length <= 3 ? "disabled" : ""}>候補</button>
@@ -616,12 +841,12 @@
     const loadout = getMemberLoadout(member);
     return `
       <article class="loadout-card faction-${member.factionId || "main"} ${member.active ? "active-member" : "reserve-member"}">
-        ${image(characterArt(member.id), `${member.name}`, "loadout-character-art")}
+        ${image(characterArt(member.id), `${escapeHtml(member.name)}`, "loadout-character-art")}
         <div>
-          <span class="faction-inline faction-${member.factionId || "main"}">${member.faction || "中洲隊"}</span>
-          <strong>${member.name}</strong>
-          <p>${member.active ? "出戰中" : "候補"} · ${member.role}</p>
-          <div class="equipped-preview">${loadout.item ? `${image(equipmentArt(loadout.item.id), "", "loadout-equipment-art")}<span>${loadout.item.name}${loadout.entry.upgraded ? "+" : ""}</span>` : "<span>未裝備</span>"}</div>
+          <span class="faction-inline faction-${member.factionId || "main"}">${escapeHtml(memberFactionName(member))}</span>
+          <strong>${escapeHtml(member.name)}</strong>
+          <p>${member.active ? "出戰中" : "候補"} · ${escapeHtml(member.role)}</p>
+          <div class="equipped-preview">${loadout.item ? `${image(equipmentArt(loadout.item.id), "", "loadout-equipment-art")}<span>${escapeHtml(loadout.item.name)}${loadout.entry.upgraded ? "+" : ""}</span>` : "<span>未裝備</span>"}</div>
         </div>
       </article>
     `;
@@ -655,7 +880,7 @@
   function renderEquipmentHolderOptions(holder) {
     const active = core.getActiveParty(state);
     const reserve = state.party.filter((member) => !member.active);
-    const optionFor = (member) => `<option value="${member.id}" ${holder?.id === member.id ? "selected" : ""}>${member.name}${member.active ? " · 出戰" : " · 候補"}</option>`;
+    const optionFor = (member) => `<option value="${escapeHtml(member.id)}" ${holder?.id === member.id ? "selected" : ""}>${escapeHtml(member.name)}${member.active ? " · 出戰" : " · 候補"}</option>`;
     return `
       <option value="" ${holder ? "" : "selected"}>未裝備</option>
       <optgroup label="出戰隊伍">${active.map(optionFor).join("")}</optgroup>
@@ -677,13 +902,36 @@
     const groups = new Map();
     members.forEach((member) => {
       const id = member.factionId || "main";
-      if (!groups.has(id)) groups.set(id, { id, name: member.faction || "中洲隊", members: [], activeCount: 0, energy: 0 });
+      if (!groups.has(id)) groups.set(id, { id, name: memberFactionName(member), members: [], activeCount: 0, energy: 0 });
       const group = groups.get(id);
       group.members.push(member);
       if (member.active) group.activeCount += 1;
       group.energy += Number(member.energyContribution || 0);
     });
     return [...groups.values()].sort((a, b) => Number(b.activeCount) - Number(a.activeCount) || a.name.localeCompare(b.name, "zh-Hant"));
+  }
+
+  function groupMembersByRosterSource(members) {
+    const byId = new Map(members.map((member) => [member.id, member]));
+    const used = new Set();
+    const sources = data.characterSources || [];
+    const groups = sources.map((source) => {
+      const sourceMembers = (source.memberIds || []).map((id) => byId.get(id)).filter(Boolean);
+      sourceMembers.forEach((member) => used.add(member.id));
+      return makeRosterSourceGroup(source, sourceMembers);
+    }).filter((group) => group.members.length);
+    const missing = members.filter((member) => !used.has(member.id));
+    if (missing.length) {
+      groups.push(makeRosterSourceGroup({ id: "other", name: "其他角色", description: "尚未歸入來源分類的角色。", heroFileName: "roster-hero-main.png" }, missing));
+    }
+    return groups;
+  }
+
+  function makeRosterSourceGroup(source, members) {
+    const activeCount = members.filter((member) => member.active).length;
+    const energy = members.reduce((sum, member) => sum + Number(member.energyContribution || 0), 0);
+    const factionId = members.find((member) => member.factionId)?.factionId || source.id;
+    return { ...source, name: source.id === "main" ? state.teamName || "中洲隊" : source.name, members, activeCount, energy, factionId };
   }
 
   function groupEquipmentBySource(entries) {
@@ -738,9 +986,18 @@
     const item = entry.kind === "card" ? core.cardsById[entry.itemId] : core.equipmentById[entry.itemId];
     const bought = state.purchased[entry.id] || 0;
     const ownedEquipment = entry.kind === "equipment" && state.equipmentInventory.some((value) => value.equipmentId === entry.itemId);
-    const disabled = bought >= entry.stock || ownedEquipment || state.rewardPoints < entry.rewardPointCost || state.sideStories < Number(entry.sideStoryCost || 0);
+    const canAfford = state.rewardPoints >= entry.rewardPointCost && state.sideStories >= Number(entry.sideStoryCost || 0);
     const label = entry.kind === "card" ? (item.sourceName || "主神基礎") : (item.sourceName || "主神裝備");
-    return `<article class="shop-item">${image(entry.kind === "card" ? skillArt(item.id) : equipmentArt(item.id), "", "shop-art")}<span class="eyebrow">${label}</span><h3>${item.name}</h3><p>${item.text}</p><button data-action="buy-shop" data-shop-id="${entry.id}" ${disabled ? "disabled" : ""}>${entry.rewardPointCost} 點${entry.sideStoryCost ? ` / ${entry.sideStoryCost} 支線` : ""}</button></article>`;
+    const costText = `${entry.rewardPointCost} 點${entry.sideStoryCost ? ` / ${entry.sideStoryCost} 支線` : ""}`;
+    if (entry.kind === "card") {
+      const ownership = cardOwnershipState(item.id);
+      const stockLocked = ownership.repeatable && bought >= entry.stock;
+      const disabled = ownership.status === "max" || stockLocked || !canAfford;
+      const buttonLabel = ownership.status === "max" ? "已擁有最高級技能" : ownership.status === "upgrade" ? `強化+ · ${costText}` : stockLocked ? "已達購買上限" : `購買 · ${costText}`;
+      return `<article class="shop-item shop-card-item rarity-${cardRarityTier(item)} ownership-${ownership.status}">${renderCardArtFrame(item, "shop-art")}<span class="eyebrow">${label} · ${cardRarityLabel(item)}</span><h3>${item.name}${ownership.entry?.upgraded ? "+" : ""}</h3><div class="shop-status-row"><span class="ownership-chip ${ownership.status}">${ownership.label}</span><span>${costText}</span></div><p>${item.text}</p><button data-action="buy-shop" data-shop-id="${entry.id}" ${disabled ? "disabled" : ""}>${buttonLabel}</button></article>`;
+    }
+    const disabled = bought >= entry.stock || ownedEquipment || !canAfford;
+    return `<article class="shop-item">${image(equipmentArt(item.id), "", "shop-art")}<span class="eyebrow">${label} · ${rarityLabel(item.rarity)}</span><h3>${item.name}</h3><div class="shop-status-row"><span class="ownership-chip ${ownedEquipment ? "max" : "new"}">${ownedEquipment ? "已擁有" : "未持有"}</span><span>${costText}</span></div><p>${item.text}</p><button data-action="buy-shop" data-shop-id="${entry.id}" ${disabled ? "disabled" : ""}>${ownedEquipment ? "已擁有" : `購買 · ${costText}`}</button></article>`;
   }
 
   function renderDeckEntry(entry) {
@@ -754,11 +1011,11 @@
   }
 
   function renderRunParty() {
-    return `<section class="panel"><div class="section-heading"><div><span class="eyebrow">遠征隊伍</span><h2>目前狀態</h2></div></div><div class="run-party-grid">${core.getActiveParty(state).map((member) => `<article>${image(characterArt(member.id), "", "run-party-art")}<div><span class="faction-inline faction-${member.factionId || "main"}">${member.faction || "中洲隊"}</span><strong>${member.name}</strong></div>${renderMeter("生命", member.hp, member.maxHp, "hp")}${renderMeter("壓力", member.stress, 100, "stress")}</article>`).join("")}</div></section>`;
+    return `<section class="panel"><div class="section-heading"><div><span class="eyebrow">遠征隊伍</span><h2>目前狀態</h2></div></div><div class="run-party-grid">${core.getActiveParty(state).map((member) => `<article>${image(characterArt(member.id), "", "run-party-art")}<div><span class="faction-inline faction-${member.factionId || "main"}">${escapeHtml(memberFactionName(member))}</span><strong>${escapeHtml(member.name)}</strong></div>${renderMeter("生命", member.hp, member.maxHp, "hp")}${renderMeter("壓力", member.stress, 100, "stress")}</article>`).join("")}</div></section>`;
   }
 
   function renderPortraitCard(member) {
-    return `<article class="portrait-card faction-${member.factionId || "main"}">${image(characterArt(member.id), `${member.name}插畫`, "portrait-art")}<span class="faction-badge">${member.faction || "中洲隊"}</span><span class="energy-badge">+${member.energyContribution} 能量</span><h3>${member.name}</h3><p>${member.passiveText}</p></article>`;
+    return `<article class="portrait-card faction-${member.factionId || "main"}">${image(characterArt(member.id), `${escapeHtml(member.name)}插畫`, "portrait-art")}<span class="faction-badge">${escapeHtml(memberFactionName(member))}</span><span class="energy-badge">+${member.energyContribution} 能量</span><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.passiveText)}</p></article>`;
   }
 
   function renderDefeat() {
@@ -891,6 +1148,15 @@
       }
       element.addEventListener("click", () => {
         audio?.unlock?.();
+        if (action === "main-god-invite") dispatch(core.answerMainGodInvite(state, element.dataset.answer), { action, answer: element.dataset.answer });
+        if (action === "restart-onboarding") dispatch(core.restartOnboarding(state), { action });
+        if (action === "player-name") dispatch(core.setPlayerName(state, app.querySelector("#player-name-input")?.value || ""), { action });
+        if (action === "player-gender") dispatch(core.setPlayerGender(state, element.dataset.gender), { action, gender: element.dataset.gender });
+        if (action === "player-profession") dispatch(core.setPlayerProfession(state, element.dataset.professionId), { action, professionId: element.dataset.professionId });
+        if (action === "player-personality") dispatch(core.setPlayerPersonality(state, element.dataset.personalityId), { action, personalityId: element.dataset.personalityId });
+        if (action === "onboarding-back") dispatch(core.goToOnboardingStage(state, element.dataset.stage), { action, stage: element.dataset.stage });
+        if (action === "confirm-player") dispatch(core.confirmPlayerCreation(state), { action });
+        if (action === "rename-team") dispatch(core.renameTeam(state, app.querySelector("#team-name-input")?.value || ""), { action });
         if (action === "story-option") dispatch(core.chooseStoryOption(state, element.dataset.optionId), { action, optionId: element.dataset.optionId });
         if (action === "recruit") dispatch(core.chooseRecruit(state, element.dataset.characterId), { action, characterId: element.dataset.characterId });
         if (action === "begin-scenario") dispatch(core.beginScenario(state, element.dataset.scenarioId), { action, scenarioId: element.dataset.scenarioId });
@@ -919,7 +1185,21 @@
   }
 
   function image(src, alt, className) {
-    return `<img src="${src}" alt="${alt}" class="${className}" onerror="this.onerror=null;this.src='./src/assets/main-god-space.svg'" />`;
+    return `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" class="${escapeHtml(className)}" onerror="this.onerror=null;this.src='./src/assets/main-god-space.svg'" />`;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function memberFactionName(member) {
+    if ((member.factionId || "main") === "main" || member.faction === "中洲隊") return state.teamName || "中洲隊";
+    return member.faction || "中洲隊";
   }
 
   function renderOpeningHeroArt(opening, scenarioId) {
@@ -932,6 +1212,13 @@
   function scenarioArt(id) {
     const art = {
       "main-god-trial": "./src/assets/generated/scenario-main-god-trial.png",
+      "alien": "./src/assets/generated/scenario-alien.png",
+      "juon": "./src/assets/generated/scenario-juon.png",
+      "mummy-curse": "./src/assets/generated/scenario-mummy-curse.png",
+      "jurassic-island": "./src/assets/generated/scenario-jurassic-island.png",
+      "abyssal-ark": "./src/assets/generated/scenario-abyssal-ark.png",
+      "evernight-castle": "./src/assets/generated/scenario-evernight-castle.png",
+      "demon-frontier": "./src/assets/generated/scenario-demon-frontier.png",
       "starship-troopers": "./src/assets/generated/scenario-starship-troopers.png",
       "avp-pyramid": "./src/assets/generated/scenario-avp-pyramid.png",
       "nightmare-elm": "./src/assets/generated/scenario-nightmare-elm.png",
@@ -944,18 +1231,39 @@
       "gintama-final-war": "./src/assets/generated/scenario-gintama-final-war.png",
       "avengers-new-york": "./src/assets/generated/scenario-avengers-new-york.png",
       "batman-v-superman": "./src/assets/generated/scenario-batman-v-superman.png",
+      "devil-may-cry-5": "./src/assets/generated/scenario-devil-may-cry-5.png",
       "final-destination": "./src/assets/generated/scenario-final-destination.png",
-      "jinyong-heroic-peak": "./src/assets/generated/scenario-jinyong-heroic-peak.png"
+      "jinyong-heroic-peak": "./src/assets/generated/scenario-jinyong-heroic-peak.png",
+      "pacific-rim-breach": "./src/assets/generated/scenario-pacific-rim-breach.png",
+      "fury-road-war-rig": "./src/assets/generated/scenario-fury-road-war-rig.png",
+      "resident-evil-6-c-virus": "./src/assets/generated/scenario-resident-evil-6-c-virus.png",
+      "elden-ring-hell-run": "./src/assets/generated/scenario-elden-ring-hell-run.png"
     };
     return art[id] || "";
   }
 
   function characterArt(id) {
+    if (id === "player-avatar") {
+      const profile = state.playerProfile || state.party.find((member) => member.id === "player-avatar")?.playerProfile;
+      if (profile?.professionId && profile?.gender) return professionArt(profile.professionId, profile.gender);
+    }
     return `./src/assets/generated/character-${id}.png`;
+  }
+
+  function professionArt(professionId, gender) {
+    return `./src/assets/generated/character-player-${professionId}-${gender === "female" ? "female" : "male"}.png`;
+  }
+
+  function rosterHeroArt(source) {
+    return `./src/assets/generated/${source.heroFileName || `roster-hero-${source.id}.png`}`;
   }
 
   function skillArt(id) {
     return `./src/assets/generated/skill-${id}.png`;
+  }
+
+  function sourceCoverArt(id) {
+    return `./src/assets/generated/source-cover-${id}.png`;
   }
 
   function equipmentArt(id) {
@@ -963,33 +1271,37 @@
   }
 
   function enemyArt(id) {
-    const aliases = {
-      "mummy-scarab": "abyss-larva",
-      "mummy-guard": "blood-thrall",
-      "desert-priest": "pressure-wraith",
-      "anubis-guardian": "trench-warden",
-      "immortal-priest": "curse-matriarch",
-      "compy-pack": "crimson-hound",
-      "raptor-stalker": "alien-warrior",
-      "dilophosaurus": "facehugger",
-      "triceratops-bull": "trench-warden",
-      "tyrannosaurus-rex": "leviathan-core",
-      "black-flame-shard": "blood-thrall",
-      "causality-sniper": "gargoyle-sentry",
-      "void-assassin": "grudge-shadow",
-      "causality-commander": "night-sovereign",
-      "devil-zheng-avatar": "night-sovereign",
-      "war-zetsu-swarm": "ten-tails-remnant",
-      "susanoo-guardian": "final-valley-sasuke",
-      "arrancar-warrior": "hollow-echo-swarm",
-      "hogyoku-aizen": "transcendent-aizen",
-    };
-    return `./src/assets/generated/enemy-${aliases[id] || id}.png`;
+    return `./src/assets/generated/enemy-${id}.png`;
   }
 
   function cardTypeLabel(card) {
     if (card.category === "curse") return "詛咒";
     return { attack: "攻擊", guard: "防護", support: "支援", tactic: "戰術" }[card.type] || card.type;
+  }
+
+  function renderCardArtFrame(card, imageClass = "skill-art") {
+    return `<span class="card-frame rarity-${cardRarityTier(card)}">${image(skillArt(card.id), `${card.name}插畫`, imageClass)}<span class="rarity-mark">${cardRarityLabel(card)}</span></span>`;
+  }
+
+  function cardRarityTier(cardOrRarity) {
+    const rarity = typeof cardOrRarity === "string" ? cardOrRarity : cardOrRarity.rarity;
+    return { starter: "basic", common: "r", uncommon: "sr", rare: "ssr", signature: "ur", curse: "curse" }[rarity] || "basic";
+  }
+
+  function cardRarityLabel(cardOrRarity) {
+    const rarity = typeof cardOrRarity === "string" ? cardOrRarity : cardOrRarity.rarity;
+    return { starter: "基礎", common: "R", uncommon: "SR", rare: "SSR", signature: "UR", curse: "詛咒" }[rarity] || rarity;
+  }
+
+  function cardOwnershipState(cardId) {
+    const card = core.cardsById[cardId];
+    const entry = core.findOwnedCardEntry(state, cardId);
+    const count = state.deck.filter((item) => item.cardId === cardId).length;
+    const repeatable = core.isRepeatableCard(cardId);
+    if (!entry) return { status: "new", label: "未持有", entry: null, repeatable, count };
+    if (repeatable) return { status: "repeatable", label: `已持有 ${count} 張`, entry, repeatable, count };
+    if (entry.upgraded || !card?.upgrade) return { status: "max", label: "已擁有最高級", entry, repeatable, count };
+    return { status: "upgrade", label: "已持有 · 可強化+", entry, repeatable, count };
   }
 
   function rarityLabel(rarity) {
@@ -1009,7 +1321,7 @@
   }
 
   function powerName(power) {
-    return { "battle-instinct": "戰鬥本能：攻擊 +2", warded: "古物護佑：開場護甲 +4", "book-of-amun-ra": "復活真經殘頁：開場護甲 +6", "electric-fence": "高壓電網：每回合護甲 +2", "pressure-suit": "壓力密封服：每回合護甲 +2", "silvered-weapons": "鍍銀武裝：攻擊 +3", "black-flame-overclock": "黑炎超載：攻擊 +5", "main-god-calibration": "主神白光校準：每回合護甲 +4", "federal-fireline": "聯邦火力校準：攻擊 +4", "predator-hunt-mark": "獵人熱視標記：攻擊 +4", "lucid-anchor": "清醒錨點：每回合護甲 +3", "mithril-stand": "秘銀遠征誓約：開場護甲 +12", "thunder-spear-route": "雷槍與立體機動線：攻擊 +4", "nichirin-counteroffensive": "赫刀連攜：攻擊 +6", "kurama-chakra-link": "九尾查克拉連結：攻擊 +5", "mugetsu-final-window": "無月出刀窗口：攻擊 +6", "yorozuya-last-stand": "萬事屋逆境連攜：每回合護甲 +4", "joyo-final-blade-line": "攘夷終局斬線：攻擊 +5", "avengers-assemble-protocol": "復仇者集結：攻擊 +4", "justice-dawn-truce": "正義黎明停戰：攻擊 +4", "stylish-combo-rating": "Stylish連段評級：攻擊 +5", "premonition-loop": "死亡設計預判：每回合護甲 +3", "wulin-manual-focus": "武林盟誓：攻擊 +4" }[power.id] || power.id;
+    return { "battle-instinct": "戰鬥本能：攻擊 +2", warded: "古物護佑：開場護甲 +4", "book-of-amun-ra": "復活真經殘頁：開場護甲 +6", "electric-fence": "高壓電網：每回合護甲 +2", "pressure-suit": "壓力密封服：每回合護甲 +2", "silvered-weapons": "鍍銀武裝：攻擊 +3", "black-flame-overclock": "黑炎超載：攻擊 +5", "main-god-calibration": "主神白光校準：每回合護甲 +4", "federal-fireline": "聯邦火力校準：攻擊 +4", "predator-hunt-mark": "獵人熱視標記：攻擊 +4", "lucid-anchor": "清醒錨點：每回合護甲 +3", "mithril-stand": "秘銀遠征誓約：開場護甲 +12", "thunder-spear-route": "雷槍與立體機動線：攻擊 +4", "nichirin-counteroffensive": "赫刀連攜：攻擊 +6", "kurama-chakra-link": "九尾查克拉連結：攻擊 +5", "mugetsu-final-window": "無月出刀窗口：攻擊 +6", "yorozuya-last-stand": "萬事屋逆境連攜：每回合護甲 +4", "joyo-final-blade-line": "攘夷終局斬線：攻擊 +5", "avengers-assemble-protocol": "復仇者集結：攻擊 +4", "justice-dawn-truce": "正義黎明停戰：攻擊 +4", "stylish-combo-rating": "Stylish連段評級：攻擊 +5", "premonition-loop": "死亡設計預判：每回合護甲 +3", "wulin-manual-focus": "武林盟誓：攻擊 +4", "great-rune-overload": "大盧恩超載：攻擊 +7" }[power.id] || power.id;
   }
 
   function intentText(intent) {

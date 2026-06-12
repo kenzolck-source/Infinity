@@ -1,0 +1,40 @@
+[
+  {
+    "index": 1,
+    "grid": 2,
+    "assets": [
+      { "fileName": "source-cover-main-god.png", "name": "主神基礎 COVER" },
+      { "fileName": "source-cover-demon-slayer.png", "name": "鬼滅之刃 COVER" },
+      { "fileName": "source-cover-attack-on-titan.png", "name": "進擊的巨人 COVER" },
+      { "fileName": "source-cover-ff7.png", "name": "Final Fantasy VII COVER" }
+    ]
+  },
+  {
+    "index": 2,
+    "grid": 2,
+    "assets": [
+      { "fileName": "source-cover-yanyun.png", "name": "燕雲十六聲 COVER" },
+      { "fileName": "source-cover-jinyong.png", "name": "金庸武俠 COVER" },
+      { "fileName": "source-cover-dmc5.png", "name": "Devil May Cry 5 COVER" },
+      { "fileName": "source-cover-gintama.png", "name": "銀魂 COVER" }
+    ]
+  },
+  {
+    "index": 3,
+    "grid": 2,
+    "assets": [
+      { "fileName": "source-cover-avengers.png", "name": "復仇者聯盟 COVER" },
+      { "fileName": "source-cover-dc-movie.png", "name": "超人大戰蝙蝠俠 COVER" },
+      { "fileName": "source-cover-pacific-rim.png", "name": "環太平洋 COVER" },
+      { "fileName": "source-cover-fury-road.png", "name": "瘋狂麥斯 COVER" }
+    ]
+  },
+  {
+    "index": 4,
+    "grid": 2,
+    "assets": [
+      { "fileName": "source-cover-re6.png", "name": "生化危機6 COVER" },
+      { "fileName": "source-cover-elden-ring.png", "name": "艾爾登法環 COVER" }
+    ]
+  }
+]

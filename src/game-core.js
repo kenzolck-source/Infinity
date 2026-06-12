@@ -10,9 +10,12 @@
   const permanentUpgradesById = indexById(data.permanentUpgrades);
   const bloodlinesByCharacterId = Object.fromEntries(data.bloodlines.map((item) => [item.characterId, item]));
   const bondsById = indexById(data.bonds || []);
+  const playerProfessionsById = indexById(data.playerProfessions || []);
+  const playerPersonalitiesById = indexById(data.playerPersonalities || []);
   const economy = data.economy || {};
   const maxLog = 12;
   const dmc5FeaturedRecruitIds = ["nero-dmc5", "v-dmc5", "dante-dmc5"];
+  const repeatableCardIds = new Set(["combat-knife", "guard-stance", "adrenaline-rush"]);
 
   function indexById(items) {
     return Object.fromEntries(items.map((item) => [item.id, item]));
@@ -23,14 +26,17 @@
   }
 
   function createInitialState() {
-    const state = {
-      version: 3,
+    return {
+      version: 4,
       nextId: 1,
       randomSeed: 173205,
-      screen: "story",
+      screen: "onboarding",
       hubTab: "deployment",
-      pending: { kind: "tutorial-intro" },
-      party: [makeCharacter("zheng-zha", true), makeCharacter("zhang-jie", true)],
+      pending: null,
+      onboarding: { stage: "invite", completed: false, draft: {} },
+      playerProfile: null,
+      teamName: "中洲隊",
+      party: [],
       deck: [],
       equipmentInventory: [],
       equipped: {},
@@ -62,17 +68,32 @@
       turnStats: freshTurnStats(),
       combatFlags: { lastChanceUsed: [], bondTriggers: [] },
       rewardChoices: [],
-      log: ["冰冷車廂正駛向蜂巢。"]
+      log: ["螢幕上彈出一個不屬於這台電腦的視窗。"]
     };
-    state.deck = data.starterDeck.map((cardId) => makeDeckEntry(state, cardId, null));
-    return state;
   }
 
   function normalizeState(saved) {
     if (!saved || typeof saved !== "object") return createInitialState();
-    if (saved.version !== 3) return migrateLegacyState(saved);
+    if (saved.version === 4) return normalizeModernState(saved);
+    if (saved.version === 3) {
+      return normalizeModernState({
+        ...clone(saved),
+        version: 4,
+        teamName: sanitizeTeamName(saved.teamName || "中洲隊", "中洲隊"),
+        playerProfile: saved.playerProfile || null,
+        onboarding: saved.onboarding || { stage: "complete", completed: true, draft: {} }
+      });
+    }
+    return normalizeModernState(migrateLegacyState(saved));
+  }
+
+  function normalizeModernState(saved) {
     const base = createInitialState();
     const next = { ...base, ...clone(saved) };
+    next.version = 4;
+    next.teamName = sanitizeTeamName(next.teamName || "中洲隊", "中洲隊");
+    next.playerProfile = normalizePlayerProfile(next.playerProfile);
+    next.onboarding = normalizeOnboarding(next.onboarding, next.playerProfile);
     next.campaign = { ...base.campaign, ...(saved.campaign || {}) };
     reconcileCampaignUnlocks(next.campaign);
     next.permanentUpgrades = { ...base.permanentUpgrades, ...(saved.permanentUpgrades || {}) };
@@ -82,10 +103,11 @@
     next.permanentUpgrades.bloodlines = Array.isArray(next.permanentUpgrades.bloodlines) ? next.permanentUpgrades.bloodlines : [];
     next.party = (Array.isArray(saved.party) ? saved.party : base.party)
       .filter((member) => charactersById[member.id] && !(member.id === "zhang-jie" && next.campaign.tutorialComplete))
-      .map(normalizeCharacter);
+      .map((member) => normalizePartyMember(member, next.playerProfile));
     next.deck = (Array.isArray(saved.deck) ? saved.deck : base.deck)
       .map((entry) => typeof entry === "string" ? makeDeckEntry(next, entry, null) : entry)
       .filter((entry) => entry && cardsById[entry.cardId]);
+    normalizeUniqueDeck(next);
     next.equipmentInventory = (saved.equipmentInventory || []).filter((entry) => equipmentById[entry.equipmentId]);
     next.curses = next.deck.filter((entry) => cardsById[entry.cardId].category === "curse").map((entry) => entry.instanceId);
     next.activeEnemies = (saved.activeEnemies || []).filter((enemy) => enemiesById[enemy.enemyId]).map((enemy) => ({
@@ -103,8 +125,57 @@
     return next;
   }
 
+  function normalizeOnboarding(onboarding, playerProfile) {
+    if (playerProfile) return { stage: "complete", completed: true, draft: {} };
+    const validStages = new Set(["invite", "name", "gender", "profession", "personality", "confirm", "ordinary-ending", "complete"]);
+    const stage = validStages.has(onboarding?.stage) ? onboarding.stage : "invite";
+    return {
+      stage,
+      completed: Boolean(onboarding?.completed && stage === "complete"),
+      draft: normalizePlayerDraft(onboarding?.draft || {})
+    };
+  }
+
+  function normalizePlayerDraft(draft) {
+    const next = { ...clone(draft || {}) };
+    if (next.name) next.name = sanitizePlayerName(next.name, "");
+    if (!["male", "female"].includes(next.gender)) delete next.gender;
+    if (!playerProfessionsById[next.professionId]) delete next.professionId;
+    if (!playerPersonalitiesById[next.personalityId]) delete next.personalityId;
+    return next;
+  }
+
+  function normalizePlayerProfile(profile) {
+    if (!profile || typeof profile !== "object") return null;
+    const profession = playerProfessionsById[profile.professionId];
+    const personality = playerPersonalitiesById[profile.personalityId];
+    const gender = ["male", "female"].includes(profile.gender) ? profile.gender : null;
+    if (!profession || !personality || !gender) return null;
+    return {
+      name: sanitizePlayerName(profile.name, "無名者"),
+      gender,
+      professionId: profession.id,
+      personalityId: personality.id,
+      cardIds: [...profession.cardIds, personality.cardId]
+    };
+  }
+
+  function sanitizePlayerName(value, fallback = "無名者") {
+    const cleaned = String(value || "").replace(/\s+/g, " ").trim().slice(0, 12);
+    return cleaned || fallback;
+  }
+
+  function sanitizeTeamName(value, fallback = "中洲隊") {
+    const cleaned = String(value || "").replace(/\s+/g, " ").trim().slice(0, 16);
+    return cleaned || fallback;
+  }
+
   function migrateLegacyState(saved) {
     const next = createInitialState();
+    next.version = 4;
+    next.teamName = "中洲隊";
+    next.playerProfile = null;
+    next.onboarding = { stage: "complete", completed: true, draft: {} };
     const clears = Number(saved.clears || 0);
     next.screen = "hub";
     next.pending = null;
@@ -137,9 +208,35 @@
         next.deck.push(makeDeckEntry(next, cardId, null));
       }
     });
+    normalizeUniqueDeck(next);
     ensureFormation(next);
     next.log = ["舊存檔已轉換：生化危機視為完成，原有資源與牌組均已保留。"];
     return next;
+  }
+
+  function normalizeUniqueDeck(state) {
+    const kept = [];
+    const uniqueByCardId = new Map();
+    state.deck.forEach((entry) => {
+      const card = cardsById[entry.cardId];
+      if (!card || card.category !== "general" || isRepeatableCard(entry.cardId)) {
+        kept.push(entry);
+        return;
+      }
+      const existing = uniqueByCardId.get(entry.cardId);
+      if (!existing) {
+        uniqueByCardId.set(entry.cardId, entry);
+        kept.push(entry);
+        return;
+      }
+      existing.upgraded = Boolean(existing.upgraded || entry.upgraded || card.upgrade);
+    });
+    state.deck = kept;
+    state.curses = state.deck.filter((entry) => cardsById[entry.cardId]?.category === "curse").map((entry) => entry.instanceId);
+    if (state.run?.acquiredDeckIds) {
+      const keptIds = new Set(state.deck.map((entry) => entry.instanceId));
+      state.run.acquiredDeckIds = state.run.acquiredDeckIds.filter((id) => keptIds.has(id));
+    }
   }
 
   function normalizeCharacter(member) {
@@ -156,13 +253,147 @@
     };
   }
 
+  function normalizePartyMember(member, playerProfile) {
+    const normalized = normalizeCharacter(member);
+    if (member.id !== "player-avatar" || !playerProfile) return normalized;
+    const player = makePlayerCharacter(playerProfile, normalized.active);
+    return {
+      ...normalized,
+      name: player.name,
+      role: player.role,
+      maxHp: player.maxHp,
+      hp: clamp(Number(member.hp ?? player.maxHp), 0, player.maxHp),
+      stress: clamp(Number(member.stress ?? player.stress), 0, 100),
+      energyContribution: player.energyContribution,
+      passiveText: player.passiveText,
+      signatureCardId: player.signatureCardId,
+      playerProfile: clone(playerProfile)
+    };
+  }
+
   function makeCharacter(id, active) {
     const base = charactersById[id];
     return { ...clone(base), hp: base.maxHp, block: 0, evade: 0, active: Boolean(active) };
   }
 
-  function makeDeckEntry(state, cardId, acquiredRunId, upgraded) {
-    return { instanceId: uid(state, "deck"), cardId, upgraded: Boolean(upgraded), acquiredRunId: acquiredRunId || null };
+  function makePlayerCharacter(profile, active) {
+    const profession = playerProfessionsById[profile.professionId] || data.playerProfessions[0];
+    const personality = playerPersonalitiesById[profile.personalityId] || data.playerPersonalities[0];
+    const base = makeCharacter("player-avatar", active);
+    return {
+      ...base,
+      name: profile.name,
+      role: profession.role,
+      maxHp: profession.maxHp,
+      hp: profession.maxHp,
+      stress: profession.stress,
+      energyContribution: profession.energyContribution,
+      passiveText: `${profession.name} · ${personality.name}：${profession.passiveText}`,
+      signatureCardId: personality.cardId,
+      playerProfile: clone(profile)
+    };
+  }
+
+  function answerMainGodInvite(state, answer) {
+    const next = clone(state);
+    if (next.screen !== "onboarding" || next.onboarding?.stage !== "invite") return next;
+    next.onboarding.stage = answer === "yes" ? "name" : "ordinary-ending";
+    next.onboarding.draft = next.onboarding.draft || {};
+    next.log = appendLog(next.log, answer === "yes" ? "你按下了 Yes。" : "你按下了 No，螢幕恢復寂靜。");
+    return next;
+  }
+
+  function restartOnboarding(state) {
+    const next = clone(state);
+    if (next.screen !== "onboarding") return next;
+    next.onboarding = { stage: "invite", completed: false, draft: {} };
+    next.log = appendLog(next.log, "那個視窗又一次彈了出來。");
+    return next;
+  }
+
+  function setPlayerName(state, name) {
+    const next = clone(state);
+    if (next.screen !== "onboarding" || next.onboarding?.stage !== "name") return next;
+    next.onboarding.draft = { ...(next.onboarding.draft || {}), name: sanitizePlayerName(name, "無名者") };
+    next.onboarding.stage = "gender";
+    return next;
+  }
+
+  function setPlayerGender(state, gender) {
+    const next = clone(state);
+    if (next.screen !== "onboarding" || next.onboarding?.stage !== "gender" || !["male", "female"].includes(gender)) return next;
+    next.onboarding.draft = { ...(next.onboarding.draft || {}), gender };
+    next.onboarding.stage = "profession";
+    return next;
+  }
+
+  function setPlayerProfession(state, professionId) {
+    const next = clone(state);
+    if (next.screen !== "onboarding" || next.onboarding?.stage !== "profession" || !playerProfessionsById[professionId]) return next;
+    next.onboarding.draft = { ...(next.onboarding.draft || {}), professionId };
+    next.onboarding.stage = "personality";
+    return next;
+  }
+
+  function setPlayerPersonality(state, personalityId) {
+    const next = clone(state);
+    if (next.screen !== "onboarding" || next.onboarding?.stage !== "personality" || !playerPersonalitiesById[personalityId]) return next;
+    next.onboarding.draft = { ...(next.onboarding.draft || {}), personalityId };
+    next.onboarding.stage = "confirm";
+    return next;
+  }
+
+  function goToOnboardingStage(state, stage) {
+    const next = clone(state);
+    const allowed = ["name", "gender", "profession", "personality", "confirm"];
+    if (next.screen !== "onboarding" || !allowed.includes(stage)) return next;
+    next.onboarding.stage = stage;
+    return next;
+  }
+
+  function confirmPlayerCreation(state) {
+    const next = clone(state);
+    if (next.screen !== "onboarding" || next.onboarding?.stage !== "confirm") return next;
+    const draft = normalizePlayerDraft(next.onboarding.draft);
+    const profile = normalizePlayerProfile({
+      name: draft.name,
+      gender: draft.gender,
+      professionId: draft.professionId,
+      personalityId: draft.personalityId
+    });
+    if (!profile) return next;
+    const profession = playerProfessionsById[profile.professionId];
+    next.playerProfile = profile;
+    next.onboarding = { stage: "complete", completed: true, draft: {} };
+    next.screen = "story";
+    next.pending = { kind: "tutorial-intro" };
+    next.party = [makePlayerCharacter(profile, true), makeCharacter("zhang-jie", true)];
+    next.deck = profession.cardIds.map((cardId) => makeDeckEntry(next, cardId, null, false, "player-avatar"));
+    next.equipped = {};
+    next.hand = [];
+    next.drawPile = [];
+    next.discardPile = [];
+    next.exhaustedPile = [];
+    next.rewardChoices = [];
+    next.log = [`${profile.name}在白光中醒來。張杰站在車廂另一端，像早就知道你會出現。`];
+    return next;
+  }
+
+  function renameTeam(state, name) {
+    const next = clone(state);
+    if (next.screen !== "hub") return next;
+    const cleaned = sanitizeTeamName(name, "");
+    if (!cleaned) {
+      next.log = appendLog(next.log, "隊名沒有改變。");
+      return next;
+    }
+    next.teamName = cleaned;
+    next.log = appendLog(next.log, `隊伍名稱已改為「${cleaned}」。`);
+    return next;
+  }
+
+  function makeDeckEntry(state, cardId, acquiredRunId, upgraded, ownerId) {
+    return { instanceId: uid(state, "deck"), cardId, upgraded: Boolean(upgraded), acquiredRunId: acquiredRunId || null, ownerId: ownerId || null };
   }
 
   function makeEquipmentEntry(state, equipmentId, acquiredRunId) {
@@ -234,7 +465,7 @@
       }
     }
     if (state.campaign.infiniteUnlocked && pool.length < 3) {
-      pool = data.characters.filter((item) => !item.tutorialOnly && !owned.has(item.id) && !legendaryIds.has(item.id)).map((item) => item.id);
+      pool = data.characters.filter((item) => !item.tutorialOnly && !item.playerOnly && !owned.has(item.id) && !legendaryIds.has(item.id)).map((item) => item.id);
     }
     if (legendaryEligible) {
       const legendaryPool = (data.legendaryRecruitmentPool || []).filter((id) => !owned.has(id));
@@ -271,7 +502,7 @@
     if (!charactersById[characterId] || state.party.some((member) => member.id === characterId)) return;
     const active = getActiveParty(state).length < 3;
     state.party.push(makeCharacter(characterId, active));
-    state.log = appendLog(state.log, `${charactersById[characterId].name}加入中洲隊。`);
+    state.log = appendLog(state.log, `${charactersById[characterId].name}加入${teamLabel(state)}。`);
   }
 
   function launchRun(state, scenarioId, infinite) {
@@ -305,6 +536,7 @@
 
   function generateMap(state, scenario) {
     const randomTypes = ["battle", "battle", "elite", "event", "treasure"];
+    const hellBossPool = Array.isArray(scenario.hellBossPool) && scenario.hellBossPool.length ? scenario.hellBossPool : null;
     const layers = [];
     for (let layer = 1; layer <= 8; layer += 1) {
       const nodes = [];
@@ -315,10 +547,11 @@
         if (layer === 5) type = "camp";
         if (layer === 8) type = "boss";
         let encounterId = null;
-        if (type === "battle") encounterId = randomChoice(state, scenario.normal);
-        if (type === "elite") encounterId = randomChoice(state, scenario.elite);
-        if (type === "miniboss") encounterId = scenario.miniboss;
-        if (type === "boss") encounterId = scenario.boss;
+        if (hellBossPool && ["battle", "elite", "miniboss", "boss"].includes(type)) encounterId = randomChoice(state, hellBossPool);
+        else if (type === "battle") encounterId = randomChoice(state, scenario.normal);
+        else if (type === "elite") encounterId = randomChoice(state, scenario.elite);
+        else if (type === "miniboss") encounterId = scenario.miniboss;
+        else if (type === "boss") encounterId = scenario.boss;
         nodes.push({ id: `layer-${layer}-lane-${lane}`, layer, lane, type, encounterId, completed: false });
       }
       layers.push(nodes);
@@ -378,7 +611,7 @@
     state.discardPile = [];
     state.exhaustedPile = [];
     state.combatFlags = { lastChanceUsed: [], bondTriggers: [] };
-    const permanent = state.deck.map((entry) => makeCombatCard(state, entry.cardId, null, entry.upgraded, entry.instanceId));
+    const permanent = state.deck.map((entry) => makeCombatCard(state, entry.cardId, entry.ownerId || null, entry.upgraded, entry.instanceId));
     const signatures = getAliveActiveParty(state).map((member) => makeCombatCard(
       state,
       member.signatureCardId,
@@ -571,7 +804,7 @@
     if (getAliveActiveParty(next).length === 0) {
       next.screen = "defeat";
       next.pending = { kind: "defeat" };
-      next.log = appendLog(next.log, "中洲隊全員失去戰鬥能力。");
+      next.log = appendLog(next.log, `${teamLabel(next)}全員失去戰鬥能力。`);
       return next;
     }
     return startPlayerTurn(next);
@@ -599,7 +832,7 @@
       return state;
     }
     state.screen = "reward";
-    state.rewardChoices = chooseCardRewards(state, encounter.tier === "elite" || encounter.tier === "miniboss" ? 4 : 3);
+    state.rewardChoices = chooseCardRewards(state, encounter.tier === "elite" || encounter.tier === "miniboss" ? 4 : 3, encounter.tier || node.type);
     state.pending = { kind: "combat-reward" };
     return state;
   }
@@ -623,7 +856,7 @@
     if (!state.equipmentInventory.some((item) => item.equipmentId === "infinite-desert-eagle")) {
       state.equipmentInventory.push(makeEquipmentEntry(state, "infinite-desert-eagle", null));
     }
-    state.log = appendLog(state.log, "張杰完成引導後離開隊伍。異形劇本已開放。");
+    state.log = appendLog(state.log, "張杰完成引導後離開隊伍。異形劇本已開放，鄭吒也可能在後續集結中加入隊伍。");
     return returnToHubWithRepair(state);
   }
 
@@ -642,7 +875,8 @@
         const item = makeEquipmentEntry(next, "infinite-desert-eagle", next.run.id);
         next.equipmentInventory.push(item);
         next.run.acquiredEquipmentIds.push(item.instanceId);
-        next.equipped["zheng-zha"] = item.instanceId;
+        const leaderId = getLeaderId(next);
+        if (leaderId) next.equipped[leaderId] = item.instanceId;
       }
       if (optionId === "rest") healActive(next, 0.25, 12);
       next.pending = null;
@@ -679,7 +913,7 @@
     state.deck.forEach((entry) => { if (entry.acquiredRunId === state.run.id) entry.acquiredRunId = null; });
     state.equipmentInventory.forEach((entry) => { if (entry.acquiredRunId === state.run.id) entry.acquiredRunId = null; });
     if (!state.campaign.completedScenarios.includes(scenarioId)) state.campaign.completedScenarios.push(scenarioId);
-    const nextScenario = { alien: "juon", juon: "mummy-curse", "mummy-curse": "jurassic-island", "jurassic-island": "abyssal-ark", "abyssal-ark": "evernight-castle", "evernight-castle": "demon-frontier", "demon-frontier": "main-god-trial", "main-god-trial": "starship-troopers", "starship-troopers": "avp-pyramid", "avp-pyramid": "nightmare-elm", "nightmare-elm": "lotr-war", "lotr-war": "rumbling-finale", "rumbling-finale": "infinity-castle", "infinity-castle": "naruto-final-valley", "naruto-final-valley": "bleach-false-karakura", "bleach-false-karakura": "gintama-yoshiwara", "gintama-yoshiwara": "gintama-final-war", "gintama-final-war": "avengers-new-york", "avengers-new-york": "batman-v-superman", "batman-v-superman": "devil-may-cry-5", "devil-may-cry-5": "final-destination", "final-destination": "jinyong-heroic-peak" }[scenarioId];
+    const nextScenario = { alien: "juon", juon: "mummy-curse", "mummy-curse": "jurassic-island", "jurassic-island": "abyssal-ark", "abyssal-ark": "evernight-castle", "evernight-castle": "demon-frontier", "demon-frontier": "main-god-trial", "main-god-trial": "starship-troopers", "starship-troopers": "avp-pyramid", "avp-pyramid": "nightmare-elm", "nightmare-elm": "lotr-war", "lotr-war": "rumbling-finale", "rumbling-finale": "infinity-castle", "infinity-castle": "naruto-final-valley", "naruto-final-valley": "bleach-false-karakura", "bleach-false-karakura": "gintama-yoshiwara", "gintama-yoshiwara": "gintama-final-war", "gintama-final-war": "avengers-new-york", "avengers-new-york": "batman-v-superman", "batman-v-superman": "devil-may-cry-5", "devil-may-cry-5": "final-destination", "final-destination": "jinyong-heroic-peak", "jinyong-heroic-peak": "pacific-rim-breach", "pacific-rim-breach": "fury-road-war-rig", "fury-road-war-rig": "resident-evil-6-c-virus", "resident-evil-6-c-virus": "elden-ring-hell-run" }[scenarioId];
     if (nextScenario && !state.campaign.unlockedScenarios.includes(nextScenario)) state.campaign.unlockedScenarios.push(nextScenario);
     if (scenarioId === "batman-v-superman") state.campaign.infiniteUnlocked = true;
     if (state.run.sourceScenarioId === "infinite") state.campaign.infiniteTier += 1;
@@ -816,7 +1050,7 @@
     state.activeEncounterId = null;
     state.activeEnemies = [];
     clearCombatPiles(state);
-    state.log = appendLog(state.log, `鄭吒：「主神全隊恢復，獎勵點數由我這裡扣除！」修復支付 ${paid}/${fullCost} 點。`);
+    state.log = appendLog(state.log, `主神修復完成：${teamLabel(state)}支付 ${paid}/${fullCost} 點。`);
     return state;
   }
 
@@ -859,12 +1093,18 @@
     if (next.screen !== "hub") return next;
     const item = shopById[shopId];
     const bought = next.purchased[shopId] || 0;
-    if (!item || bought >= item.stock || next.rewardPoints < item.rewardPointCost || next.sideStories < Number(item.sideStoryCost || 0)) return next;
+    if (!item || next.rewardPoints < item.rewardPointCost || next.sideStories < Number(item.sideStoryCost || 0)) return next;
+    const card = item.kind === "card" ? cardsById[item.itemId] : null;
+    const repeatableCard = item.kind === "card" && isRepeatableCard(item.itemId);
+    const ownedCard = item.kind === "card" ? findOwnedCardEntry(next, item.itemId) : null;
+    const maxedUniqueCard = item.kind === "card" && card?.category === "general" && !repeatableCard && ownedCard && (ownedCard.upgraded || !card.upgrade);
+    if ((item.kind !== "card" || repeatableCard) && bought >= item.stock) return next;
+    if (maxedUniqueCard) return next;
     if (item.kind === "equipment" && next.equipmentInventory.some((entry) => entry.equipmentId === item.itemId)) return next;
     next.rewardPoints -= item.rewardPointCost;
     next.sideStories -= Number(item.sideStoryCost || 0);
     next.purchased[shopId] = bought + 1;
-    if (item.kind === "card") next.deck.push(makeDeckEntry(next, item.itemId, null));
+    if (item.kind === "card") grantOrUpgradeCard(next, item.itemId, null);
     if (item.kind === "equipment") next.equipmentInventory.push(makeEquipmentEntry(next, item.itemId, null));
     return next;
   }
@@ -955,9 +1195,7 @@
   }
 
   function addRunCard(state, cardId) {
-    const entry = makeDeckEntry(state, cardId, state.run?.id || null);
-    state.deck.push(entry);
-    if (state.run) state.run.acquiredDeckIds.push(entry.instanceId);
+    return grantOrUpgradeCard(state, cardId, state.run?.id || null);
   }
 
   function addRunEquipment(state, equipmentId) {
@@ -970,9 +1208,55 @@
     if (state.run) state.run.acquiredEquipmentIds.push(entry.instanceId);
   }
 
-  function chooseCardRewards(state, count) {
-    const pool = data.cards.filter((card) => card.category === "general" && card.rarity !== "starter");
-    return takeRandom(state, pool, count);
+  function isRepeatableCard(cardId) {
+    return repeatableCardIds.has(cardId);
+  }
+
+  function findOwnedCardEntry(state, cardId) {
+    return state.deck.find((entry) => entry.cardId === cardId);
+  }
+
+  function isUniqueCardMaxed(state, cardId) {
+    const card = cardsById[cardId];
+    if (!card || card.category !== "general" || isRepeatableCard(cardId)) return false;
+    const owned = findOwnedCardEntry(state, cardId);
+    return Boolean(owned && (owned.upgraded || !card.upgrade));
+  }
+
+  function isCardRewardAvailable(state, cardId) {
+    const card = cardsById[cardId];
+    if (!card || card.category !== "general") return false;
+    if (isRepeatableCard(cardId)) return true;
+    return !isUniqueCardMaxed(state, cardId);
+  }
+
+  function grantOrUpgradeCard(state, cardId, acquiredRunId) {
+    const card = cardsById[cardId];
+    if (!card) return null;
+    if (card.category === "general" && !isRepeatableCard(cardId)) {
+      const owned = findOwnedCardEntry(state, cardId);
+      if (owned) {
+        if (!owned.upgraded && card.upgrade) {
+          owned.upgraded = true;
+          return { action: "upgrade", entry: owned };
+        }
+        return { action: "max", entry: owned };
+      }
+    }
+    const entry = makeDeckEntry(state, cardId, acquiredRunId);
+    state.deck.push(entry);
+    if (state.run && acquiredRunId === state.run.id) state.run.acquiredDeckIds.push(entry.instanceId);
+    return { action: "add", entry };
+  }
+
+  function chooseCardRewards(state, count, tier = "battle") {
+    const rareTier = tier === "elite" || tier === "miniboss";
+    const allowedRarities = rareTier ? new Set(["common", "uncommon", "rare"]) : new Set(["common", "uncommon"]);
+    const pool = data.cards.filter((card) => card.category === "general" && allowedRarities.has(card.rarity) && isCardRewardAvailable(state, card.id));
+    if (!rareTier) return takeRandom(state, pool, count);
+    const rareChoice = takeRandom(state, pool.filter((card) => card.rarity === "rare"), 1);
+    const rareIds = new Set(rareChoice.map((card) => card.id));
+    return [...rareChoice, ...takeRandom(state, pool.filter((card) => !rareIds.has(card.id)), Math.max(0, count - rareChoice.length))];
   }
 
   function chooseEquipmentRewards(state, count) {
@@ -980,14 +1264,22 @@
     return takeRandom(state, data.equipment.filter((item) => !owned.has(item.id)), count);
   }
 
+  function chooseEquipmentRewardsByRarity(state, count, rarities) {
+    const owned = new Set(state.equipmentInventory.map((entry) => entry.equipmentId));
+    const raritySet = new Set(rarities);
+    return takeRandom(state, data.equipment.filter((item) => !owned.has(item.id) && raritySet.has(item.rarity)), count);
+  }
+
   function chooseBossRewards(state) {
-    const rare = takeRandom(state, data.cards.filter((card) => card.category === "general" && card.rarity === "rare"), 1)[0];
-    const equipment = chooseEquipmentRewards(state, 1)[0] || randomChoice(state, data.equipment);
+    const rarePool = data.cards.filter((card) => card.category === "general" && card.rarity === "rare" && isCardRewardAvailable(state, card.id));
+    const fallbackPool = data.cards.filter((card) => card.category === "general" && card.rarity !== "starter" && isCardRewardAvailable(state, card.id));
+    const rare = takeRandom(state, rarePool.length ? rarePool : fallbackPool, 1)[0];
+    const equipment = chooseEquipmentRewardsByRarity(state, 1, ["legendary"])[0] || chooseEquipmentRewards(state, 1)[0] || randomChoice(state, data.equipment);
     return [
-      { id: `boss-card-${rare.id}`, kind: "card", itemId: rare.id, name: rare.name, text: rare.text },
+      rare ? { id: `boss-card-${rare.id}`, kind: "card", itemId: rare.id, name: rare.name, text: rare.text } : null,
       { id: `boss-equipment-${equipment.id}`, kind: "equipment", itemId: equipment.id, name: equipment.name, text: equipment.text },
       { id: "boss-upgrade-token", kind: "upgrade", itemId: null, name: "永久強化券", text: "獲得 1 枚強化券，可在主神空間免費購買一次永久強化。" }
-    ];
+    ].filter(Boolean);
   }
 
   function applyTurnStartPassives(state) {
@@ -1072,7 +1364,10 @@
     if (card.stunAll) getLivingEnemies(state).forEach((enemy) => addEnemyStatus(state, enemy.uid, "stun", card.stunAll));
     if (card.weakTarget && target) addEnemyStatus(state, target.uid, "weak", card.weakTarget);
     if (card.weakAll) getLivingEnemies(state).forEach((enemy) => addEnemyStatus(state, enemy.uid, "weak", card.weakAll));
-    if (card.evadeOwner && ownerId) updateMember(state, ownerId, (member) => ({ ...member, evade: Number(member.evade || 0) + card.evadeOwner }));
+    if (card.evadeOwner) {
+      const evadeOwnerId = ownerId || getLeaderId(state);
+      if (evadeOwnerId) updateMember(state, evadeOwnerId, (member) => ({ ...member, evade: Number(member.evade || 0) + card.evadeOwner }));
+    }
     if (card.evadeAll) affectAliveActive(state, (member) => ({ ...member, evade: Number(member.evade || 0) + card.evadeAll }));
     if (card.reduceStress) affectAliveActive(state, (member) => ({ ...member, stress: Math.max(0, member.stress - card.reduceStress) }));
     if (card.addStress) affectAliveActive(state, (member) => ({ ...member, stress: clamp(member.stress + card.addStress, 0, 100) }));
@@ -1337,6 +1632,14 @@
     return state.party.filter((member) => member.active);
   }
 
+  function getLeaderId(state) {
+    return state.party.find((member) => member.id === "player-avatar")?.id
+      || state.party.find((member) => member.id === "zheng-zha")?.id
+      || getActiveParty(state)[0]?.id
+      || state.party[0]?.id
+      || null;
+  }
+
   function getAliveActiveParty(state) {
     return getActiveParty(state).filter((member) => member.hp > 0);
   }
@@ -1479,6 +1782,10 @@
     if (campaign.completedScenarios.includes("batman-v-superman")) unlock("devil-may-cry-5");
     if (campaign.completedScenarios.includes("devil-may-cry-5")) unlock("final-destination");
     if (campaign.completedScenarios.includes("final-destination")) unlock("jinyong-heroic-peak");
+    if (campaign.completedScenarios.includes("jinyong-heroic-peak")) unlock("pacific-rim-breach");
+    if (campaign.completedScenarios.includes("pacific-rim-breach")) unlock("fury-road-war-rig");
+    if (campaign.completedScenarios.includes("fury-road-war-rig")) unlock("resident-evil-6-c-virus");
+    if (campaign.completedScenarios.includes("resident-evil-6-c-virus")) unlock("elden-ring-hell-run");
     if (campaign.completedScenarios.includes("batman-v-superman")) campaign.infiniteUnlocked = true;
   }
 
@@ -1522,6 +1829,10 @@
     return [...(log || []), message].slice(-maxLog);
   }
 
+  function teamLabel(state) {
+    return sanitizeTeamName(state?.teamName || "中洲隊", "中洲隊");
+  }
+
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
   }
@@ -1529,6 +1840,15 @@
   global.MainGodCore = {
     createInitialState,
     normalizeState,
+    answerMainGodInvite,
+    restartOnboarding,
+    setPlayerName,
+    setPlayerGender,
+    setPlayerProfession,
+    setPlayerPersonality,
+    goToOnboardingStage,
+    confirmPlayerCreation,
+    renameTeam,
     beginTutorial,
     beginScenario,
     chooseRecruit,
@@ -1564,6 +1884,14 @@
     isNodeAvailable,
     isAlive,
     effectiveCard,
+    isRepeatableCard,
+    findOwnedCardEntry,
+    isUniqueCardMaxed,
+    isCardRewardAvailable,
+    grantOrUpgradeCard,
+    chooseCardRewards,
+    chooseEquipmentRewards,
+    chooseBossRewards,
     cardsById,
     charactersById,
     equipmentById,

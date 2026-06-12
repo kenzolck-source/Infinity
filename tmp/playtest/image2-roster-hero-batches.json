@@ -1,0 +1,70 @@
+[
+  {
+    "index": 1,
+    "grid": 2,
+    "assets": [
+      { "fileName": "roster-hero-main.png", "name": "中洲隊角色整備 Hero" },
+      { "fileName": "roster-hero-demon.png", "name": "惡魔隊角色整備 Hero" },
+      { "fileName": "roster-hero-celestial.png", "name": "天神隊角色整備 Hero" },
+      { "fileName": "roster-hero-south.png", "name": "南炎洲隊角色整備 Hero" }
+    ]
+  },
+  {
+    "index": 2,
+    "grid": 2,
+    "assets": [
+      { "fileName": "roster-hero-north.png", "name": "北冰洲隊角色整備 Hero" },
+      { "fileName": "roster-hero-india.png", "name": "印洲隊角色整備 Hero" },
+      { "fileName": "roster-hero-west.png", "name": "西海隊角色整備 Hero" },
+      { "fileName": "roster-hero-forest.png", "name": "森洲隊角色整備 Hero" }
+    ]
+  },
+  {
+    "index": 3,
+    "grid": 2,
+    "assets": [
+      { "fileName": "roster-hero-devil-hunter.png", "name": "惡魔獵人角色整備 Hero" },
+      { "fileName": "roster-hero-gintama.png", "name": "銀魂角色整備 Hero" },
+      { "fileName": "roster-hero-avengers.png", "name": "復仇者角色整備 Hero" },
+      { "fileName": "roster-hero-justice-dawn.png", "name": "正義黎明角色整備 Hero" }
+    ]
+  },
+  {
+    "index": 4,
+    "grid": 2,
+    "assets": [
+      { "fileName": "roster-hero-pacific-rim.png", "name": "環太平洋角色整備 Hero" },
+      { "fileName": "roster-hero-fury-road.png", "name": "狂怒公路角色整備 Hero" },
+      { "fileName": "roster-hero-re6.png", "name": "生化危機6角色整備 Hero" },
+      { "fileName": "roster-hero-elden-ring.png", "name": "艾爾登法環角色整備 Hero" }
+    ]
+  },
+  {
+    "index": 5,
+    "grid": 2,
+    "assets": [
+      { "fileName": "roster-hero-demon-slayer.png", "name": "鬼滅之刃角色整備 Hero" },
+      { "fileName": "roster-hero-naruto.png", "name": "火影忍者角色整備 Hero" },
+      { "fileName": "roster-hero-one-piece.png", "name": "海賊王角色整備 Hero" },
+      { "fileName": "roster-hero-dragon-ball.png", "name": "龍珠角色整備 Hero" }
+    ]
+  },
+  {
+    "index": 6,
+    "grid": 2,
+    "assets": [
+      { "fileName": "roster-hero-battle-through-heavens.png", "name": "鬥破蒼穹角色整備 Hero" },
+      { "fileName": "roster-hero-bleach.png", "name": "死神角色整備 Hero" },
+      { "fileName": "roster-hero-fullmetal-alchemist.png", "name": "鋼之鍊金術師角色整備 Hero" },
+      { "fileName": "roster-hero-attack-on-titan.png", "name": "進擊的巨人角色整備 Hero" }
+    ]
+  },
+  {
+    "index": 7,
+    "grid": 2,
+    "assets": [
+      { "fileName": "roster-hero-hunter.png", "name": "獵人角色整備 Hero" },
+      { "fileName": "roster-hero-sword-art-online.png", "name": "刀劍神域角色整備 Hero" }
+    ]
+  }
+]

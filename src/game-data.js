@@ -1,5 +1,6 @@
 (function (global) {
   const characters = [
+    { id: "player-avatar", name: "無名者", role: "自創輪迴者", faction: "中洲隊", factionId: "main", maxHp: 66, stress: 10, energyContribution: 1, passiveId: "player-origin", passiveText: "被主神記錄的人，從普通人生裡帶來第一組求生本能。", signatureCardId: "player-personality-calm", unlock: "tutorial", playerOnly: true },
     { id: "zheng-zha", name: "鄭吒", role: "基因鎖戰士", maxHp: 82, stress: 12, energyContribution: 1, passiveId: "first-attack", passiveText: "每回合第一張攻擊牌傷害 +5。", signatureCardId: "blood-awakening", unlock: "tutorial" },
     { id: "zhang-jie", name: "張杰", role: "引導者", maxHp: 120, stress: 0, energyContribution: 3, passiveId: "mentor-guard", passiveText: "回合開始全隊獲得 8 護甲並降低 2 壓力。", signatureCardId: "mentor-demo", unlock: "tutorial", tutorialOnly: true },
     { id: "zhan-lan", name: "詹嵐", role: "精神力輔助", maxHp: 58, stress: 12, energyContribution: 1, passiveId: "turn-stress-relief", passiveText: "回合開始時全隊壓力 -2。", signatureCardId: "mental-link", unlock: "alien" },
@@ -73,13 +74,111 @@
     { id: "clint-barton", name: "克林特·巴頓", role: "鷹眼精準射手", faction: "復仇者", factionId: "avengers", maxHp: 86, stress: 11, energyContribution: 2, passiveId: "first-ranged-pierce", passiveText: "每回合第一張攻擊牌傷害 +4。鷹眼會把第一箭射進最薄的裝甲縫隙。", signatureCardId: "hawkeye-trick-shot", unlock: "avengers-new-york" },
     { id: "clark-kent-superman", name: "克拉克·肯特", role: "氪星之子", faction: "正義黎明", factionId: "justice-dawn", maxHp: 134, stress: 10, energyContribution: 2, passiveId: "first-heavy-attack", passiveText: "每回合第一張費用 2 以上的攻擊牌傷害 +6。太陽能量會把正面衝擊推成壓倒性破口。", signatureCardId: "superman-heat-vision-dive", unlock: "batman-v-superman" },
     { id: "bruce-wayne-batman", name: "布魯斯·韋恩", role: "黑暗騎士戰術家", faction: "正義黎明", factionId: "justice-dawn", maxHp: 98, stress: 14, energyContribution: 2, passiveId: "first-tactic-discount", passiveText: "每回合第一張戰術牌費用 -1，最低為 0。蝙蝠洞預案會把恐懼變成可執行步驟。", signatureCardId: "batman-kryptonite-trap", unlock: "batman-v-superman" },
-    { id: "diana-prince-wonder-woman", name: "黛安娜·普林斯", role: "亞馬遜神戰士", faction: "正義黎明", factionId: "justice-dawn", maxHp: 118, stress: 8, energyContribution: 2, passiveId: "second-card-strike", passiveText: "每回合打出第二張牌時，追加 5 點傷害。亞馬遜戰技擅長在敵人失衡時切入。", signatureCardId: "wonder-woman-lasso-smite", unlock: "batman-v-superman" }
+    { id: "diana-prince-wonder-woman", name: "黛安娜·普林斯", role: "亞馬遜神戰士", faction: "正義黎明", factionId: "justice-dawn", maxHp: 118, stress: 8, energyContribution: 2, passiveId: "second-card-strike", passiveText: "每回合打出第二張牌時，追加 5 點傷害。亞馬遜戰技擅長在敵人失衡時切入。", signatureCardId: "wonder-woman-lasso-smite", unlock: "batman-v-superman" },
+    { id: "raleigh-becket", name: "羅利·貝克特", role: "危險流浪者駕駛", faction: "環太平洋", factionId: "pacific-rim", maxHp: 108, stress: 14, energyContribution: 2, passiveId: "first-heavy-attack", passiveText: "每回合第一張費用 2 以上的攻擊牌傷害 +6。神經共感會把重擊壓成機甲正拳。", signatureCardId: "gipsy-danger-plasma-caster", unlock: "pacific-rim-breach" },
+    { id: "mako-mori", name: "森真子", role: "神經共感駕駛", faction: "環太平洋", factionId: "pacific-rim", maxHp: 96, stress: 8, energyContribution: 2, passiveId: "first-tactic-discount", passiveText: "每回合第一張戰術牌費用 -1，最低為 0。她能在漂移雜訊裡抓住真正的反擊窗口。", signatureCardId: "mako-drift-counter", unlock: "pacific-rim-breach" },
+    { id: "stacker-pentecost", name: "史塔克·潘特考斯特", role: "破碎穹頂指揮官", faction: "環太平洋", factionId: "pacific-rim", maxHp: 112, stress: 9, energyContribution: 2, passiveId: "opening-forecast", passiveText: "每場戰鬥第一回合額外抽 2 張牌。最後的命令會在怪獸登陸前先抵達。", signatureCardId: "pentecost-final-march", unlock: "pacific-rim-breach" },
+    { id: "herc-hansen", name: "赫克·韓森", role: "尤里卡突擊駕駛", faction: "環太平洋", factionId: "pacific-rim", maxHp: 104, stress: 12, energyContribution: 2, passiveId: "first-attack-pierce", passiveText: "每回合第一張攻擊牌穿透敵方護甲。尤里卡的導彈會先打穿最厚的甲殼。", signatureCardId: "striker-eureka-missile-run", unlock: "pacific-rim-breach" },
+    { id: "max-rockatansky", name: "麥斯·洛克坦斯基", role: "荒原求生者", faction: "狂怒公路", factionId: "fury-road", maxHp: 100, stress: 20, energyContribution: 2, passiveId: "last-chance", passiveText: "每場戰鬥首次受到致命傷害時保留 1 生命。荒原上的活路通常只剩最後一口氣。", signatureCardId: "max-shotgun-road-duel", unlock: "fury-road-war-rig" },
+    { id: "imperator-furiosa", name: "芙莉歐莎", role: "戰爭車隊指揮", faction: "狂怒公路", factionId: "fury-road", maxHp: 110, stress: 10, energyContribution: 2, passiveId: "front-guard", passiveText: "回合開始時，前排與生命比例最低的隊員獲得 4 護甲。戰爭車會把隊伍重新推回正面。", signatureCardId: "furiosa-war-rig-breakthrough", unlock: "fury-road-war-rig" },
+    { id: "nux-war-boy", name: "納克斯", role: "戰爭男孩突擊手", faction: "狂怒公路", factionId: "fury-road", maxHp: 92, stress: 24, energyContribution: 2, passiveId: "opening-overdrive", passiveText: "每場戰鬥第一回合額外獲得 2 能量，但自身壓力 +8。他會把死亡衝鋒當成開場白。", signatureCardId: "nux-witness-me-charge", unlock: "fury-road-war-rig" },
+    { id: "capable", name: "卡帕布", role: "荒原救援者", faction: "狂怒公路", factionId: "fury-road", maxHp: 84, stress: 8, energyContribution: 1, passiveId: "turn-stress-relief", passiveText: "回合開始時全隊壓力 -2。她能在狂熱追逐裡留下仍像人的聲音。", signatureCardId: "capable-redemption-signal", unlock: "fury-road-war-rig" },
+    { id: "leon-kennedy", name: "里昂·S·甘迺迪", role: "總統特勤生還者", faction: "生化危機6", factionId: "re6", maxHp: 106, stress: 11, energyContribution: 2, passiveId: "first-attack-pierce", passiveText: "每回合第一張攻擊牌穿透敵方護甲。特勤訓練會先打穿感染體的衝鋒點。", signatureCardId: "leon-wing-shooter-quickshot", unlock: "resident-evil-6-c-virus" },
+    { id: "helena-harper", name: "海蓮娜·哈珀", role: "特勤霰彈突入手", faction: "生化危機6", factionId: "re6", maxHp: 96, stress: 13, energyContribution: 2, passiveId: "first-attack-splash", passiveText: "每回合第一張單體攻擊牌，對其他敵人造成 3 點傷害。海德拉霰彈會把包圍線一起震開。", signatureCardId: "helena-hydra-breaker", unlock: "resident-evil-6-c-virus" },
+    { id: "chris-redfield", name: "克里斯·雷德菲爾", role: "BSAA突擊隊長", faction: "生化危機6", factionId: "re6", maxHp: 118, stress: 16, energyContribution: 2, passiveId: "front-guard", passiveText: "回合開始時，前排與生命比例最低的隊員獲得 4 護甲。BSAA隊長會把槍線壓回正面。", signatureCardId: "chris-bsaa-fireline", unlock: "resident-evil-6-c-virus" },
+    { id: "piers-nivans", name: "皮爾斯·尼凡斯", role: "BSAA精準狙擊手", faction: "生化危機6", factionId: "re6", maxHp: 88, stress: 14, energyContribution: 2, passiveId: "first-heavy-attack", passiveText: "每回合第一張費用 2 以上的攻擊牌傷害 +6。皮爾斯會把重火力壓到最脆弱的核心。", signatureCardId: "piers-anti-materiel-sacrifice", unlock: "resident-evil-6-c-virus" },
+    { id: "jake-muller", name: "傑克·穆勒", role: "抗體血脈格鬥者", faction: "生化危機6", factionId: "re6", maxHp: 112, stress: 18, energyContribution: 2, passiveId: "status-exploit", passiveText: "攻擊帶有負面狀態的敵人時，傷害 +6。威斯卡血脈會追著病毒弱點打。", signatureCardId: "jake-wesker-blood-combo", unlock: "resident-evil-6-c-virus" },
+    { id: "sherry-birkin", name: "雪莉·柏金", role: "G病毒再生者", faction: "生化危機6", factionId: "re6", maxHp: 92, stress: 8, energyContribution: 2, passiveId: "turn-heal-lowest", passiveText: "回合開始時，治療生命比例最低的隊員 3 點生命。她的再生能力會穩住最危險的傷口。", signatureCardId: "sherry-g-virus-regeneration", unlock: "resident-evil-6-c-virus" },
+    { id: "ada-wong", name: "艾達·王", role: "紅衣弩箭特工", faction: "生化危機6", factionId: "re6", maxHp: 90, stress: 9, energyContribution: 2, passiveId: "second-card-strike", passiveText: "每回合打出第二張牌時，追加 5 點傷害。她總在第二個角度開槍。", signatureCardId: "ada-crossbow-shadow", unlock: "resident-evil-6-c-virus" },
+    { id: "bsaa-agent", name: "BSAA特工", role: "合作掩護隊員", faction: "生化危機6", factionId: "re6", maxHp: 94, stress: 10, energyContribution: 1, passiveId: "first-support-draw", passiveText: "每回合第一張支援牌額外抽 1 張牌。合作掩護能把混亂變成下一個射擊窗口。", signatureCardId: "agent-coop-cover-fire", unlock: "resident-evil-6-c-virus" },
+    { id: "tarnished-elden-lord", name: "褪色者", role: "艾爾登之王候選", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 118, stress: 18, energyContribution: 2, passiveId: "opening-overdrive", passiveText: "每場戰鬥第一回合額外獲得 2 能量，但自身壓力 +8。賜福會把第一步推成必須賭命的破局。", signatureCardId: "tarnished-elden-lord-strike", unlock: "elden-ring-hell-run" },
+    { id: "melina-kindling-maiden", name: "梅琳娜", role: "火種引導者", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 88, stress: 7, energyContribution: 2, passiveId: "turn-stress-relief", passiveText: "回合開始時全隊壓力 -2。她的低語會把崩潰邊緣重新拉回賜福旁。", signatureCardId: "melina-kindling-flame", unlock: "elden-ring-hell-run" },
+    { id: "ranni-dark-moon", name: "菈妮", role: "暗月魔女", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 84, stress: 6, energyContribution: 2, passiveId: "first-tactic-discount", passiveText: "每回合第一張戰術牌費用 -1，最低為 0。暗月契約會先改寫敵人的行動軌跡。", signatureCardId: "ranni-dark-moon-rite", unlock: "elden-ring-hell-run" },
+    { id: "blaidd-half-wolf", name: "布萊澤", role: "半狼王劍士", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 108, stress: 12, energyContribution: 2, passiveId: "first-heavy-attack", passiveText: "每回合第一張費用 2 以上的攻擊牌傷害 +6。王室巨劍只需要一次完整揮下。", signatureCardId: "blaidd-royal-greatsword", unlock: "elden-ring-hell-run" },
+    { id: "millicent-valkyrie", name: "米莉森", role: "腐敗劍舞者", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 96, stress: 14, energyContribution: 2, passiveId: "status-exploit", passiveText: "攻擊帶有負面狀態的敵人時，傷害 +6。腐敗之花會逼敵人露出下一個傷口。", signatureCardId: "millicent-scarlet-waterfowl", unlock: "elden-ring-hell-run" },
+    { id: "alexander-warrior-jar", name: "壺戰士亞歷山大", role: "戰士壺", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 122, stress: 10, energyContribution: 1, passiveId: "front-guard", passiveText: "回合開始時，前排與生命比例最低的隊員獲得 4 護甲。戰士壺會把自己頂在最危險的位置。", signatureCardId: "alexander-jar-cannon-charge", unlock: "elden-ring-hell-run" },
+    { id: "black-knife-tiche", name: "黑刀狄希", role: "死亡符文刺客", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 90, stress: 9, energyContribution: 2, passiveId: "second-card-strike", passiveText: "每回合打出第二張牌時，追加 5 點傷害。黑刀會在第二道陰影裡割開生命線。", signatureCardId: "tiche-destined-death", unlock: "elden-ring-hell-run" },
+    { id: "nepheli-loux", name: "涅斐麗·露", role: "風暴斧戰士", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 104, stress: 11, energyContribution: 2, passiveId: "first-attack-splash", passiveText: "每回合第一張單體攻擊牌，對其他敵人造成 3 點傷害。風暴斧會把第一個落點炸成整片缺口。", signatureCardId: "nepheli-stormhawk-axe", unlock: "elden-ring-hell-run" }
+  ];
+
+  const playerProfessions = [
+    { id: "emergency-medic", name: "文員", archetype: "智慧", role: "文員", maxHp: 58, stress: 8, energyContribution: 1, passiveText: "長時間整理表格、文件與突發指令的人，最懂得把混亂分成一格一格處理。", cardIds: ["player-medic-hemostatic-cut", "player-medic-adrenaline-shot", "player-medic-golden-four-minutes"] },
+    { id: "systems-engineer", name: "黑客", archetype: "智慧", role: "黑客", maxHp: 56, stress: 9, energyContribution: 1, passiveText: "習慣在看不見的系統裡找後門，白光降臨後，連恐懼都像一段可拆的程式。", cardIds: ["player-engineer-em-short", "player-engineer-overload-script", "player-engineer-battle-model"] },
+    { id: "criminal-profiler", name: "犯罪側寫師", archetype: "智慧", role: "犯罪側寫師", maxHp: 60, stress: 7, energyContribution: 1, passiveText: "看一眼足跡、停頓與呼吸，就知道下一秒誰會先動。", cardIds: ["player-profiler-weakpoint-mark", "player-profiler-interrogate-rhythm", "player-profiler-behavior-read"] },
+    { id: "archaeologist", name: "平面設計師", archetype: "智慧", role: "平面設計師", maxHp: 60, stress: 10, energyContribution: 1, passiveText: "每天和版面、留白、色塊與 deadline 對峙的人，會本能地找出場景裡最不協調的位置。", cardIds: ["player-archaeologist-stone-toss", "player-archaeologist-symbol-blast", "player-archaeologist-ruin-scan"] },
+    { id: "retired-mercenary", name: "退役傭兵", archetype: "力量", role: "退役傭兵", maxHp: 76, stress: 14, energyContribution: 1, passiveText: "曾經在火線裡找出口的人，聽見槍聲時反而比沉默時更冷靜。", cardIds: ["player-merc-close-burst", "player-merc-breach-sweep", "player-merc-tactical-cover"] },
+    { id: "fire-rescuer", name: "地盤工人", archetype: "力量", role: "地盤工人", maxHp: 78, stress: 12, energyContribution: 1, passiveText: "在棚架、混凝土與噪音裡磨出來的身體，知道哪裡能借力，哪裡會塌。", cardIds: ["player-firefighter-breaching-axe", "player-firefighter-water-jet", "player-firefighter-rescue-line"] },
+    { id: "underground-boxer", name: "地下拳手", archetype: "力量", role: "地下拳手", maxHp: 82, stress: 16, energyContribution: 1, passiveText: "靠身體記住痛覺與距離的人，越接近崩潰，拳頭越像條件反射。", cardIds: ["player-boxer-heavy-open", "player-boxer-rib-break", "player-boxer-hard-guard"] },
+    { id: "parkour-courier", name: "外賣速遞員", archetype: "技巧", role: "外賣速遞員", maxHp: 62, stress: 11, energyContribution: 1, passiveText: "在窄巷、雨夜、升降機與催單聲中穿行的人，對路線有近乎本能的判斷。", cardIds: ["player-courier-wall-kick", "player-courier-slide-throat", "player-courier-extreme-route"] },
+    { id: "stage-magician", name: "便利店收銀員", archetype: "技巧", role: "便利店收銀員", maxHp: 60, stress: 9, energyContribution: 1, passiveText: "在夜班櫃檯後看過太多失眠、醉意與奇怪客人，手比表情更快。", cardIds: ["player-magician-sleeve-knife", "player-magician-flash-point", "player-magician-misdirection"] },
+    { id: "stunt-double", name: "殺手", archetype: "技巧", role: "殺手", maxHp: 66, stress: 13, energyContribution: 1, passiveText: "不問原因，只看距離、光線、出口，以及目標露出的那半秒。", cardIds: ["player-stunt-flip-kick", "player-stunt-wire-counter", "player-stunt-danger-move"] }
+  ];
+
+  const playerPersonalities = [
+    { id: "calm", name: "冷靜", cardId: "player-personality-calm", text: "越危險越能降噪，讓隊伍重新聽見自己的呼吸。" },
+    { id: "hotblood", name: "熱血", cardId: "player-personality-hotblood", text: "恐懼來得越快，衝鋒也越快。" },
+    { id: "cautious", name: "謹慎", cardId: "player-personality-cautious", text: "先留退路，再談勝利。" },
+    { id: "curious", name: "好奇", cardId: "player-personality-curious", text: "就算是怪物，也一定有能被觀察到的規律。" },
+    { id: "selfless", name: "利他", cardId: "player-personality-selfless", text: "第一反應不是逃，而是把別人拉出火線。" },
+    { id: "solitary", name: "孤僻", cardId: "player-personality-solitary", text: "習慣一個人站在死角，反而更不容易被命運抓住。" },
+    { id: "obsessive", name: "偏執", cardId: "player-personality-obsessive", text: "同一個結論會被反覆推演，直到找到唯一可行解。" },
+    { id: "humorous", name: "幽默", cardId: "player-personality-humorous", text: "在死亡面前還能吐槽的人，至少能讓手不抖。" },
+    { id: "cruel", name: "殘酷", cardId: "player-personality-cruel", text: "不把怪物當謎題，只當作必須補刀的目標。" },
+    { id: "conviction", name: "信念", cardId: "player-personality-conviction", text: "白光可以把人丟進地獄，但不能命令你後退。" }
+  ];
+
+  const playerProfessionCards = [
+    { id: "player-medic-hemostatic-cut", name: "文件夾猛擊", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 10, healLowest: 3, text: "造成 10 傷害，治療生命最低隊員 3 點。", upgrade: { damage: 14, healLowest: 5 }, tags: ["自創主角", "文員"] },
+    { id: "player-medic-adrenaline-shot", name: "釘書機反擊", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 8, gainEnergy: 1, addStress: 2, text: "造成 8 傷害，獲得 1 能量；全隊壓力 +2。", upgrade: { damage: 12, addStress: 1 }, tags: ["自創主角", "文員"] },
+    { id: "player-medic-golden-four-minutes", name: "流程整理", category: "general", type: "support", rarity: "starter", cost: 1, healLowest: 12, reduceStress: 4, text: "治療生命最低隊員 12 點，全隊壓力 -4。", upgrade: { healLowest: 16, reduceStress: 6 }, tags: ["自創主角", "智慧"] },
+    { id: "player-engineer-em-short", name: "電磁短路", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 9, weakTarget: 3, text: "造成 9 傷害，使目標虛弱 3 點。", upgrade: { damage: 13, weakTarget: 5 }, tags: ["自創主角", "黑客"] },
+    { id: "player-engineer-overload-script", name: "過載腳本", category: "general", type: "attack", rarity: "starter", cost: 2, damageAll: 8, stunTarget: 1, text: "對所有敵人造成 8 傷害，封鎖目標下一次行動。", upgrade: { damageAll: 12 }, tags: ["自創主角", "黑客"] },
+    { id: "player-engineer-battle-model", name: "後門地圖", category: "general", type: "tactic", rarity: "starter", cost: 1, draw: 2, blockAll: 3, text: "抽 2 張牌，全隊獲得 3 護甲。", upgrade: { blockAll: 6 }, tags: ["自創主角", "智慧"] },
+    { id: "player-profiler-weakpoint-mark", name: "破綻標記", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 11, weakTarget: 4, text: "造成 11 傷害，使目標虛弱 4 點。", upgrade: { damage: 15, weakTarget: 6 }, tags: ["自創主角", "犯罪側寫師"] },
+    { id: "player-profiler-interrogate-rhythm", name: "逼供節奏", category: "general", type: "attack", rarity: "starter", cost: 2, damage: 16, stunTarget: 1, text: "造成 16 傷害，封鎖目標下一次行動。", upgrade: { damage: 23 }, tags: ["自創主角", "犯罪側寫師"] },
+    { id: "player-profiler-behavior-read", name: "行為預判", category: "general", type: "tactic", rarity: "starter", cost: 1, draw: 1, evadeAll: 1, text: "抽 1 張牌，全隊獲得 1 次閃避。", upgrade: { draw: 2 }, tags: ["自創主角", "智慧"] },
+    { id: "player-archaeologist-stone-toss", name: "美工刀劃線", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 10, blockAll: 2, text: "造成 10 傷害，全隊獲得 2 護甲。", upgrade: { damage: 14, blockAll: 4 }, tags: ["自創主角", "平面設計師"] },
+    { id: "player-archaeologist-symbol-blast", name: "色塊干擾", category: "general", type: "attack", rarity: "starter", cost: 2, damageAll: 9, weakAll: 2, text: "對所有敵人造成 9 傷害，並使其虛弱 2 點。", upgrade: { damageAll: 13, weakAll: 4 }, tags: ["自創主角", "平面設計師"] },
+    { id: "player-archaeologist-ruin-scan", name: "版面重排", category: "general", type: "tactic", rarity: "starter", cost: 0, draw: 1, gainEnergy: 1, exhaust: true, text: "抽 1 張牌，獲得 1 能量，耗盡。", upgrade: { draw: 2 }, tags: ["自創主角", "智慧"] },
+    { id: "player-merc-close-burst", name: "近距離點放", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 13, text: "造成 13 傷害。", upgrade: { damage: 18 }, tags: ["自創主角", "退役傭兵"] },
+    { id: "player-merc-breach-sweep", name: "破門掃射", category: "general", type: "attack", rarity: "starter", cost: 2, damageAll: 11, text: "對所有敵人造成 11 傷害。", upgrade: { damageAll: 16 }, tags: ["自創主角", "退役傭兵"] },
+    { id: "player-merc-tactical-cover", name: "戰術掩護", category: "general", type: "guard", rarity: "starter", cost: 1, blockAll: 10, text: "全隊獲得 10 護甲。", upgrade: { blockAll: 14 }, tags: ["自創主角", "力量"] },
+    { id: "player-firefighter-breaching-axe", name: "鐵鎚破拆", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 12, blockAll: 2, text: "造成 12 傷害，全隊獲得 2 護甲。", upgrade: { damage: 17, blockAll: 4 }, tags: ["自創主角", "地盤工人"] },
+    { id: "player-firefighter-water-jet", name: "鋼筋橫掃", category: "general", type: "attack", rarity: "starter", cost: 2, damage: 15, weakTarget: 5, text: "造成 15 傷害，使目標虛弱 5 點。", upgrade: { damage: 22, weakTarget: 8 }, tags: ["自創主角", "地盤工人"] },
+    { id: "player-firefighter-rescue-line", name: "臨時支架", category: "general", type: "guard", rarity: "starter", cost: 1, blockAll: 8, healLowest: 5, text: "全隊獲得 8 護甲，治療生命最低隊員 5 點。", upgrade: { blockAll: 12, healLowest: 8 }, tags: ["自創主角", "力量"] },
+    { id: "player-boxer-heavy-open", name: "重拳開路", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 14, addStress: 2, text: "造成 14 傷害；全隊壓力 +2。", upgrade: { damage: 20, addStress: 1 }, tags: ["自創主角", "地下拳手"] },
+    { id: "player-boxer-rib-break", name: "肋骨碎擊", category: "general", type: "attack", rarity: "starter", cost: 2, damage: 22, text: "造成 22 傷害。", upgrade: { damage: 30 }, tags: ["自創主角", "地下拳手"] },
+    { id: "player-boxer-hard-guard", name: "硬撐到底", category: "general", type: "guard", rarity: "starter", cost: 1, blockAll: 7, reduceStress: 2, text: "全隊獲得 7 護甲，壓力 -2。", upgrade: { blockAll: 11, reduceStress: 4 }, tags: ["自創主角", "力量"] },
+    { id: "player-courier-wall-kick", name: "保溫袋撞擊", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 11, draw: 1, text: "造成 11 傷害，抽 1 張牌。", upgrade: { damage: 16 }, tags: ["自創主角", "外賣速遞員"] },
+    { id: "player-courier-slide-throat", name: "後巷急轉", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 10, pierce: true, text: "穿透護甲造成 10 傷害。", upgrade: { damage: 15 }, tags: ["自創主角", "外賣速遞員"] },
+    { id: "player-courier-extreme-route", name: "趕單路線", category: "general", type: "tactic", rarity: "starter", cost: 1, evadeAll: 1, draw: 1, text: "全隊獲得 1 次閃避，抽 1 張牌。", upgrade: { draw: 2 }, tags: ["自創主角", "技巧"] },
+    { id: "player-magician-sleeve-knife", name: "掃碼器砸擊", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 10, pierce: true, text: "穿透護甲造成 10 傷害。", upgrade: { damage: 15 }, tags: ["自創主角", "便利店收銀員"] },
+    { id: "player-magician-flash-point", name: "貨架燈爆閃", category: "general", type: "attack", rarity: "starter", cost: 2, damage: 12, stunTarget: 1, text: "造成 12 傷害，封鎖目標下一次行動。", upgrade: { damage: 18 }, tags: ["自創主角", "便利店收銀員"] },
+    { id: "player-magician-misdirection", name: "收銀台死角", category: "general", type: "tactic", rarity: "starter", cost: 1, weakAll: 3, evadeOwner: 1, text: "所有敵人虛弱 3 點；自身獲得 1 次閃避。", upgrade: { weakAll: 5 }, tags: ["自創主角", "技巧"] },
+    { id: "player-stunt-flip-kick", name: "低聲割喉", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 12, text: "造成 12 傷害。", upgrade: { damage: 17 }, tags: ["自創主角", "殺手"] },
+    { id: "player-stunt-wire-counter", name: "雙點射擊", category: "general", type: "attack", rarity: "starter", cost: 2, damage: 18, blockAll: 4, text: "造成 18 傷害，全隊獲得 4 護甲。", upgrade: { damage: 25, blockAll: 7 }, tags: ["自創主角", "殺手"] },
+    { id: "player-stunt-danger-move", name: "消失步", category: "general", type: "tactic", rarity: "starter", cost: 1, evadeOwner: 2, addStress: 3, text: "自身獲得 2 次閃避；全隊壓力 +3。", upgrade: { addStress: 1 }, tags: ["自創主角", "技巧"] }
+  ];
+
+  const playerPersonalityCards = [
+    { id: "player-personality-calm", name: "危機降噪", category: "signature", type: "support", rarity: "signature", cost: 1, draw: 2, reduceStress: 6, text: "抽 2 張牌，全隊壓力 -6。", upgrade: { cost: 0, reduceStress: 8 }, tags: ["自創主角", "冷靜"] },
+    { id: "player-personality-hotblood", name: "燃點衝鋒", category: "signature", type: "attack", rarity: "signature", cost: 1, damage: 18, gainEnergy: 1, addStress: 4, text: "造成 18 傷害，獲得 1 能量；全隊壓力 +4。", upgrade: { damage: 25, addStress: 2 }, tags: ["自創主角", "熱血"] },
+    { id: "player-personality-cautious", name: "後撤線", category: "signature", type: "guard", rarity: "signature", cost: 1, blockAll: 10, evadeOwner: 1, text: "全隊獲得 10 護甲，自身獲得 1 次閃避。", upgrade: { blockAll: 15 }, tags: ["自創主角", "謹慎"] },
+    { id: "player-personality-curious", name: "異常觀察", category: "signature", type: "tactic", rarity: "signature", cost: 1, draw: 2, weakTarget: 4, text: "抽 2 張牌，使目標虛弱 4 點。", upgrade: { draw: 3, weakTarget: 6 }, tags: ["自創主角", "好奇"] },
+    { id: "player-personality-selfless", name: "替身救援", category: "signature", type: "support", rarity: "signature", cost: 1, healAll: 5, blockAll: 4, text: "全隊恢復 5 生命並獲得 4 護甲。", upgrade: { healAll: 8, blockAll: 7 }, tags: ["自創主角", "利他"] },
+    { id: "player-personality-solitary", name: "單人死角", category: "signature", type: "attack", rarity: "signature", cost: 1, damage: 13, pierce: true, evadeOwner: 1, text: "穿透護甲造成 13 傷害，自身獲得 1 次閃避。", upgrade: { damage: 20 }, tags: ["自創主角", "孤僻"] },
+    { id: "player-personality-obsessive", name: "重複推演", category: "signature", type: "tactic", rarity: "signature", cost: 0, draw: 1, gainEnergy: 1, addStress: 3, exhaust: true, text: "抽 1 張牌，獲得 1 能量；全隊壓力 +3，耗盡。", upgrade: { draw: 2, addStress: 1 }, tags: ["自創主角", "偏執"] },
+    { id: "player-personality-humorous", name: "斷線吐槽", category: "signature", type: "support", rarity: "signature", cost: 1, reduceStress: 8, draw: 1, text: "全隊壓力 -8，抽 1 張牌。", upgrade: { reduceStress: 12, draw: 2 }, tags: ["自創主角", "幽默"] },
+    { id: "player-personality-cruel", name: "補刀規則", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 20, executeBelow: 0.35, executeDamage: 10, text: "造成 20 傷害；目標生命低於 35% 時追加 10 穿甲傷害。", upgrade: { damage: 28, executeDamage: 16 }, tags: ["自創主角", "殘酷"] },
+    { id: "player-personality-conviction", name: "不退一步", category: "signature", type: "guard", rarity: "signature", cost: 2, blockAll: 14, healLowest: 5, text: "全隊獲得 14 護甲，治療生命最低隊員 5 點。", upgrade: { blockAll: 20, healLowest: 8 }, tags: ["自創主角", "信念"] }
   ];
 
   const cards = [
     { id: "combat-knife", name: "軍用匕首", category: "general", type: "attack", rarity: "starter", cost: 1, damage: 8, text: "造成 8 點傷害。", upgrade: { damage: 12 }, tags: ["攻擊", "近戰"] },
     { id: "guard-stance", name: "防護姿態", category: "general", type: "guard", rarity: "starter", cost: 1, blockAll: 6, text: "全隊獲得 6 護甲。", upgrade: { blockAll: 9 }, tags: ["防護", "全隊"] },
     { id: "adrenaline-rush", name: "腎上腺素", category: "general", type: "tactic", rarity: "starter", cost: 0, gainEnergy: 1, draw: 1, addStress: 4, exhaust: true, text: "獲得 1 能量，抽 1 張牌；全隊壓力 +4，耗盡。", upgrade: { addStress: 1 }, tags: ["戰術", "耗盡"] },
+    ...playerProfessionCards,
+    ...playerPersonalityCards,
     { id: "wide-burst", name: "橫掃火力", category: "general", type: "attack", rarity: "common", cost: 2, damageAll: 9, text: "對所有敵人造成 9 點傷害。", upgrade: { damageAll: 13 }, tags: ["攻擊", "群體"] },
     { id: "emergency-dodge", name: "緊急迴避", category: "general", type: "guard", rarity: "common", cost: 1, blockAll: 8, text: "全隊獲得 8 護甲。", upgrade: { blockAll: 11 }, tags: ["防護", "全隊"] },
     { id: "focus-fire", name: "集中射擊", category: "general", type: "attack", rarity: "uncommon", cost: 2, damage: 18, text: "造成 18 點傷害。", upgrade: { damage: 25 }, tags: ["攻擊", "遠程"] },
@@ -137,6 +236,34 @@
     { id: "bvs-batmobile-ram", name: "蝙蝠車衝撞", category: "general", type: "attack", rarity: "uncommon", cost: 2, damageAll: 16, stunTarget: 1, addStress: 2, text: "對所有敵人造成 16 傷害，封鎖目標下一次行動；全隊壓力 +2。", upgrade: { damageAll: 23, addStress: 0 }, tags: ["超人大戰蝙蝠俠", "蝙蝠車"], sourceId: "dc-movie", sourceName: "超人大戰蝙蝠俠" },
     { id: "bvs-kryptonite-gas-grenade", name: "氪石瓦斯彈", category: "general", type: "tactic", rarity: "uncommon", cost: 1, damage: 8, weakTarget: 8, stunTarget: 1, text: "造成 8 傷害，使目標虛弱 8 點並封鎖下一次行動。", upgrade: { damage: 13, weakTarget: 12 }, tags: ["超人大戰蝙蝠俠", "氪石"], sourceId: "dc-movie", sourceName: "超人大戰蝙蝠俠" },
     { id: "bvs-justice-dawn-stand", name: "正義黎明並肩", category: "general", type: "support", rarity: "rare", cost: 2, blockAll: 14, draw: 2, reduceStress: 5, text: "全隊獲得 14 護甲，抽 2 張牌，壓力 -5。", upgrade: { blockAll: 20, reduceStress: 8 }, tags: ["超人大戰蝙蝠俠", "正義黎明"], sourceId: "dc-movie", sourceName: "超人大戰蝙蝠俠" },
+    { id: "pacrim-rocket-elbow", name: "火箭肘擊", category: "general", type: "attack", rarity: "common", cost: 1, damage: 14, blockAll: 3, text: "造成 14 傷害，全隊獲得 3 護甲。", upgrade: { damage: 20, blockAll: 5 }, tags: ["環太平洋", "機甲"], sourceId: "pacific-rim", sourceName: "環太平洋" },
+    { id: "pacrim-plasma-caster", name: "電漿炮齊射", category: "general", type: "attack", rarity: "uncommon", cost: 2, damage: 22, burnTarget: 4, text: "造成 22 傷害，並施加 4 燃燒。", upgrade: { damage: 30, burnTarget: 7 }, tags: ["環太平洋", "電漿炮"], sourceId: "pacific-rim", sourceName: "環太平洋" },
+    { id: "pacrim-chain-sword", name: "鏈劍切開甲殼", category: "general", type: "attack", rarity: "rare", cost: 2, damage: 25, pierce: true, draw: 1, text: "穿透護甲造成 25 傷害，抽 1 張牌。", upgrade: { damage: 34, draw: 2 }, tags: ["環太平洋", "鏈劍"], sourceId: "pacific-rim", sourceName: "環太平洋" },
+    { id: "pacrim-drift-protocol", name: "神經共感協議", category: "general", type: "tactic", rarity: "rare", cost: 1, draw: 2, blockAll: 6, reduceStress: 2, text: "抽 2 張牌，全隊獲得 6 護甲並降低 2 壓力。", upgrade: { draw: 3, blockAll: 10, reduceStress: 4 }, tags: ["環太平洋", "神經共感"], sourceId: "pacific-rim", sourceName: "環太平洋" },
+    { id: "fury-war-rig-ram", name: "戰爭車衝撞", category: "general", type: "attack", rarity: "common", cost: 1, damage: 12, blockAll: 5, text: "造成 12 傷害，全隊獲得 5 護甲。", upgrade: { damage: 18, blockAll: 8 }, tags: ["瘋狂麥斯", "戰爭車"], sourceId: "fury-road", sourceName: "瘋狂麥斯" },
+    { id: "fury-thunderpoon-salvo", name: "雷矛齊射", category: "general", type: "attack", rarity: "uncommon", cost: 2, damageAll: 14, burnAll: 4, text: "對所有敵人造成 14 傷害並施加 4 燃燒。", upgrade: { damageAll: 20, burnAll: 7 }, tags: ["瘋狂麥斯", "雷矛"], sourceId: "fury-road", sourceName: "瘋狂麥斯" },
+    { id: "fury-polecat-boarding", name: "撐杆跳車突襲", category: "general", type: "attack", rarity: "uncommon", cost: 1, damage: 11, evadeAll: 1, text: "造成 11 傷害，全隊獲得 1 次閃避。", upgrade: { damage: 16 }, tags: ["瘋狂麥斯", "車隊突襲"], sourceId: "fury-road", sourceName: "瘋狂麥斯" },
+    { id: "fury-green-place-oath", name: "綠洲誓言", category: "general", type: "support", rarity: "rare", cost: 1, healAll: 5, reduceStress: 6, draw: 1, text: "全隊恢復 5 生命、壓力 -6，抽 1 張牌。", upgrade: { healAll: 8, reduceStress: 10, draw: 2 }, tags: ["瘋狂麥斯", "救援"], sourceId: "fury-road", sourceName: "瘋狂麥斯" },
+    { id: "re6-wing-shooter-burst", name: "Wing Shooter連射", category: "general", type: "attack", rarity: "common", cost: 1, damage: 13, draw: 1, text: "造成 13 傷害，抽 1 張牌。", upgrade: { damage: 19, draw: 2 }, tags: ["生化危機6", "雙槍"], sourceId: "re6", sourceName: "生化危機6" },
+    { id: "re6-hydra-shotgun-sweep", name: "Hydra霰彈橫掃", category: "general", type: "attack", rarity: "uncommon", cost: 2, damageAll: 14, stunTarget: 1, text: "對所有敵人造成 14 傷害，封鎖目標下一次行動。", upgrade: { damageAll: 21 }, tags: ["生化危機6", "霰彈"], sourceId: "re6", sourceName: "生化危機6" },
+    { id: "re6-bsaa-assault-fireline", name: "BSAA突擊火線", category: "general", type: "attack", rarity: "uncommon", cost: 2, damageAll: 15, blockAll: 5, text: "對所有敵人造成 15 傷害，全隊獲得 5 護甲。", upgrade: { damageAll: 22, blockAll: 8 }, tags: ["生化危機6", "BSAA"], sourceId: "re6", sourceName: "生化危機6" },
+    { id: "re6-anti-materiel-shot", name: "反器材狙擊", category: "general", type: "attack", rarity: "rare", cost: 2, damage: 27, pierce: true, weakTarget: 4, text: "穿透護甲造成 27 傷害，並使目標虛弱 4 點。", upgrade: { damage: 38, weakTarget: 7 }, tags: ["生化危機6", "狙擊"], sourceId: "re6", sourceName: "生化危機6" },
+    { id: "re6-elephant-killer", name: "象殺左輪重擊", category: "general", type: "attack", rarity: "rare", cost: 2, damage: 34, addStress: 3, text: "造成 34 傷害；全隊壓力 +3。", upgrade: { damage: 46, addStress: 1 }, tags: ["生化危機6", "麥格農"], sourceId: "re6", sourceName: "生化危機6" },
+    { id: "re6-remote-bomb-breach", name: "遙控炸彈破門", category: "general", type: "attack", rarity: "uncommon", cost: 1, damageAll: 10, burnAll: 3, text: "對所有敵人造成 10 傷害並施加 3 燃燒。", upgrade: { damageAll: 16, burnAll: 5 }, tags: ["生化危機6", "爆破"], sourceId: "re6", sourceName: "生化危機6" },
+    { id: "re6-antiviral-serum", name: "抗病毒血清", category: "general", type: "support", rarity: "rare", cost: 1, healAll: 5, reduceStress: 7, draw: 1, text: "全隊恢復 5 生命、壓力 -7，抽 1 張牌。", upgrade: { healAll: 8, reduceStress: 11, draw: 2 }, tags: ["生化危機6", "抗體"], sourceId: "re6", sourceName: "生化危機6" },
+    { id: "re6-coop-quick-shot", name: "合作快射窗口", category: "general", type: "tactic", rarity: "rare", cost: 1, draw: 2, gainEnergy: 1, blockAll: 4, text: "抽 2 張牌，獲得 1 能量，全隊獲得 4 護甲。", upgrade: { draw: 3, blockAll: 7 }, tags: ["生化危機6", "合作"], sourceId: "re6", sourceName: "生化危機6" },
+    { id: "er-transient-moonlight", name: "名刀月隱·居合光波", category: "general", type: "attack", rarity: "uncommon", cost: 1, damage: 15, pierce: true, text: "穿透護甲造成 15 傷害。", upgrade: { damage: 22 }, tags: ["艾爾登法環", "月隱"], sourceId: "elden-ring", sourceName: "艾爾登法環" },
+    { id: "er-corpse-piler-bloodflame", name: "屍山血海·連斬血焰", category: "general", type: "attack", rarity: "rare", cost: 2, damageAll: 16, burnAll: 4, addStress: 2, text: "對所有敵人造成 16 傷害並施加 4 燃燒；全隊壓力 +2。", upgrade: { damageAll: 24, burnAll: 7, addStress: 0 }, tags: ["艾爾登法環", "血焰"], sourceId: "elden-ring", sourceName: "艾爾登法環" },
+    { id: "er-blasphemous-flame", name: "褻瀆聖劍·掠奪火", category: "general", type: "attack", rarity: "rare", cost: 2, damage: 26, burnTarget: 6, healLowest: 6, text: "造成 26 傷害並施加 6 燃燒，治療生命比例最低的隊員 6 生命。", upgrade: { damage: 36, burnTarget: 10, healLowest: 10 }, tags: ["艾爾登法環", "火焰"], sourceId: "elden-ring", sourceName: "艾爾登法環" },
+    { id: "er-lion-claw-crush", name: "獅子斬重砸", category: "general", type: "attack", rarity: "uncommon", cost: 2, damage: 28, blockAll: 5, text: "造成 28 傷害，全隊獲得 5 護甲。", upgrade: { damage: 39, blockAll: 8 }, tags: ["艾爾登法環", "重武器"], sourceId: "elden-ring", sourceName: "艾爾登法環" },
+    { id: "er-black-knife-wave", name: "黑刀死亡波紋", category: "general", type: "attack", rarity: "rare", cost: 1, damage: 14, pierce: true, weakTarget: 5, poisonTarget: 4, text: "穿透護甲造成 14 傷害，使目標虛弱 5 點並中毒 4 點。", upgrade: { damage: 20, weakTarget: 8, poisonTarget: 7 }, tags: ["艾爾登法環", "黑刀"], sourceId: "elden-ring", sourceName: "艾爾登法環" },
+    { id: "er-ancient-dragon-lightning", name: "古龍雷槍風暴", category: "general", type: "attack", rarity: "rare", cost: 2, damageAll: 18, weakAll: 3, text: "對所有敵人造成 18 傷害，並使所有敵人虛弱 3 點。", upgrade: { damageAll: 27, weakAll: 5 }, tags: ["艾爾登法環", "古龍"], sourceId: "elden-ring", sourceName: "艾爾登法環" },
+    { id: "er-scarlet-aeonia", name: "猩紅艾奧尼亞", category: "general", type: "attack", rarity: "rare", cost: 3, damageAll: 22, poisonAll: 8, exhaust: true, text: "對所有敵人造成 22 傷害並施加 8 中毒，耗盡。", upgrade: { damageAll: 32, poisonAll: 12 }, tags: ["艾爾登法環", "腐敗"], sourceId: "elden-ring", sourceName: "艾爾登法環" },
+    { id: "er-starscourge-arrow-rain", name: "碎星箭雨", category: "general", type: "attack", rarity: "uncommon", cost: 2, damageAll: 15, draw: 1, text: "對所有敵人造成 15 傷害，抽 1 張牌。", upgrade: { damageAll: 22, draw: 2 }, tags: ["艾爾登法環", "重力"], sourceId: "elden-ring", sourceName: "艾爾登法環" },
+    { id: "er-flame-redmanes", name: "紅獅子火焰", category: "general", type: "attack", rarity: "uncommon", cost: 1, damageAll: 11, burnAll: 5, text: "對所有敵人造成 11 傷害並施加 5 燃燒。", upgrade: { damageAll: 17, burnAll: 8 }, tags: ["艾爾登法環", "戰灰"], sourceId: "elden-ring", sourceName: "艾爾登法環" },
+    { id: "er-godslayer-blackflame", name: "狩神黑焰", category: "general", type: "attack", rarity: "rare", cost: 2, damage: 24, pierce: true, burnTarget: 8, text: "穿透護甲造成 24 傷害，並施加 8 燃燒。", upgrade: { damage: 34, burnTarget: 12 }, tags: ["艾爾登法環", "黑焰"], sourceId: "elden-ring", sourceName: "艾爾登法環" },
+    { id: "er-golden-vow", name: "黃金樹立誓", category: "general", type: "support", rarity: "rare", cost: 1, blockAll: 12, draw: 1, reduceStress: 4, text: "全隊獲得 12 護甲、抽 1 張牌，壓力 -4。", upgrade: { blockAll: 18, draw: 2, reduceStress: 7 }, tags: ["艾爾登法環", "祈禱"], sourceId: "elden-ring", sourceName: "艾爾登法環" },
+    { id: "er-bloodhound-step", name: "獵犬步伐", category: "general", type: "tactic", rarity: "rare", cost: 1, evadeAll: 1, draw: 1, gainEnergy: 1, text: "全隊獲得 1 次閃避，抽 1 張牌並獲得 1 能量。", upgrade: { draw: 2 }, tags: ["艾爾登法環", "戰灰"], sourceId: "elden-ring", sourceName: "艾爾登法環" },
     { id: "blood-awakening", name: "血統覺醒", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 18, gainEnergy: 1, addStress: 8, text: "造成 18 點傷害，獲得 1 能量；全隊壓力 +8。", upgrade: { damage: 26, addStress: 4 }, tags: ["鄭吒", "專屬"] },
     { id: "mentor-demo", name: "引導者示範", category: "signature", type: "attack", rarity: "signature", cost: 0, damage: 24, blockAll: 8, exhaust: true, text: "造成 24 點傷害，全隊獲得 8 護甲，耗盡。", upgrade: { damage: 32, blockAll: 12 }, tags: ["張杰", "專屬"] },
     { id: "mental-link", name: "精神鏈接", category: "signature", type: "support", rarity: "signature", cost: 1, blockAll: 3, draw: 1, reduceStress: 4, text: "全隊獲得 3 護甲，抽 1 張牌，壓力 -4。", upgrade: { blockAll: 6, reduceStress: 7 }, tags: ["詹嵐", "專屬"] },
@@ -211,6 +338,30 @@
     { id: "superman-heat-vision-dive", name: "超人·熱視線俯衝", category: "signature", type: "attack", rarity: "signature", cost: 3, damageAll: 32, burnAll: 6, blockAll: 8, text: "超人從高空俯衝，以熱視線切開戰場，對所有敵人造成 32 傷害與 6 燃燒，全隊獲得 8 護甲。", upgrade: { damageAll: 44, burnAll: 10, blockAll: 12 }, tags: ["克拉克·肯特", "超人"] },
     { id: "batman-kryptonite-trap", name: "蝙蝠俠·氪石陷阱", category: "signature", type: "tactic", rarity: "signature", cost: 2, damage: 18, stunTarget: 1, weakAll: 6, blockAll: 8, text: "布魯斯啟動預設陷阱，造成 18 傷害，封鎖目標下一次行動，使所有敵人虛弱 6 點，全隊獲得 8 護甲。", upgrade: { damage: 26, weakAll: 9, blockAll: 12 }, tags: ["布魯斯·韋恩", "蝙蝠俠"] },
     { id: "wonder-woman-lasso-smite", name: "神力女超人·真言套索斬", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 30, stunTarget: 1, blockAll: 10, draw: 1, text: "黛安娜以真言套索拉住敵人，造成 30 傷害，封鎖目標下一次行動，全隊獲得 10 護甲，抽 1 張牌。", upgrade: { damage: 42, blockAll: 15, draw: 2 }, tags: ["黛安娜·普林斯", "神力女超人"] },
+    { id: "gipsy-danger-plasma-caster", name: "危險流浪者·電漿炮", category: "signature", type: "attack", rarity: "signature", cost: 3, damageAll: 30, pierce: true, burnAll: 6, blockAll: 8, text: "機甲掌心電漿撕開怪獸甲殼，穿透護甲對所有敵人造成 30 傷害並燃燒 6 點，全隊獲得 8 護甲。", upgrade: { damageAll: 42, burnAll: 10, blockAll: 12 }, tags: ["羅利·貝克特", "危險流浪者"] },
+    { id: "mako-drift-counter", name: "真子·漂移反制", category: "signature", type: "tactic", rarity: "signature", cost: 1, damage: 14, stunTarget: 1, draw: 2, blockAll: 8, text: "從神經共感裡讀出怪獸動作，造成 14 傷害，封鎖目標下一次行動，抽 2 張牌，全隊獲得 8 護甲。", upgrade: { damage: 22, draw: 3, blockAll: 12 }, tags: ["森真子", "神經共感"] },
+    { id: "pentecost-final-march", name: "潘特考斯特·最後進軍", category: "signature", type: "guard", rarity: "signature", cost: 2, blockAll: 22, weakAll: 4, gainEnergy: 1, addStress: 4, text: "破碎穹頂發出最後命令，全隊獲得 22 護甲，所有敵人虛弱 4 點，獲得 1 能量；全隊壓力 +4。", upgrade: { blockAll: 30, weakAll: 7, addStress: 2 }, tags: ["史塔克·潘特考斯特", "破碎穹頂"] },
+    { id: "striker-eureka-missile-run", name: "尤里卡突襲·導彈雨", category: "signature", type: "attack", rarity: "signature", cost: 3, damageAll: 34, pierce: true, weakAll: 4, exhaust: true, text: "尤里卡突襲者鎖定多重目標，穿透護甲對所有敵人造成 34 傷害並虛弱 4 點，耗盡。", upgrade: { damageAll: 48, weakAll: 7 }, tags: ["赫克·韓森", "尤里卡突襲者"] },
+    { id: "max-shotgun-road-duel", name: "麥斯·雙管路戰", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 30, pierce: true, draw: 1, evadeOwner: 1, text: "近距離雙管霰彈打穿車門，穿透護甲造成 30 傷害，抽 1 張牌，麥斯獲得 1 次閃避。", upgrade: { damage: 42, draw: 2 }, tags: ["麥斯", "荒原"] },
+    { id: "furiosa-war-rig-breakthrough", name: "芙莉歐莎·戰爭車破陣", category: "signature", type: "guard", rarity: "signature", cost: 2, damageAll: 14, blockAll: 20, weakAll: 3, text: "戰爭車頂著火線撞開追兵，對所有敵人造成 14 傷害並虛弱 3 點，全隊獲得 20 護甲。", upgrade: { damageAll: 21, blockAll: 30, weakAll: 5 }, tags: ["芙莉歐莎", "戰爭車"] },
+    { id: "nux-witness-me-charge", name: "納克斯·見證我衝鋒", category: "signature", type: "attack", rarity: "signature", cost: 1, damage: 24, gainEnergy: 1, addStress: 8, exhaust: true, text: "納克斯踩死油門衝向火線，造成 24 傷害並獲得 1 能量；全隊壓力 +8，耗盡。", upgrade: { damage: 34, addStress: 4 }, tags: ["納克斯", "戰爭男孩"] },
+    { id: "capable-redemption-signal", name: "卡帕布·救贖信號", category: "signature", type: "support", rarity: "signature", cost: 1, healLowest: 10, reduceStress: 8, draw: 1, blockAll: 4, text: "她在引擎轟鳴中拉回失控的人，治療生命最低隊員 10 點，全隊壓力 -8，抽 1 張牌並獲得 4 護甲。", upgrade: { healLowest: 15, reduceStress: 12, draw: 2, blockAll: 7 }, tags: ["卡帕布", "救援"] },
+    { id: "leon-wing-shooter-quickshot", name: "里昂·雙槍快射", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 30, pierce: true, draw: 1, evadeOwner: 1, text: "Wing Shooter雙槍連射，穿透護甲造成 30 傷害，抽 1 張牌，里昂獲得 1 次閃避。", upgrade: { damage: 42, draw: 2 }, tags: ["里昂", "雙槍"] },
+    { id: "helena-hydra-breaker", name: "海蓮娜·Hydra破圍", category: "signature", type: "attack", rarity: "signature", cost: 3, damageAll: 26, stunTarget: 1, blockAll: 8, text: "Hydra霰彈把包圍線轟開，對所有敵人造成 26 傷害，封鎖目標下一次行動，全隊獲得 8 護甲。", upgrade: { damageAll: 37, blockAll: 12 }, tags: ["海蓮娜", "霰彈"] },
+    { id: "chris-bsaa-fireline", name: "克里斯·BSAA火線推進", category: "signature", type: "guard", rarity: "signature", cost: 2, damageAll: 16, blockAll: 20, weakAll: 3, text: "克里斯帶隊壓上火線，對所有敵人造成 16 傷害並虛弱 3 點，全隊獲得 20 護甲。", upgrade: { damageAll: 24, blockAll: 30, weakAll: 5 }, tags: ["克里斯", "BSAA"] },
+    { id: "piers-anti-materiel-sacrifice", name: "皮爾斯·反器材犧牲射擊", category: "signature", type: "attack", rarity: "signature", cost: 3, damage: 46, pierce: true, weakTarget: 8, addStress: 6, text: "反器材步槍鎖定變異核心，穿透護甲造成 46 傷害並使目標虛弱 8 點；全隊壓力 +6。", upgrade: { damage: 64, weakTarget: 12, addStress: 3 }, tags: ["皮爾斯", "狙擊"] },
+    { id: "jake-wesker-blood-combo", name: "傑克·威斯卡血脈連擊", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 32, executeBelow: 0.35, executeDamage: 18, evadeOwner: 1, text: "傑克近身連打感染核心，造成 32 傷害；目標生命低於 35% 時追加 18 穿甲傷害，傑克獲得 1 次閃避。", upgrade: { damage: 44, executeDamage: 28 }, tags: ["傑克", "血脈"] },
+    { id: "sherry-g-virus-regeneration", name: "雪莉·G病毒再生", category: "signature", type: "support", rarity: "signature", cost: 1, healAll: 8, reduceStress: 6, blockAll: 6, draw: 1, text: "雪莉以再生能力穩住隊伍，全隊恢復 8 生命、壓力 -6、獲得 6 護甲，抽 1 張牌。", upgrade: { healAll: 12, reduceStress: 10, blockAll: 10 }, tags: ["雪莉", "再生"] },
+    { id: "ada-crossbow-shadow", name: "艾達·弩箭暗線", category: "signature", type: "tactic", rarity: "signature", cost: 1, damage: 18, poisonTarget: 6, stunTarget: 1, draw: 2, text: "艾達從暗處射出弩箭，造成 18 傷害，施加 6 中毒，封鎖目標下一次行動，抽 2 張牌。", upgrade: { damage: 26, poisonTarget: 9, draw: 3 }, tags: ["艾達", "弩箭"] },
+    { id: "agent-coop-cover-fire", name: "BSAA特工·合作掩護", category: "signature", type: "guard", rarity: "signature", cost: 1, damage: 12, blockAll: 14, gainEnergy: 1, text: "特工以掩護射擊穩住隊形，造成 12 傷害，全隊獲得 14 護甲並獲得 1 能量。", upgrade: { damage: 18, blockAll: 20 }, tags: ["BSAA特工", "合作"] },
+    { id: "tarnished-elden-lord-strike", name: "褪色者·王座破環斬", category: "signature", type: "attack", rarity: "signature", cost: 3, damage: 52, pierce: true, gainEnergy: 1, addStress: 6, text: "褪色者以大盧恩共鳴斬向王座，穿透護甲造成 52 傷害，獲得 1 能量；全隊壓力 +6。", upgrade: { damage: 72, addStress: 3 }, tags: ["褪色者", "艾爾登之王"] },
+    { id: "melina-kindling-flame", name: "梅琳娜·火種引路", category: "signature", type: "support", rarity: "signature", cost: 1, healAll: 8, reduceStress: 10, blockAll: 8, draw: 1, text: "火種點亮賜福，全隊恢復 8 生命、壓力 -10、獲得 8 護甲，抽 1 張牌。", upgrade: { healAll: 12, reduceStress: 15, blockAll: 12, draw: 2 }, tags: ["梅琳娜", "火種"] },
+    { id: "ranni-dark-moon-rite", name: "菈妮·暗月儀式", category: "signature", type: "tactic", rarity: "signature", cost: 2, damageAll: 18, weakAll: 7, draw: 2, text: "暗月降下霜白光潮，對所有敵人造成 18 傷害並虛弱 7 點，抽 2 張牌。", upgrade: { damageAll: 26, weakAll: 11, draw: 3 }, tags: ["菈妮", "暗月"] },
+    { id: "blaidd-royal-greatsword", name: "布萊澤·王室巨劍冰狼", category: "signature", type: "attack", rarity: "signature", cost: 3, damage: 48, weakTarget: 8, blockAll: 10, text: "半狼拖著王室巨劍斬落，造成 48 傷害，使目標虛弱 8 點，全隊獲得 10 護甲。", upgrade: { damage: 66, weakTarget: 12, blockAll: 16 }, tags: ["布萊澤", "王室巨劍"] },
+    { id: "millicent-scarlet-waterfowl", name: "米莉森·腐敗水鳥", category: "signature", type: "attack", rarity: "signature", cost: 3, damageAll: 28, poisonAll: 8, evadeOwner: 1, text: "米莉森在腐敗花影中連斬，對所有敵人造成 28 傷害並施加 8 中毒，自身獲得 1 次閃避。", upgrade: { damageAll: 40, poisonAll: 12 }, tags: ["米莉森", "腐敗"] },
+    { id: "alexander-jar-cannon-charge", name: "亞歷山大·戰士壺衝鋒", category: "signature", type: "guard", rarity: "signature", cost: 2, damageAll: 18, blockAll: 22, addStress: 3, text: "戰士壺用全身撞進敵陣，對所有敵人造成 18 傷害，全隊獲得 22 護甲；全隊壓力 +3。", upgrade: { damageAll: 26, blockAll: 32, addStress: 1 }, tags: ["亞歷山大", "戰士壺"] },
+    { id: "tiche-destined-death", name: "狄希·命定之死黑刀", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 36, pierce: true, poisonTarget: 8, stunTarget: 1, text: "黑刀劃過生命線，穿透護甲造成 36 傷害，施加 8 中毒並封鎖目標下一次行動。", upgrade: { damage: 50, poisonTarget: 12 }, tags: ["黑刀狄希", "命定之死"] },
+    { id: "nepheli-stormhawk-axe", name: "涅斐麗·風暴鷹戰斧", category: "signature", type: "attack", rarity: "signature", cost: 2, damageAll: 22, blockAll: 10, draw: 1, text: "風暴鷹盤旋，戰斧劈開前線，對所有敵人造成 22 傷害，全隊獲得 10 護甲，抽 1 張牌。", upgrade: { damageAll: 32, blockAll: 15, draw: 2 }, tags: ["涅斐麗", "風暴"] },
     { id: "curse-panic", name: "恐慌殘響", category: "curse", type: "curse", rarity: "curse", cost: 99, unplayable: true, onDrawStress: 5, text: "抽到時全隊壓力 +5；無法打出。", tags: ["詛咒"] },
     { id: "curse-drain", name: "生命流失", category: "curse", type: "curse", rarity: "curse", cost: 99, unplayable: true, onDrawDamage: 2, text: "抽到時全隊失去 2 生命；無法打出。", tags: ["詛咒"] }
   ];
@@ -263,10 +414,39 @@
     { id: "kryptonite-spear", name: "氪石長矛", rarity: "legendary", effect: "firstAttackPierce", amount: 8, upgradedAmount: 12, text: "每回合第一張攻擊牌穿透護甲，並額外造成 8 點傷害。只在最壞結局前才會被拿起。", sourceId: "dc-equipment", sourceName: "正義黎明裝備" },
     { id: "armored-batsuit", name: "重裝蝙蝠戰甲", rarity: "legendary", effect: "turnBlock", amount: 6, upgradedAmount: 9, text: "回合開始時全隊獲得 6 護甲。裝甲不讓人變強，只讓人多撐幾秒。", sourceId: "dc-equipment", sourceName: "正義黎明裝備" },
     { id: "amazonian-shield", name: "亞馬遜神盾", rarity: "legendary", effect: "openingEvade", amount: 1, upgradedAmount: 2, text: "每場戰鬥第一回合，全隊獲得 1 次閃避。盾面能把末日衝擊偏轉成反擊窗口。", sourceId: "dc-equipment", sourceName: "正義黎明裝備" },
-    { id: "batwing-remote", name: "蝙蝠翼遠端火控", rarity: "rare", effect: "openingDraw", amount: 2, upgradedAmount: 3, text: "每場戰鬥第一回合額外抽 2 張牌。空中火控會先標出不能失手的目標。", sourceId: "dc-equipment", sourceName: "正義黎明裝備" }
+    { id: "batwing-remote", name: "蝙蝠翼遠端火控", rarity: "rare", effect: "openingDraw", amount: 2, upgradedAmount: 3, text: "每場戰鬥第一回合額外抽 2 張牌。空中火控會先標出不能失手的目標。", sourceId: "dc-equipment", sourceName: "正義黎明裝備" },
+    { id: "neural-drift-rig", name: "神經共感駕駛艙", rarity: "legendary", effect: "openingDraw", amount: 2, upgradedAmount: 3, text: "每場戰鬥第一回合額外抽 2 張牌。兩個意識同步時，戰場會先慢半拍。", sourceId: "pacific-rim-equipment", sourceName: "環太平洋武裝" },
+    { id: "jaeger-plasma-cannon", name: "獵人機甲電漿炮", rarity: "legendary", effect: "firstAttackBurn", amount: 7, upgradedAmount: 11, weaponClass: "firearm", text: "每回合第一張攻擊牌使命中的敵人燃燒 7 點。電漿會把怪獸甲殼燒出登陸缺口。", sourceId: "pacific-rim-equipment", sourceName: "環太平洋武裝" },
+    { id: "jaeger-chain-sword", name: "機甲鏈劍", rarity: "legendary", effect: "firstAttackPierce", amount: 8, upgradedAmount: 12, text: "每回合第一張攻擊牌穿透護甲，並額外造成 8 點傷害。鏈鋸刃專為切開巨獸甲殼準備。", sourceId: "pacific-rim-equipment", sourceName: "環太平洋武裝" },
+    { id: "striker-reactor-core", name: "尤里卡反應爐核心", rarity: "legendary", effect: "openingEnergy", amount: 1, upgradedAmount: 2, text: "每場戰鬥第一回合額外獲得 1 點能量。反應爐會把開場推成全火力突入。", sourceId: "pacific-rim-equipment", sourceName: "環太平洋武裝" },
+    { id: "max-double-barrel", name: "麥斯的雙管霰彈槍", rarity: "rare", effect: "firstAttackBonus", amount: 11, upgradedAmount: 17, weaponClass: "firearm", text: "每回合第一張攻擊牌額外造成 11 點傷害。荒原上的第一槍通常就是談判。", sourceId: "fury-road-equipment", sourceName: "狂怒公路武裝" },
+    { id: "war-rig-armored-cab", name: "戰爭車裝甲駕駛艙", rarity: "legendary", effect: "turnBlock", amount: 6, upgradedAmount: 9, text: "回合開始時全隊獲得 6 護甲。車頭不只是載具，是會移動的防線。", sourceId: "fury-road-equipment", sourceName: "狂怒公路武裝" },
+    { id: "thunderpoon-rack", name: "雷矛發射架", rarity: "rare", effect: "firstAttackBurn", amount: 6, upgradedAmount: 10, weaponClass: "firearm", text: "每回合第一張攻擊牌使命中的敵人燃燒 6 點。刺進車身後才是真正的爆炸。", sourceId: "fury-road-equipment", sourceName: "狂怒公路武裝" },
+    { id: "green-place-seed-bag", name: "綠洲種子袋", rarity: "legendary", effect: "turnStressRelief", amount: 4, upgradedAmount: 6, text: "回合開始時全隊壓力 -4。哪怕只剩一把種子，也足夠提醒隊伍還有去處。", sourceId: "fury-road-equipment", sourceName: "狂怒公路武裝" },
+    { id: "wing-shooter-pistols", name: "Wing Shooter雙槍", rarity: "rare", effect: "firstAttackBonus", amount: 10, upgradedAmount: 16, weaponClass: "firearm", text: "每回合第一張攻擊牌額外造成 10 點傷害。雙槍快射能在感染體撲上來前打出空隙。", sourceId: "re6-equipment", sourceName: "C病毒武裝" },
+    { id: "hydra-shotgun", name: "Hydra三管霰彈槍", rarity: "legendary", effect: "firstAttackBurn", amount: 6, upgradedAmount: 10, weaponClass: "firearm", text: "每回合第一張攻擊牌使命中的敵人燃燒 6 點。三管火舌會把屍潮推回門外。", sourceId: "re6-equipment", sourceName: "C病毒武裝" },
+    { id: "bsaa-assault-kit", name: "BSAA突擊套件", rarity: "rare", effect: "attackBonus", amount: 3, upgradedAmount: 5, weaponClass: "firearm", text: "持有者存活時，所有攻擊牌傷害 +3。彈匣、護具與通訊模組讓火線更穩。", sourceId: "re6-equipment", sourceName: "C病毒武裝" },
+    { id: "anti-materiel-rifle", name: "反器材狙擊步槍", rarity: "legendary", effect: "firstAttackPierce", amount: 10, upgradedAmount: 15, weaponClass: "firearm", text: "每回合第一張攻擊牌穿透護甲，並額外造成 10 點傷害。專門瞄準變異核心與厚甲外殼。", sourceId: "re6-equipment", sourceName: "C病毒武裝" },
+    { id: "elephant-killer-magnum", name: "Elephant Killer麥格農", rarity: "legendary", effect: "firstAttackBonus", amount: 14, upgradedAmount: 21, weaponClass: "firearm", text: "每回合第一張攻擊牌額外造成 14 點傷害。巨大後座力換來的是能讓怪物停步的一槍。", sourceId: "re6-equipment", sourceName: "C病毒武裝" },
+    { id: "ada-tactical-crossbow", name: "艾達戰術弩", rarity: "rare", effect: "firstAttackPierce", amount: 7, upgradedAmount: 11, text: "每回合第一張攻擊牌穿透護甲，並額外造成 7 點傷害。無聲弩箭適合在混亂裡切斷指揮者。", sourceId: "re6-equipment", sourceName: "C病毒武裝" },
+    { id: "c-virus-antibody-serum", name: "C病毒抗體血清", rarity: "legendary", effect: "turnHealLowest", amount: 5, upgradedAmount: 8, text: "回合開始時治療生命比例最低的隊員 5 點。雪莉與傑克的抗體樣本把戰線從崩潰邊緣拉回來。", sourceId: "re6-equipment", sourceName: "C病毒武裝" },
+    { id: "quad-tower-command-key", name: "四塔指揮密鑰", rarity: "legendary", effect: "openingDraw", amount: 2, upgradedAmount: 3, text: "每場戰鬥第一回合額外抽 2 張牌。蘭祥四塔的控制權能先暴露戰場的真正路線。", sourceId: "re6-equipment", sourceName: "C病毒武裝" },
+    { id: "rivers-of-blood-katana", name: "屍山血海", rarity: "legendary", effect: "firstAttackBurn", amount: 8, upgradedAmount: 12, text: "每回合第一張攻擊牌使命中的敵人燃燒 8 點。血焰沿著刀口蔓延，逼頭目提早露出硬直。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
+    { id: "moonveil-katana", name: "名刀月隱", rarity: "legendary", effect: "firstAttackPierce", amount: 8, upgradedAmount: 12, text: "每回合第一張攻擊牌穿透護甲，並額外造成 8 點傷害。居合光波專切盔甲縫隙。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
+    { id: "blasphemous-blade", name: "褻瀆聖劍", rarity: "legendary", effect: "turnHealLowest", amount: 5, upgradedAmount: 8, text: "回合開始時治療生命比例最低的隊員 5 點。掠奪火會把死亡邊緣換成下一次揮劍。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
+    { id: "dark-moon-greatsword", name: "暗月大劍", rarity: "legendary", effect: "attackBonus", amount: 5, upgradedAmount: 8, text: "持有者存活時，所有攻擊牌傷害 +5。暗月光刃會把普通攻擊推成儀式斬。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
+    { id: "maliketh-black-blade", name: "瑪利喀斯黑劍", rarity: "legendary", effect: "firstAttackPierce", amount: 12, upgradedAmount: 18, text: "每回合第一張攻擊牌穿透護甲，並額外造成 12 點傷害。命定之死只需要第一刀命中。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
+    { id: "hand-of-malenia", name: "瑪蓮妮亞義手刀", rarity: "legendary", effect: "openingEvade", amount: 1, upgradedAmount: 2, text: "每場戰鬥第一回合，全隊獲得 1 次閃避。水鳥亂舞前，身形會先消失在刀光裡。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
+    { id: "starscourge-greatbow", name: "碎星大弓", rarity: "rare", effect: "firstAttackBonus", amount: 13, upgradedAmount: 20, text: "每回合第一張攻擊牌額外造成 13 點傷害。重力箭雨會先壓碎最外層防線。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
+    { id: "grafted-blade-greatsword", name: "劍骸大劍", rarity: "legendary", effect: "turnBlock", amount: 7, upgradedAmount: 10, text: "回合開始時全隊獲得 7 護甲。無數誓約壓在劍脊上，也壓住戰線。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
+    { id: "azur-glintstone-staff", name: "亞茲勒輝石杖", rarity: "legendary", effect: "openingEnergy", amount: 1, upgradedAmount: 2, text: "每場戰鬥第一回合額外獲得 1 點能量。魔力洪流會把開場變成彗星窗口。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
+    { id: "dragon-communion-seal", name: "龍饗印記", rarity: "rare", effect: "firstAttackBurn", amount: 7, upgradedAmount: 11, text: "每回合第一張攻擊牌使命中的敵人燃燒 7 點。龍焰會替第一擊補上古龍怒火。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
+    { id: "mimic-tear-ashes", name: "仿身淚滴骨灰", rarity: "legendary", effect: "openingDraw", amount: 3, upgradedAmount: 4, text: "每場戰鬥第一回合額外抽 3 張牌。另一個自己會把手牌路線提前展開。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
+    { id: "flask-wondrous-physick", name: "靈藥聖杯瓶", rarity: "rare", effect: "turnStressRelief", amount: 4, upgradedAmount: 6, text: "回合開始時全隊壓力 -4。調配後的靈藥能把一次失誤從腦中洗掉。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" }
   ];
 
   const bloodlines = [
+    { characterId: "player-avatar", name: "未定義心靈之光", text: "自創主角的性格專屬牌額外抽 1 張牌，並為全隊提供 4 護甲。", sideStoryCost: 2, effect: { draw: 1, blockAll: 4 } },
     { characterId: "zheng-zha", name: "高級吸血鬼血統", text: "血統覺醒造成 2 倍暴擊傷害，鄭吒恢復 6 生命。", sideStoryCost: 2, effect: { criticalMultiplier: 2, healOwner: 6 } },
     { characterId: "zhang-jie", name: "引導者權限", text: "引導者示範使所有敵人下一次行動失效。", tutorialOnly: true, effect: { stunAll: 1 } },
     { characterId: "zhan-lan", name: "精神力控制者", text: "精神鏈接使所有隊員獲得 1 次閃避。", sideStoryCost: 2, effect: { evadeAll: 1 } },
@@ -340,7 +520,31 @@
     { characterId: "clint-barton", name: "鷹眼預判射線", text: "鷹眼穿城一箭穿透護甲，造成 1.6 倍暴擊傷害，並額外抽 1 張牌。", sideStoryCost: { rewardPointCost: 8600, sideStoryCost: 3 }, effect: { pierce: true, criticalMultiplier: 1.6, draw: 1 } },
     { characterId: "clark-kent-superman", name: "黃太陽細胞充能", text: "超人·熱視線俯衝造成 1.5 倍暴擊傷害，額外對所有敵人造成 10 點穿甲傷害。", sideStoryCost: { rewardPointCost: 11200, sideStoryCost: 5 }, effect: { criticalMultiplier: 1.5, extraDamageAll: 10 } },
     { characterId: "bruce-wayne-batman", name: "蝙蝠洞反制預案", text: "蝙蝠俠·氪石陷阱額外封鎖所有敵人一次行動，並抽 1 張牌。", sideStoryCost: { rewardPointCost: 9800, sideStoryCost: 4 }, effect: { stunAll: 1, draw: 1 } },
-    { characterId: "diana-prince-wonder-woman", name: "亞馬遜半神血脈", text: "神力女超人·真言套索斬造成 1.6 倍暴擊傷害，並使黛安娜獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 10400, sideStoryCost: 4 }, effect: { criticalMultiplier: 1.6, evadeOwner: 1 } }
+    { characterId: "diana-prince-wonder-woman", name: "亞馬遜半神血脈", text: "神力女超人·真言套索斬造成 1.6 倍暴擊傷害，並使黛安娜獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 10400, sideStoryCost: 4 }, effect: { criticalMultiplier: 1.6, evadeOwner: 1 } },
+    { characterId: "raleigh-becket", name: "流浪者老兵漂移", text: "危險流浪者·電漿炮額外對所有敵人造成 10 點穿甲傷害，並使敵人燃燒加深。", sideStoryCost: { rewardPointCost: 9800, sideStoryCost: 4 }, effect: { extraDamageAll: 10, burnAll: 6, pierce: true } },
+    { characterId: "mako-mori", name: "真子記憶校準", text: "真子·漂移反制額外抽 1 張牌，並讓全隊獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 9000, sideStoryCost: 4 }, effect: { draw: 1, evadeAll: 1 } },
+    { characterId: "stacker-pentecost", name: "末日鐘聲指揮權", text: "潘特考斯特·最後進軍額外提供全隊 12 護甲，並使所有敵人再虛弱 4 點。", sideStoryCost: { rewardPointCost: 10200, sideStoryCost: 4 }, effect: { blockAll: 12, weakAll: 4 } },
+    { characterId: "herc-hansen", name: "尤里卡反應爐同步", text: "尤里卡突襲·導彈雨穿透護甲，額外造成 12 點群體傷害並獲得 1 能量。", sideStoryCost: { rewardPointCost: 9800, sideStoryCost: 4 }, effect: { pierce: true, extraDamageAll: 12, gainEnergy: 1 } },
+    { characterId: "max-rockatansky", name: "荒原求生本能", text: "麥斯·雙管路戰造成 1.6 倍暴擊傷害，麥斯獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 8800, sideStoryCost: 3 }, effect: { criticalMultiplier: 1.6, evadeOwner: 1 } },
+    { characterId: "imperator-furiosa", name: "不死老喬叛逃路線", text: "芙莉歐莎·戰爭車破陣額外提供全隊 12 護甲並降低 6 壓力。", sideStoryCost: { rewardPointCost: 9600, sideStoryCost: 4 }, effect: { blockAll: 12, reduceStress: 6 } },
+    { characterId: "nux-war-boy", name: "英靈殿錯位信仰", text: "納克斯·見證我衝鋒造成 1.8 倍暴擊傷害，並額外獲得 1 能量。", sideStoryCost: { rewardPointCost: 8800, sideStoryCost: 3 }, effect: { criticalMultiplier: 1.8, gainEnergy: 1 } },
+    { characterId: "capable", name: "荒原人性錨點", text: "卡帕布·救贖信號額外治療全隊 6 生命，並使全隊壓力再降低 5 點。", sideStoryCost: { rewardPointCost: 8200, sideStoryCost: 3 }, effect: { healAll: 6, reduceStress: 5 } },
+    { characterId: "leon-kennedy", name: "浣熊市倖存者反射", text: "里昂·雙槍快射造成 1.6 倍暴擊傷害，里昂額外獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 9400, sideStoryCost: 4 }, effect: { criticalMultiplier: 1.6, evadeOwner: 1 } },
+    { characterId: "helena-harper", name: "教堂事件贖罪線", text: "海蓮娜·Hydra破圍額外封鎖目標下一次行動，並使所有敵人虛弱 4 點。", sideStoryCost: { rewardPointCost: 8800, sideStoryCost: 3 }, effect: { stunTarget: 1, weakAll: 4 } },
+    { characterId: "chris-redfield", name: "BSAA隊長意志", text: "克里斯·BSAA火線推進額外提供全隊 12 護甲，並對所有敵人追加 8 點穿甲傷害。", sideStoryCost: { rewardPointCost: 10000, sideStoryCost: 4 }, effect: { blockAll: 12, extraDamageAll: 8 } },
+    { characterId: "piers-nivans", name: "皮爾斯最後電流", text: "皮爾斯·反器材犧牲射擊造成 1.8 倍暴擊傷害，並額外抽 1 張牌。", sideStoryCost: { rewardPointCost: 10400, sideStoryCost: 4 }, effect: { criticalMultiplier: 1.8, draw: 1 } },
+    { characterId: "jake-muller", name: "威斯卡抗體血脈", text: "傑克·威斯卡血脈連擊穿透護甲，追加 14 點單體傷害並恢復自身 6 生命。", sideStoryCost: { rewardPointCost: 9800, sideStoryCost: 4 }, effect: { pierce: true, extraDamageTarget: 14, healOwner: 6 } },
+    { characterId: "sherry-birkin", name: "G病毒穩定再生", text: "雪莉·G病毒再生額外治療全隊 8 生命，並讓全隊壓力再降低 5 點。", sideStoryCost: { rewardPointCost: 9000, sideStoryCost: 4 }, effect: { healAll: 8, reduceStress: 5 } },
+    { characterId: "ada-wong", name: "間諜暗線權限", text: "艾達·弩箭暗線穿透護甲，額外使所有敵人中毒 5 點並虛弱 3 點。", sideStoryCost: { rewardPointCost: 9400, sideStoryCost: 4 }, effect: { pierce: true, poisonAll: 5, weakAll: 3 } },
+    { characterId: "bsaa-agent", name: "合作模式戰術鏈", text: "BSAA特工·合作掩護額外抽 1 張牌，全隊再獲得 8 護甲。", sideStoryCost: { rewardPointCost: 8200, sideStoryCost: 3 }, effect: { draw: 1, blockAll: 8 } },
+    { characterId: "tarnished-elden-lord", name: "大盧恩承載者", text: "褪色者·王座破環斬造成 1.8 倍暴擊傷害、穿透護甲，並額外獲得 1 能量。", sideStoryCost: { rewardPointCost: 12000, sideStoryCost: 5 }, effect: { criticalMultiplier: 1.8, pierce: true, gainEnergy: 1 } },
+    { characterId: "melina-kindling-maiden", name: "火種少女契約", text: "梅琳娜·火種引路額外治療全隊 8 生命，並讓全隊壓力再降低 6 點。", sideStoryCost: { rewardPointCost: 9800, sideStoryCost: 4 }, effect: { healAll: 8, reduceStress: 6 } },
+    { characterId: "ranni-dark-moon", name: "暗月律法", text: "菈妮·暗月儀式額外使所有敵人虛弱 6 點，抽 1 張牌，並封鎖目標下一次行動。", sideStoryCost: { rewardPointCost: 11200, sideStoryCost: 5 }, effect: { weakAll: 6, draw: 1, stunTarget: 1 } },
+    { characterId: "blaidd-half-wolf", name: "半狼忠誓", text: "布萊澤·王室巨劍冰狼造成 1.6 倍暴擊傷害，並額外提供全隊 8 護甲。", sideStoryCost: { rewardPointCost: 10400, sideStoryCost: 4 }, effect: { criticalMultiplier: 1.6, blockAll: 8 } },
+    { characterId: "millicent-valkyrie", name: "腐敗義手劍舞", text: "米莉森·腐敗水鳥穿透護甲，額外對所有敵人造成 10 傷害並中毒 6 點。", sideStoryCost: { rewardPointCost: 11000, sideStoryCost: 5 }, effect: { pierce: true, extraDamageAll: 10, poisonAll: 6 } },
+    { characterId: "alexander-warrior-jar", name: "戰士壺碎片", text: "亞歷山大·戰士壺衝鋒額外提供全隊 14 護甲，並使所有敵人虛弱 4 點。", sideStoryCost: { rewardPointCost: 9400, sideStoryCost: 4 }, effect: { blockAll: 14, weakAll: 4 } },
+    { characterId: "black-knife-tiche", name: "命定之死殘片", text: "狄希·命定之死黑刀造成 1.7 倍暴擊傷害，追加 8 中毒，並讓狄希獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 10800, sideStoryCost: 4 }, effect: { criticalMultiplier: 1.7, poisonTarget: 8, evadeOwner: 1 } },
+    { characterId: "nepheli-loux", name: "風暴王血脈", text: "涅斐麗·風暴鷹戰斧額外對所有敵人造成 8 點穿甲傷害，全隊再獲得 8 護甲。", sideStoryCost: { rewardPointCost: 9600, sideStoryCost: 4 }, effect: { extraDamageAll: 8, blockAll: 8 } }
   ];
 
   const enemies = [
@@ -457,7 +661,37 @@
     { id: "jy-beggar-staff-line", name: "丐幫棍陣", maxHp: 220, stressAura: 11, intents: [{ kind: "cleave", label: "打狗棒陣", amount: 19, targetMode: "all" }, { kind: "attack", label: "伏虎截脈", amount: 36, targetMode: "front" }, { kind: "guard", label: "八方呼應", amount: 32 }] },
     { id: "jy-tomb-sword-shadow", name: "古墓劍影", maxHp: 270, stressAura: 14, intents: [{ kind: "attack", label: "玉女素心劍", amount: 42, targetMode: "random" }, { kind: "cleave", label: "雙劍合璧", amount: 22, targetMode: "all" }, { kind: "guard", label: "寒玉床息", amount: 36 }, { kind: "stress", label: "斷腸回聲", amount: 22, targetMode: "all" }] },
     { id: "jy-five-absolute-avatar", name: "五絕論劍投影", maxHp: 560, stressAura: 18, intents: [{ kind: "cleave", label: "東邪西毒南帝北丐", amount: 30, targetMode: "all" }, { kind: "attack", label: "一陽指破脈", amount: 58, targetMode: "front" }, { kind: "guard", label: "九陰護體", amount: 54 }, { kind: "stress", label: "宗師威壓", amount: 30, targetMode: "all" }] },
-    { id: "jy-mount-hua-master", name: "華山劍意核心", maxHp: 820, stressAura: 23, regen: 18, intents: [{ kind: "attack", label: "獨孤破式", amount: 72, targetMode: "random" }, { kind: "cleave", label: "六脈劍氣縱橫", amount: 36, targetMode: "all" }, { kind: "stress", label: "天下第一之名", amount: 36, targetMode: "all" }, { kind: "regen", label: "真氣回環", amount: 54, block: 24 }], phaseTwo: { name: "華山劍意 無招勝有招", maxHp: 660, stressAura: 27, regen: 24, intents: [{ kind: "cleave", label: "萬劍歸宗", amount: 42, targetMode: "all" }, { kind: "attack", label: "玄鐵重劍壓頂", amount: 84, targetMode: "front" }, { kind: "stress", label: "武林氣運倒卷", amount: 40, targetMode: "all" }, { kind: "regen", label: "先天真氣", amount: 66, block: 30 }] } }
+    { id: "jy-mount-hua-master", name: "華山劍意核心", maxHp: 820, stressAura: 23, regen: 18, intents: [{ kind: "attack", label: "獨孤破式", amount: 72, targetMode: "random" }, { kind: "cleave", label: "六脈劍氣縱橫", amount: 36, targetMode: "all" }, { kind: "stress", label: "天下第一之名", amount: 36, targetMode: "all" }, { kind: "regen", label: "真氣回環", amount: 54, block: 24 }], phaseTwo: { name: "華山劍意 無招勝有招", maxHp: 660, stressAura: 27, regen: 24, intents: [{ kind: "cleave", label: "萬劍歸宗", amount: 42, targetMode: "all" }, { kind: "attack", label: "玄鐵重劍壓頂", amount: 84, targetMode: "front" }, { kind: "stress", label: "武林氣運倒卷", amount: 40, targetMode: "all" }, { kind: "regen", label: "先天真氣", amount: 66, block: 30 }] } },
+    { id: "pr-kaiju-spawn", name: "裂隙幼獸群", maxHp: 185, stressAura: 11, intents: [{ kind: "cleave", label: "酸液撲擊", amount: 19, targetMode: "all" }, { kind: "attack", label: "甲爪穿刺", amount: 34, targetMode: "random" }, { kind: "guard", label: "外骨骼蜷縮", amount: 26 }] },
+    { id: "pr-knifehead", name: "刀鋒頭怪獸", maxHp: 320, stressAura: 14, intents: [{ kind: "attack", label: "頭刃撞擊", amount: 48, targetMode: "front" }, { kind: "cleave", label: "港口掀翻", amount: 24, targetMode: "all" }, { kind: "guard", label: "厚甲壓進", amount: 38 }] },
+    { id: "pr-leatherback", name: "棱背怪獸", maxHp: 440, stressAura: 16, intents: [{ kind: "cleave", label: "電磁脈衝", amount: 27, targetMode: "all" }, { kind: "stress", label: "機甲斷訊", amount: 26, targetMode: "all" }, { kind: "guard", label: "厚背甲殼", amount: 46 }, { kind: "attack", label: "巨臂碾壓", amount: 56, targetMode: "front" }] },
+    { id: "pr-otachi", name: "尾立鼠怪獸", maxHp: 560, stressAura: 18, intents: [{ kind: "attack", label: "酸液噴吐", amount: 58, targetMode: "random" }, { kind: "cleave", label: "翼膜俯衝", amount: 30, targetMode: "all" }, { kind: "stress", label: "高空拖拽", amount: 30, targetMode: "all" }, { kind: "guard", label: "尾刃盤繞", amount: 50 }] },
+    { id: "pr-slattern", name: "毒婦裂隙巨獸", maxHp: 900, stressAura: 26, regen: 20, intents: [{ kind: "cleave", label: "三冠巨獸衝擊", amount: 42, targetMode: "all" }, { kind: "attack", label: "深海處刑", amount: 82, targetMode: "front" }, { kind: "stress", label: "裂隙召喚", amount: 42, targetMode: "all" }, { kind: "regen", label: "怪獸群護衛", amount: 64, block: 30 }], phaseTwo: { name: "毒婦巨獸 裂隙過載", maxHp: 720, stressAura: 30, regen: 28, intents: [{ kind: "cleave", label: "核爆前衝鋒", amount: 48, targetMode: "all" }, { kind: "attack", label: "深海尾刃貫穿", amount: 92, targetMode: "random" }, { kind: "stress", label: "太平洋裂開", amount: 46, targetMode: "all" }, { kind: "regen", label: "裂隙再生", amount: 76, block: 34 }] } },
+    { id: "fr-war-boy-raiders", name: "戰爭男孩車隊", maxHp: 175, stressAura: 11, intents: [{ kind: "attack", label: "引擎矛刺", amount: 32, targetMode: "front" }, { kind: "cleave", label: "車隊掃射", amount: 18, targetMode: "all" }, { kind: "guard", label: "鋼板車門", amount: 24 }] },
+    { id: "fr-buzzard-spike-cars", name: "尖刺車獵團", maxHp: 210, stressAura: 12, intents: [{ kind: "cleave", label: "尖刺夾擊", amount: 20, targetMode: "all" }, { kind: "attack", label: "鋸輪切入", amount: 38, targetMode: "random" }, { kind: "guard", label: "廢鐵裝甲", amount: 30 }] },
+    { id: "fr-polecat-boarders", name: "撐杆跳車兵", maxHp: 250, stressAura: 14, intents: [{ kind: "attack", label: "空中登車", amount: 42, targetMode: "random" }, { kind: "cleave", label: "撐杆掃落", amount: 22, targetMode: "all" }, { kind: "stress", label: "引擎咆哮", amount: 21, targetMode: "all" }, { kind: "guard", label: "高桿迴避", amount: 34 }] },
+    { id: "fr-bullet-farmer", name: "子彈農場領主", maxHp: 520, stressAura: 18, intents: [{ kind: "cleave", label: "雙機槍盲射", amount: 30, targetMode: "all" }, { kind: "attack", label: "重彈點名", amount: 60, targetMode: "random" }, { kind: "stress", label: "火線壓迫", amount: 30, targetMode: "all" }, { kind: "guard", label: "彈藥車掩體", amount: 52 }] },
+    { id: "fr-immortan-joe-war-party", name: "不死老喬戰團", maxHp: 860, stressAura: 25, regen: 18, intents: [{ kind: "cleave", label: "狂信車隊碾壓", amount: 40, targetMode: "all" }, { kind: "attack", label: "呼吸面具處刑", amount: 80, targetMode: "front" }, { kind: "stress", label: "見證我的恐懼", amount: 40, targetMode: "all" }, { kind: "regen", label: "狂熱護衛補位", amount: 58, block: 28 }], phaseTwo: { name: "不死老喬 最後車陣", maxHp: 680, stressAura: 29, regen: 26, intents: [{ kind: "cleave", label: "峽谷回頭路", amount: 46, targetMode: "all" }, { kind: "attack", label: "車頭撞殺", amount: 90, targetMode: "random" }, { kind: "stress", label: "荒原膜拜", amount: 44, targetMode: "all" }, { kind: "regen", label: "戰爭男孩替死", amount: 70, block: 32 }] } },
+    { id: "re6-zombie-horde", name: "Tall Oaks喪屍潮", maxHp: 190, stressAura: 10, intents: [{ kind: "cleave", label: "街區撲咬", amount: 16, targetMode: "all" }, { kind: "attack", label: "群屍壓倒", amount: 30, targetMode: "front" }, { kind: "stress", label: "城市尖叫", amount: 17, targetMode: "all" }] },
+    { id: "re6-javo-rifle-squad", name: "J'avo步槍小隊", maxHp: 220, stressAura: 12, regen: 8, intents: [{ kind: "attack", label: "突擊步槍點射", amount: 34, targetMode: "random" }, { kind: "cleave", label: "交叉火線", amount: 18, targetMode: "all" }, { kind: "regen", label: "肢體變異再生", amount: 28, block: 12 }] },
+    { id: "re6-bloodshot-pack", name: "Bloodshot暴走體", maxHp: 180, stressAura: 11, intents: [{ kind: "attack", label: "骨爪撲殺", amount: 36, targetMode: "front" }, { kind: "cleave", label: "血肉撕裂", amount: 18, targetMode: "all" }, { kind: "guard", label: "血肉硬化", amount: 24 }] },
+    { id: "re6-napad-brute", name: "Napad重甲變異體", maxHp: 340, stressAura: 14, intents: [{ kind: "attack", label: "重甲撞擊", amount: 48, targetMode: "front" }, { kind: "cleave", label: "硬殼震地", amount: 22, targetMode: "all" }, { kind: "guard", label: "角質裝甲", amount: 44 }] },
+    { id: "re6-strelats-screecher", name: "Strelats尖嘯變異體", maxHp: 260, stressAura: 15, intents: [{ kind: "stress", label: "高頻尖嘯", amount: 24, targetMode: "all" }, { kind: "attack", label: "舌刺突襲", amount: 42, targetMode: "random" }, { kind: "guard", label: "伏地閃避", amount: 30 }] },
+    { id: "re6-ustanak-capture", name: "Ustanak追獵者", maxHp: 560, stressAura: 18, regen: 12, intents: [{ kind: "attack", label: "機械臂捕獲", amount: 60, targetMode: "front" }, { kind: "cleave", label: "鐵爪橫掃", amount: 28, targetMode: "all" }, { kind: "stress", label: "追獵壓迫", amount: 28, targetMode: "all" }, { kind: "regen", label: "戰術裝甲補位", amount: 42, block: 20 }] },
+    { id: "re6-haos-chrysalis", name: "Haos蛹化核心", maxHp: 420, stressAura: 16, regen: 20, intents: [{ kind: "regen", label: "蛹殼自我修復", amount: 44, block: 24 }, { kind: "stress", label: "全球感染倒數", amount: 26, targetMode: "all" }, { kind: "cleave", label: "觸鬚甩擊", amount: 24, targetMode: "all" }] },
+    { id: "re6-iluzija-serpent", name: "Iluzija隱形巨蛇", maxHp: 460, stressAura: 17, intents: [{ kind: "attack", label: "隱形吞咬", amount: 56, targetMode: "random" }, { kind: "stress", label: "熱感消失", amount: 25, targetMode: "all" }, { kind: "guard", label: "光學隱匿", amount: 46 }] },
+    { id: "re6-simmons-dinosaur", name: "Derek Simmons恐龍變異", maxHp: 680, stressAura: 21, regen: 18, intents: [{ kind: "cleave", label: "骨架列車衝撞", amount: 34, targetMode: "all" }, { kind: "attack", label: "恐龍咬殺", amount: 70, targetMode: "front" }, { kind: "stress", label: "陰謀崩壞", amount: 33, targetMode: "all" }, { kind: "regen", label: "C病毒重組", amount: 56, block: 24 }] },
+    { id: "re6-haos-final-core", name: "Haos終局孵化體", maxHp: 900, stressAura: 26, regen: 26, intents: [{ kind: "cleave", label: "海底基地崩裂", amount: 42, targetMode: "all" }, { kind: "attack", label: "終局觸手處刑", amount: 84, targetMode: "front" }, { kind: "stress", label: "全球C病毒擴散", amount: 42, targetMode: "all" }, { kind: "regen", label: "完全孵化再生", amount: 70, block: 32 }], phaseTwo: { name: "Haos 完全孵化", maxHp: 720, stressAura: 30, regen: 34, intents: [{ kind: "cleave", label: "深海末日爆裂", amount: 50, targetMode: "all" }, { kind: "attack", label: "感染核心貫穿", amount: 96, targetMode: "random" }, { kind: "stress", label: "世界感染線", amount: 48, targetMode: "all" }, { kind: "regen", label: "C病毒完全適應", amount: 82, block: 38 }] } },
+    { id: "er-starscourge-radahn", name: "碎星將軍拉塔恩", maxHp: 940, stressAura: 28, intents: [{ kind: "cleave", label: "重力箭雨", amount: 44, targetMode: "all" }, { kind: "attack", label: "雙刀碎星斬", amount: 90, targetMode: "front" }, { kind: "guard", label: "重力鎧甲", amount: 70 }, { kind: "stress", label: "戰祭咆哮", amount: 44, targetMode: "all" }], phaseTwo: { name: "拉塔恩 隕星再臨", maxHp: 760, stressAura: 32, intents: [{ kind: "cleave", label: "隕星墜落", amount: 54, targetMode: "all" }, { kind: "attack", label: "星砕衝鋒", amount: 104, targetMode: "random" }, { kind: "guard", label: "重力場壓縮", amount: 82 }, { kind: "stress", label: "赤獅軍戰吼", amount: 50, targetMode: "all" }] } },
+    { id: "er-morgott-omen-king", name: "惡兆王蒙葛特", maxHp: 900, stressAura: 27, intents: [{ kind: "attack", label: "咒劍突刺", amount: 86, targetMode: "random" }, { kind: "cleave", label: "黃金幻刃雨", amount: 42, targetMode: "all" }, { kind: "guard", label: "王城封印", amount: 68 }, { kind: "stress", label: "惡兆審判", amount: 42, targetMode: "all" }], phaseTwo: { name: "蒙葛特 王血詛咒", maxHp: 720, stressAura: 31, intents: [{ kind: "cleave", label: "咒血爆散", amount: 50, targetMode: "all" }, { kind: "attack", label: "聖槍處刑", amount: 100, targetMode: "front" }, { kind: "stress", label: "黃金樹拒絕", amount: 48, targetMode: "all" }, { kind: "guard", label: "王城最後門扉", amount: 78 }] } },
+    { id: "er-fire-giant", name: "火焰巨人", maxHp: 1120, stressAura: 30, regen: 12, intents: [{ kind: "cleave", label: "雪原巨盾碾壓", amount: 48, targetMode: "all" }, { kind: "attack", label: "巨腳踩碎", amount: 98, targetMode: "front" }, { kind: "stress", label: "火山爐心甦醒", amount: 46, targetMode: "all" }, { kind: "regen", label: "巨人火焰護身", amount: 50, block: 36 }], phaseTwo: { name: "火焰巨人 獨眼爐心", maxHp: 880, stressAura: 34, regen: 18, intents: [{ kind: "cleave", label: "滾火吞原", amount: 58, targetMode: "all" }, { kind: "attack", label: "爐心火掌", amount: 112, targetMode: "random" }, { kind: "stress", label: "禁忌火焰", amount: 54, targetMode: "all" }, { kind: "regen", label: "燃燒血肉", amount: 62, block: 42 }] } },
+    { id: "er-godskin-duo", name: "神皮雙人組", maxHp: 980, stressAura: 29, regen: 20, intents: [{ kind: "cleave", label: "黑焰雙刃輪舞", amount: 46, targetMode: "all" }, { kind: "attack", label: "神皮縫針處刑", amount: 92, targetMode: "random" }, { kind: "regen", label: "神皮輪替復生", amount: 68, block: 34 }, { kind: "stress", label: "狩神禱詞", amount: 44, targetMode: "all" }], phaseTwo: { name: "神皮雙人組 復生輪迴", maxHp: 760, stressAura: 33, regen: 28, intents: [{ kind: "cleave", label: "黑焰輪鋸", amount: 55, targetMode: "all" }, { kind: "attack", label: "使徒伸展斬", amount: 106, targetMode: "front" }, { kind: "regen", label: "神皮再縫合", amount: 78, block: 40 }, { kind: "stress", label: "神皮合唱", amount: 50, targetMode: "all" }] } },
+    { id: "er-mohg-lord-of-blood", name: "鮮血君王蒙格", maxHp: 1020, stressAura: 31, regen: 18, intents: [{ kind: "cleave", label: "血焰灑落", amount: 50, targetMode: "all" }, { kind: "attack", label: "三叉戟穿心", amount: 98, targetMode: "random" }, { kind: "stress", label: "尼希爾血咒", amount: 52, targetMode: "all" }, { kind: "regen", label: "鮮血王朝祭壇", amount: 60, block: 36 }], phaseTwo: { name: "蒙格 血翼展開", maxHp: 820, stressAura: 36, regen: 26, intents: [{ kind: "cleave", label: "血翼爆燃", amount: 62, targetMode: "all" }, { kind: "attack", label: "王朝處刑", amount: 116, targetMode: "front" }, { kind: "stress", label: "鮮血倒數", amount: 58, targetMode: "all" }, { kind: "regen", label: "血池重生", amount: 72, block: 42 }] } },
+    { id: "er-dragonlord-placidusax", name: "龍王普拉頓桑克斯", maxHp: 1100, stressAura: 32, regen: 16, intents: [{ kind: "cleave", label: "古龍雷暴", amount: 54, targetMode: "all" }, { kind: "attack", label: "時空龍爪", amount: 104, targetMode: "random" }, { kind: "guard", label: "龍王時停", amount: 74 }, { kind: "stress", label: "風暴中心", amount: 50, targetMode: "all" }], phaseTwo: { name: "普拉頓桑克斯 時空裂身", maxHp: 860, stressAura: 37, regen: 24, intents: [{ kind: "cleave", label: "黃金雷雲化身", amount: 66, targetMode: "all" }, { kind: "attack", label: "雙首龍息", amount: 120, targetMode: "front" }, { kind: "stress", label: "古王降臨", amount: 60, targetMode: "all" }, { kind: "regen", label: "時空回捲", amount: 70, block: 44 }] } },
+    { id: "er-maliketh-black-blade", name: "黑劍瑪利喀斯", maxHp: 980, stressAura: 33, intents: [{ kind: "attack", label: "獸爪裂地", amount: 96, targetMode: "random" }, { kind: "cleave", label: "岩石彈幕", amount: 48, targetMode: "all" }, { kind: "guard", label: "野獸祭司披風", amount: 66 }, { kind: "stress", label: "死亡盧恩封存", amount: 52, targetMode: "all" }], phaseTwo: { name: "瑪利喀斯 命定之死", maxHp: 820, stressAura: 38, regen: 12, intents: [{ kind: "cleave", label: "黑劍死亡波", amount: 66, targetMode: "all" }, { kind: "attack", label: "空翻黑刃處刑", amount: 124, targetMode: "front" }, { kind: "stress", label: "命定之死釋放", amount: 62, targetMode: "all" }, { kind: "regen", label: "黑焰殘痕", amount: 54, block: 34 }] } },
+    { id: "er-malenia-blade-miquella", name: "米凱拉的鋒刃瑪蓮妮亞", maxHp: 1040, stressAura: 35, regen: 30, intents: [{ kind: "attack", label: "水鳥亂舞點名", amount: 112, targetMode: "random" }, { kind: "cleave", label: "義手刀連舞", amount: 56, targetMode: "all" }, { kind: "regen", label: "命中吸血再生", amount: 74, block: 26 }, { kind: "stress", label: "從未敗北", amount: 56, targetMode: "all" }], phaseTwo: { name: "腐敗女神瑪蓮妮亞", maxHp: 900, stressAura: 41, regen: 38, intents: [{ kind: "cleave", label: "猩紅艾奧尼亞盛放", amount: 72, targetMode: "all" }, { kind: "attack", label: "腐敗幻影連斬", amount: 132, targetMode: "random" }, { kind: "stress", label: "腐敗花海", amount: 68, targetMode: "all" }, { kind: "regen", label: "女神再生", amount: 90, block: 44 }] } },
+    { id: "er-godfrey-hoarah-loux", name: "初始王葛孚雷", maxHp: 1080, stressAura: 34, intents: [{ kind: "cleave", label: "王斧震地", amount: 56, targetMode: "all" }, { kind: "attack", label: "黃金王斧處刑", amount: 108, targetMode: "front" }, { kind: "guard", label: "王者踏步", amount: 76 }, { kind: "stress", label: "初始王威壓", amount: 54, targetMode: "all" }], phaseTwo: { name: "荷萊·露 戰士本能", maxHp: 880, stressAura: 40, intents: [{ kind: "cleave", label: "撼地咆哮", amount: 70, targetMode: "all" }, { kind: "attack", label: "摔投撕裂", amount: 136, targetMode: "random" }, { kind: "stress", label: "戰士咆哮", amount: 66, targetMode: "all" }, { kind: "guard", label: "獸性霸體", amount: 88 }] } },
+    { id: "er-radagon-elden-beast", name: "拉達岡與艾爾登獸", maxHp: 1180, stressAura: 36, regen: 18, intents: [{ kind: "cleave", label: "黃金錘光爆", amount: 62, targetMode: "all" }, { kind: "attack", label: "律法破碎重擊", amount: 118, targetMode: "front" }, { kind: "stress", label: "黃金律法審判", amount: 60, targetMode: "all" }, { kind: "regen", label: "法環修復", amount: 70, block: 44 }], phaseTwo: { name: "艾爾登獸 星海律法", maxHp: 980, stressAura: 42, regen: 32, intents: [{ kind: "cleave", label: "艾爾登流星雨", amount: 78, targetMode: "all" }, { kind: "attack", label: "星海聖劍", amount: 144, targetMode: "random" }, { kind: "stress", label: "世界律法重寫", amount: 72, targetMode: "all" }, { kind: "regen", label: "星海重構", amount: 92, block: 48 }] } }
   ];
 
   const encounters = [
@@ -578,12 +812,37 @@
     { id: "jy-poison-inn", name: "星宿毒霧客棧", tier: "normal", enemies: ["jy-poison-cultist", "jy-poison-cultist"], rewardPoints: 4200 },
     { id: "jy-tomb-shadow-line", name: "古墓密道劍影", tier: "elite", enemies: ["jy-tomb-sword-shadow", "jy-poison-cultist"], rewardPoints: 6000 },
     { id: "jy-five-absolute-duel", name: "五絕論劍投影", tier: "miniboss", enemies: ["jy-five-absolute-avatar"], rewardPoints: 8200 },
-    { id: "jy-mount-hua-master", name: "華山劍意終局", tier: "boss", enemies: ["jy-mount-hua-master"], rewardPoints: 13600 }
+    { id: "jy-mount-hua-master", name: "華山劍意終局", tier: "boss", enemies: ["jy-mount-hua-master"], rewardPoints: 13600 },
+    { id: "pacrim-hong-kong-docks", name: "香港碼頭怪獸登陸", tier: "normal", enemies: ["pr-kaiju-spawn", "pr-knifehead"], rewardPoints: 4200 },
+    { id: "pacrim-shatterdome-breach", name: "破碎穹頂防線", tier: "normal", enemies: ["pr-kaiju-spawn", "pr-leatherback"], rewardPoints: 4600 },
+    { id: "pacrim-double-event", name: "雙重怪獸事件", tier: "elite", enemies: ["pr-leatherback", "pr-otachi"], rewardPoints: 6600 },
+    { id: "pacrim-otachi-airlift", name: "尾立鼠高空拖拽", tier: "miniboss", enemies: ["pr-otachi"], rewardPoints: 8800 },
+    { id: "pacrim-breach-slattern", name: "太平洋裂隙終戰", tier: "boss", enemies: ["pr-slattern"], rewardPoints: 14400 },
+    { id: "fury-canyon-ambush", name: "峽谷車隊伏擊", tier: "normal", enemies: ["fr-war-boy-raiders", "fr-buzzard-spike-cars"], rewardPoints: 4300 },
+    { id: "fury-sandstorm-run", name: "沙暴追逐線", tier: "normal", enemies: ["fr-war-boy-raiders", "fr-polecat-boarders"], rewardPoints: 4700 },
+    { id: "fury-bullet-farm-siege", name: "子彈農場火線", tier: "elite", enemies: ["fr-bullet-farmer", "fr-war-boy-raiders"], rewardPoints: 6800 },
+    { id: "fury-polecat-swarm", name: "撐杆跳車包圍", tier: "miniboss", enemies: ["fr-polecat-boarders"], rewardPoints: 9000 },
+    { id: "fury-citadel-chase", name: "要塞回頭路", tier: "boss", enemies: ["fr-immortan-joe-war-party"], rewardPoints: 14600 },
+    { id: "re6-tall-oaks-outbreak", name: "Tall Oaks總統演說廳", tier: "normal", enemies: ["re6-zombie-horde", "re6-bloodshot-pack"], rewardPoints: 4600 },
+    { id: "re6-edonia-warzone", name: "東歐傭兵戰區", tier: "normal", enemies: ["re6-javo-rifle-squad", "re6-napad-brute"], rewardPoints: 5000 },
+    { id: "re6-lanshiang-siege", name: "蘭祥四塔圍城", tier: "elite", enemies: ["re6-javo-rifle-squad", "re6-strelats-screecher", "re6-iluzija-serpent"], rewardPoints: 7200 },
+    { id: "re6-ustanak-hunt", name: "Ustanak抗體追獵", tier: "miniboss", enemies: ["re6-ustanak-capture", "re6-simmons-dinosaur"], rewardPoints: 9800 },
+    { id: "re6-haos-final", name: "海底基地Haos終局", tier: "boss", enemies: ["re6-haos-chrysalis", "re6-haos-final-core"], rewardPoints: 16000 },
+    { id: "er-radahn-festival", name: "蓋利德戰祭·碎星拉塔恩", tier: "boss", enemies: ["er-starscourge-radahn"], rewardPoints: 16800 },
+    { id: "er-morgott-throne", name: "王城王座·惡兆王蒙葛特", tier: "boss", enemies: ["er-morgott-omen-king"], rewardPoints: 16600 },
+    { id: "er-fire-giant-forge", name: "巨人山頂·火焰巨人", tier: "boss", enemies: ["er-fire-giant"], rewardPoints: 17600 },
+    { id: "er-godskin-temple", name: "天空神殿·神皮雙人組", tier: "boss", enemies: ["er-godskin-duo"], rewardPoints: 17400 },
+    { id: "er-mohg-dynasty", name: "鮮血王朝·蒙格", tier: "boss", enemies: ["er-mohg-lord-of-blood"], rewardPoints: 17800 },
+    { id: "er-placidusax-storm", name: "風暴時空·龍王普拉頓桑克斯", tier: "boss", enemies: ["er-dragonlord-placidusax"], rewardPoints: 18200 },
+    { id: "er-maliketh-death", name: "法姆亞茲拉·黑劍瑪利喀斯", tier: "boss", enemies: ["er-maliketh-black-blade"], rewardPoints: 18400 },
+    { id: "er-malenia-haligtree", name: "聖樹底層·瑪蓮妮亞", tier: "boss", enemies: ["er-malenia-blade-miquella"], rewardPoints: 19000 },
+    { id: "er-godfrey-ashen-capital", name: "灰燼王城·初始王葛孚雷", tier: "boss", enemies: ["er-godfrey-hoarah-loux"], rewardPoints: 18600 },
+    { id: "er-radagon-elden-throne", name: "艾爾登王座·拉達岡與艾爾登獸", tier: "boss", enemies: ["er-radagon-elden-beast"], rewardPoints: 20000 }
   ];
 
   const scenarios = [
     { id: "tutorial", name: "生化危機", subtitle: "蜂巢新手關", intro: "冰冷車廂駛向蜂巢。張杰只給你一句忠告：活下去。", recruitmentPool: [], tutorialEncounters: ["bio-lab", "bio-stairs", "bio-crawler"] },
-    { id: "alien", name: "異形", subtitle: "深空獵殺", intro: "寂靜飛船沒有回應，生命探測器卻正逐個亮起。", recruitmentPool: ["zhan-lan", "zero", "li-xiaoyi", "mou-gang", "li-shuaixi"], normal: ["alien-eggs", "alien-ducts"], elite: ["alien-warriors"], miniboss: "alien-praetorian", boss: "alien-queen" },
+    { id: "alien", name: "異形", subtitle: "深空獵殺", intro: "寂靜飛船沒有回應，生命探測器卻正逐個亮起。", recruitmentPool: ["zheng-zha", "zhan-lan", "zero", "li-xiaoyi", "mou-gang", "li-shuaixi"], normal: ["alien-eggs", "alien-ducts"], elite: ["alien-warriors"], miniboss: "alien-praetorian", boss: "alien-queen" },
     { id: "juon", name: "咒怨", subtitle: "怨念宅邸", intro: "踏入宅邸的瞬間，每個人都知道門後不再是原本的世界。", recruitmentPool: ["chu-xuan", "zhao-yingkong", "ba-wang", "xiao-honglu", "qi-tengyi", "zhang-heng", "ming-yanwei", "cheng-xiao", "wang-xia", "luo-gandao", "liu-yu", "lin-juntian", "imhotep"], normal: ["juon-house", "juon-attic"], elite: ["juon-corridor"], miniboss: "juon-matriarch", boss: "juon-kayako", eventTitle: "宅邸深處的低語", eventText: "黑暗中傳來熟悉的聲音，代價與生路同時擺在眼前。" },
     { id: "mummy-curse", name: "神鬼傳奇", subtitle: "亡者都城", intro: "黃沙掩埋的亡者之城重新開啟，復活真經與亡靈詛咒同時等待中洲隊。", recruitmentPool: ["qi-tengyi", "cheng-xiao", "imhotep", "zhang-heng", "ming-yanwei", "wang-xia", "liu-yu", "lin-juntian", "luo-gandao", "xiao-honglu"], normal: ["mummy-hamunaptra", "mummy-catacombs"], elite: ["mummy-ritual"], miniboss: "mummy-anubis", boss: "mummy-imhotep", eventTitle: "亡者黑經與太陽金經", eventText: "兩本古書在祭壇兩端同時翻開，一邊是復活的希望，一邊是詛咒的代價。", scenarioPowerName: "復活真經殘頁", scenarioPowerText: "本次遠征第一回合全隊額外獲得 6 護甲。", scenarioPower: { id: "book-of-amun-ra", effect: "openingBlock", amount: 6 } },
     { id: "jurassic-island", name: "侏羅紀公園", subtitle: "失控樂園", intro: "電網熄滅，雨夜裡傳來沉重腳步聲。這座樂園從來不是為人類準備的。", recruitmentPool: ["zhao-yingkong", "ba-wang", "mou-gang", "li-xiaoyi", "li-shuaixi", "zhan-lan", "zero", "chu-xuan", "zhang-heng", "cheng-xiao"], normal: ["jurassic-visitor-center", "jurassic-raptor-pen"], elite: ["jurassic-jungle"], miniboss: "jurassic-triceratops", boss: "jurassic-rex", eventTitle: "高壓電網控制室", eventText: "控制台不斷閃爍，重啟電網能爭取生路，也會把所有恐龍驚醒。", scenarioPowerName: "高壓電網重啟", scenarioPowerText: "本次遠征每回合全隊額外獲得 2 護甲。", scenarioPower: { id: "electric-fence", effect: "turnBlock", amount: 2 } },
@@ -605,7 +864,11 @@
     { id: "batman-v-superman", name: "超人大戰蝙蝠俠", subtitle: "正義黎明", intro: "白光散去，大都會廢墟仍在雨夜裡冒煙。蝙蝠燈照向雲層，超人的身影停在城市上空，LexCorp正把恐懼、氪石與氪星遺骸推向同一場末日實驗。", recruitmentPool: ["clark-kent-superman", "bruce-wayne-batman", "diana-prince-wonder-woman", "chu-xuan", "zheng-zha", "zero", "ba-wang", "zhan-lan", "zhao-yingkong", "xiao-honglu"], normal: ["bvs-metropolis-ruins", "bvs-knightmare-line"], elite: ["bvs-kryptonite-yard"], miniboss: "bvs-lex-genesis", boss: "bvs-doomsday", eventTitle: "氪石矛與蝙蝠燈停戰線", eventText: "雨水淹過破碎港口，氪石武器箱與蝙蝠翼火控同時亮起。若能讓兩個象徵停下互相獵殺，真正的末日才會現形。", scenarioPowerName: "正義黎明停戰", scenarioPowerText: "本次遠征所有攻擊牌傷害 +4。", scenarioPower: { id: "justice-dawn-truce", effect: "attackBonus", amount: 4 } },
     { id: "devil-may-cry-5", name: "Devil May Cry 5", subtitle: "Qliphoth魔樹決戰", intro: "白光散去，紅墓市被Qliphoth魔樹撕成血色廢墟。尼祿、V與但丁分別從三條戰線逼近樹心，主神要求中洲隊在魔王完全吞下果實前打穿王座。", recruitmentPool: ["nero-dmc5", "v-dmc5", "dante-dmc5", "zhao-yingkong", "zero", "ba-wang", "song-tian", "kevin", "victor", "clone-zheng-zha"], normal: ["dmc-red-grave-streets", "dmc-qiliphoth-roots"], elite: ["dmc-riot-hunt"], miniboss: "dmc-proto-angelo", boss: "dmc-urizen", eventTitle: "Devil May Cry事務所的臨時委託", eventText: "破損電話亭裡傳來妮可的聲音，武器箱、Devil Breaker備件與但丁留下的帳單一起砸在地上。選擇支援路線，會改變這次遠征的連段節奏。", scenarioPowerName: "Stylish連段評級", scenarioPowerText: "本次遠征所有攻擊牌傷害 +5。", scenarioPower: { id: "stylish-combo-rating", effect: "attackBonus", amount: 5 } },
     { id: "final-destination", name: "死神來了", subtitle: "死亡設計", intro: "白光散去，眾人站在爆裂前一秒的高速公路中央。每一塊玻璃、每一滴油、每一道煞車聲都像提前寫好的判決。", recruitmentPool: ["zhan-lan", "xiao-honglu", "chu-xuan", "zero", "zhao-yingkong", "cheng-xiao", "liu-yu", "lin-juntian", "naya", "sarah"], normal: ["fd-highway-premonition", "fd-theater-trap"], elite: ["fd-chain-reaction"], miniboss: "fd-design-lock", boss: "fd-final-list", eventTitle: "預感碎片與安全出口", eventText: "倖存者留下的路線圖被燒掉一半，仍能看出下一次事故的順序。改變一個節點，死亡會立刻重排。", scenarioPowerName: "死亡設計預判", scenarioPowerText: "本次遠征每回合全隊額外獲得 3 護甲。", scenarioPower: { id: "premonition-loop", effect: "turnBlock", amount: 3 } },
-    { id: "jinyong-heroic-peak", name: "金庸武俠", subtitle: "襄陽與華山", intro: "白光散去，襄陽城頭戰鼓正急。江湖高手在城內結盟，華山劍意卻從遠處壓下，像要把整個武林拖進最後一次論劍。", recruitmentPool: ["luo-yinglong", "qi-tengyi", "cheng-xiao", "zhao-yingkong", "zhang-heng", "ming-yanwei", "chu-xuan", "xiao-honglu", "shiva-gangtian", "song-tian"], normal: ["jy-xiangyang-vanguard", "jy-poison-inn"], elite: ["jy-tomb-shadow-line"], miniboss: "jy-five-absolute-duel", boss: "jy-mount-hua-master", eventTitle: "九陰殘卷與襄陽軍旗", eventText: "殘卷被壓在染血軍旗下，旁邊是郭靖留下的守城令。取武學，或守城，最後都會導向華山。", scenarioPowerName: "武林盟誓", scenarioPowerText: "本次遠征所有攻擊牌傷害 +4。", scenarioPower: { id: "wulin-manual-focus", effect: "attackBonus", amount: 4 } }
+    { id: "jinyong-heroic-peak", name: "金庸武俠", subtitle: "襄陽與華山", intro: "白光散去，襄陽城頭戰鼓正急。江湖高手在城內結盟，華山劍意卻從遠處壓下，像要把整個武林拖進最後一次論劍。", recruitmentPool: ["luo-yinglong", "qi-tengyi", "cheng-xiao", "zhao-yingkong", "zhang-heng", "ming-yanwei", "chu-xuan", "xiao-honglu", "shiva-gangtian", "song-tian"], normal: ["jy-xiangyang-vanguard", "jy-poison-inn"], elite: ["jy-tomb-shadow-line"], miniboss: "jy-five-absolute-duel", boss: "jy-mount-hua-master", eventTitle: "九陰殘卷與襄陽軍旗", eventText: "殘卷被壓在染血軍旗下，旁邊是郭靖留下的守城令。取武學，或守城，最後都會導向華山。", scenarioPowerName: "武林盟誓", scenarioPowerText: "本次遠征所有攻擊牌傷害 +4。", scenarioPower: { id: "wulin-manual-focus", effect: "attackBonus", amount: 4 } },
+    { id: "pacific-rim-breach", name: "環太平洋", subtitle: "香港破碎穹頂", intro: "白光散去，香港海面被怪獸骨脊劃開。破碎穹頂警報全線亮紅，獵人機甲正從維修架上墜入暴雨，主神要求中洲隊在裂隙完全擴張前守住城市。", recruitmentPool: ["raleigh-becket", "mako-mori", "stacker-pentecost", "herc-hansen", "luo-gandao", "clone-luo-gandao", "ba-wang", "wang-xia", "chu-xuan", "zero"], normal: ["pacrim-hong-kong-docks", "pacrim-shatterdome-breach"], elite: ["pacrim-double-event"], miniboss: "pacrim-otachi-airlift", boss: "pacrim-breach-slattern", eventTitle: "神經共感駕駛艙與核爆授權", eventText: "破碎穹頂最後一套神經共感駕駛艙仍在閃爍，旁邊是只會用一次的裂隙核爆授權。上機，或把城市留給怪獸。", scenarioPowerName: "獵人機甲同步", scenarioPowerText: "本次遠征所有攻擊牌傷害 +5。", scenarioPower: { id: "jaeger-drift-sync", effect: "attackBonus", amount: 5 } },
+    { id: "fury-road-war-rig", name: "瘋狂麥斯", subtitle: "狂怒公路", intro: "白光散去，戰爭車正衝進沙暴前緣。引擎、鼓點與追兵的嘶吼擠滿耳膜，芙莉歐莎把方向盤打死，主神只標出一句：護送車隊穿過要塞回頭路。", recruitmentPool: ["max-rockatansky", "imperator-furiosa", "nux-war-boy", "capable", "li-shuaixi", "li-xiaoyi", "ba-wang", "wang-xia", "zero", "zhao-yingkong"], normal: ["fury-canyon-ambush", "fury-sandstorm-run"], elite: ["fury-bullet-farm-siege"], miniboss: "fury-polecat-swarm", boss: "fury-citadel-chase", eventTitle: "戰爭車油箱與綠洲種子", eventText: "油箱漏得像傷口，種子袋被卡帕布護在懷裡。繼續逃，只會被耗死；回頭殺穿要塞，才有真正的路。", scenarioPowerName: "狂怒公路衝刺", scenarioPowerText: "本次遠征第一回合全隊額外獲得 12 護甲。", scenarioPower: { id: "war-rig-breakthrough", effect: "openingBlock", amount: 12 } },
+    { id: "resident-evil-6-c-virus", name: "生化危機6", subtitle: "全球C病毒戰線", intro: "白光散去，總統演說廳的屍潮已經撞碎安檢門。Tall Oaks、東歐戰區、蘭祥四塔與海底基地的警報同時在主神視野裡亮起，C病毒正在把整個世界推進同一場超大型感染戰。", recruitmentPool: ["leon-kennedy", "helena-harper", "chris-redfield", "piers-nivans", "jake-muller", "sherry-birkin", "ada-wong", "bsaa-agent", "zhan-lan", "chu-xuan"], normal: ["re6-tall-oaks-outbreak", "re6-edonia-warzone"], elite: ["re6-lanshiang-siege"], miniboss: "re6-ustanak-hunt", boss: "re6-haos-final", eventTitle: "抗體樣本與四塔指揮密鑰", eventText: "雪莉與傑克的抗體樣本被鎖進冷藏箱，旁邊是蘭祥四塔的指揮密鑰。拿到它們，才能把全球感染線重新壓回海底基地。", scenarioPowerName: "C病毒抗體窗口", scenarioPowerText: "本次遠征所有攻擊牌傷害 +5。", scenarioPower: { id: "c-virus-antibody-window", effect: "attackBonus", amount: 5 } },
+    { id: "elden-ring-hell-run", name: "艾爾登法環", subtitle: "地獄難度 · 交界地十王", intro: "白光散去，賜福沒有照亮道路，只照出十個頭目的名字。主神把交界地壓縮成一條地獄級遠征線：每個戰鬥節點都可能抽中碎星、血王、黑劍、腐敗女神或艾爾登獸。", recruitmentPool: ["tarnished-elden-lord", "melina-kindling-maiden", "ranni-dark-moon", "blaidd-half-wolf", "millicent-valkyrie", "alexander-warrior-jar", "black-knife-tiche", "nepheli-loux", "zheng-zha", "chu-xuan"], normal: ["er-radahn-festival", "er-morgott-throne"], elite: ["er-mohg-dynasty"], miniboss: "er-maliketh-death", boss: "er-radagon-elden-throne", hellBossPool: ["er-radahn-festival", "er-morgott-throne", "er-fire-giant-forge", "er-godskin-temple", "er-mohg-dynasty", "er-placidusax-storm", "er-maliketh-death", "er-malenia-haligtree", "er-godfrey-ashen-capital", "er-radagon-elden-throne"], eventTitle: "賜福、淚滴與大盧恩裂片", eventText: "賜福旁的光點不再指向安全路線，而是指向下一個頭目。仿身淚滴骨灰、靈藥聖杯瓶與破碎大盧恩只能支撐一次地獄級衝刺。", scenarioPowerName: "大盧恩超載", scenarioPowerText: "本次遠征所有攻擊牌傷害 +7。", scenarioPower: { id: "great-rune-overload", effect: "attackBonus", amount: 7 } }
   ];
 
   const scenarioOpenings = {
@@ -980,6 +1243,81 @@
         { enemyId: "jy-five-absolute-avatar", title: "五絕論劍投影", text: "東邪西毒南帝北丐的影子在石台上交錯，無人先退半步。" },
         { enemyId: "jy-mount-hua-master", title: "華山劍意核心", text: "雲海裂開，劍意像無數看不見的線，把整座華山鎖成一場終局。" }
       ]
+    },
+    "pacific-rim-breach": {
+      title: "香港破碎穹頂",
+      premise: "白光散去時，雨水正從破碎穹頂的鋼架上往下砸。遠處海面亮起裂隙藍光，怪獸的骨脊切開維港，獵人機甲還卡在維修架上，警報已經把整座城市推進倒數。",
+      dialogue: [
+        { speaker: "主神", line: "主線：守住香港防線並摧毀太平洋裂隙。支線：保留至少一台獵人機甲完整戰力。" },
+        { speaker: "羅利·貝克特", line: "危險流浪者還能動。真子，進入漂移，我們把那東西從碼頭推回海裡。" },
+        { speaker: "森真子", line: "神經共感穩定。牠的行動不是野獸本能，裂隙後面有指揮節奏。" },
+        { speaker: "史塔克·潘特考斯特", line: "所有機甲駕駛聽令：城市防線不能再退。中洲隊，替我們清出通往裂隙的路。" },
+        { speaker: "楚軒", line: "怪獸會用電磁脈衝切斷機甲控制。先保護指揮鏈，再把核爆授權留到裂隙核心。" }
+      ],
+      panels: [
+        { enemyId: "pr-kaiju-spawn", title: "裂隙幼獸登岸", text: "海水裡爬出成群藍光幼獸，酸液落在碼頭鋼板上冒出白煙。" },
+        { enemyId: "pr-knifehead", title: "刀鋒頭撞城", text: "巨大的頭刃撞碎防波堤，貨櫃像骰子一樣被掀上半空。" },
+        { enemyId: "pr-leatherback", title: "棱背電磁脈衝", text: "怪獸雙臂砸下，藍白電磁浪讓整條機甲防線同時失明。" },
+        { enemyId: "pr-otachi", title: "尾立鼠高空拖拽", text: "翼膜在暴雨裡展開，尾刃鉤住機甲胸甲，把戰場從街區拖向雲層。" },
+        { enemyId: "pr-slattern", title: "太平洋裂隙終戰", text: "深海裂隙像一隻睜開的眼，三冠巨獸從藍光裡抬頭，擋在核爆航線前。" }
+      ]
+    },
+    "fury-road-war-rig": {
+      title: "狂怒公路",
+      premise: "投放結束時，眾人已經站在高速疾馳的戰爭車上。沙暴在前，追兵在後，鼓車的火焰吉他把引擎聲推成戰鼓。芙莉歐莎沒有回頭，只把方向盤打向要塞。",
+      dialogue: [
+        { speaker: "主神", line: "主線：護送戰爭車突破要塞回頭路。支線：保住綠洲種子與五名逃亡者。" },
+        { speaker: "芙莉歐莎", line: "我們不再往前逃。回頭，穿過他們的車陣，奪回水源。" },
+        { speaker: "麥斯·洛克坦斯基", line: "追兵太多，燃料不夠。要活，就得讓他們撞在自己路上。" },
+        { speaker: "納克斯", line: "見證我！不……這次我把車開到該去的地方。" },
+        { speaker: "楚軒", line: "車隊戰不是逃跑，是移動陣地戰。先拆撐杆兵，再逼不死老喬離開護衛圈。" }
+      ],
+      panels: [
+        { enemyId: "fr-war-boy-raiders", title: "戰爭男孩追擊", text: "白粉臉的車手踩死油門，長矛和引擎一起刺向戰爭車側翼。" },
+        { enemyId: "fr-buzzard-spike-cars", title: "尖刺車獵團", text: "廢鐵尖刺從沙塵裡探出，像一群帶輪子的捕獸夾咬向車隊。" },
+        { enemyId: "fr-polecat-boarders", title: "撐杆跳車包圍", text: "高桿在車陣間來回晃動，跳車兵從半空撲向油箱與駕駛艙。" },
+        { enemyId: "fr-bullet-farmer", title: "子彈農場火線", text: "盲眼領主站在彈藥車上狂笑，曳光彈把沙暴切成一條條火線。" },
+        { enemyId: "fr-immortan-joe-war-party", title: "要塞回頭路", text: "不死老喬的車隊堵住峽谷出口，水源、狂信和死亡全擠在同一道窄路上。" }
+      ]
+    },
+    "resident-evil-6-c-virus": {
+      title: "全球C病毒戰線",
+      premise: "白光散去時，Tall Oaks的演說廳已經失守。螢幕牆同時跳出東歐戰區、蘭祥四塔與海底基地的紅色警報，主神把四條戰線壓縮成同一次投放：阻止C病毒全球擴散。",
+      dialogue: [
+        { speaker: "主神", line: "主線：阻斷C病毒全球擴散並消滅Haos。支線：保留抗體樣本與四塔指揮密鑰。" },
+        { speaker: "里昂·S·甘迺迪", line: "總統已經感染。別停在演說廳，先把生還者帶出去，再找出誰打開了這個局。" },
+        { speaker: "克里斯·雷德菲爾", line: "BSAA火線正在東歐崩潰。J'avo有組織、有武器，這不是單純的屍潮。" },
+        { speaker: "傑克·穆勒", line: "他們要我的血，因為它能阻止這玩意。那就讓他們親自來拿。" },
+        { speaker: "艾達·王", line: "四塔的鑰匙不只開門，也會暴露真正的幕後命令。別相信第一份任務簡報。" },
+        { speaker: "楚軒", line: "感染、戰爭、抗體與海底孵化體是同一條鏈。切斷末端沒有意義，必須打到Haos完成孵化前。" }
+      ],
+      panels: [
+        { enemyId: "re6-zombie-horde", title: "Tall Oaks失控", text: "演說廳門口被屍潮擠到變形，紅色警燈照出一張張失去表情的臉。" },
+        { enemyId: "re6-javo-rifle-squad", title: "東歐J'avo火線", text: "有組織的感染士兵在雪地裡更換彈匣，變異手臂從軍服袖口撕開。" },
+        { enemyId: "re6-ustanak-capture", title: "抗體追獵", text: "巨大的機械臂拖過地面，Ustanak沿著血樣冷藏箱的信號一步步逼近。" },
+        { enemyId: "re6-simmons-dinosaur", title: "陰謀者變異", text: "列車殘骸中，Simmons的骨架重新拼合成怪物，政治陰謀終於露出牙齒。" },
+        { enemyId: "re6-haos-final-core", title: "海底基地終局", text: "玻璃艙外是黑色深海，Haos在孵化池裡展開翅膜，全球感染倒數只剩最後一格。" }
+      ]
+    },
+    "elden-ring-hell-run": {
+      title: "交界地十王地獄線",
+      premise: "白光散去時，賜福只剩一點微光。遠處黃金樹燃燒成灰，天空同時映出十座 Boss 霧門：碎星、惡兆王、火焰巨人、神皮雙人組、鮮血君王、龍王、黑劍、腐敗女神、初始王與艾爾登獸。",
+      dialogue: [
+        { speaker: "主神", line: "主線：完成交界地十王地獄挑戰。每個戰鬥節點將從十名超高難頭目中隨機抽取。" },
+        { speaker: "褪色者", line: "沒有小怪，沒有練手，只有霧門。賜福指向哪裡，我們就砍進哪裡。" },
+        { speaker: "梅琳娜", line: "火種可以引路，但不能替你承受死亡。若你們要走到王座前，就別把任何一次倒地當成結束。" },
+        { speaker: "菈妮", line: "黃金律法已經破裂。若主神把命運洗成隨機，那暗月便替你們保留下一次選擇。" },
+        { speaker: "布萊澤", line: "只要霧門打開，我會先衝。王室巨劍會替菈妮斬斷擋路的律法。" },
+        { speaker: "楚軒", line: "十個頭目不是線性關卡，而是壓縮後的隨機高壓樣本。保存手牌循環，比單次爆發更重要。" }
+      ],
+      panels: [
+        { enemyId: "er-starscourge-radahn", title: "蓋利德戰祭", text: "赤紅沙丘上插滿斷旗，拉塔恩拖著雙刀站在隕石陰影下，整片天空都被重力拉低。" },
+        { enemyId: "er-mohg-lord-of-blood", title: "鮮血王朝", text: "血池倒映出王座與三叉戟，蒙格的血翼在黑暗裡展開，咒語已經數到下一拍。" },
+        { enemyId: "er-dragonlord-placidusax", title: "時空風暴", text: "龍王盤踞在破碎時間中央，古龍雷光在雲層中反覆倒流。" },
+        { enemyId: "er-maliketh-black-blade", title: "命定之死", text: "黑劍從獸爪陰影裡出鞘，死亡盧恩像裂紋一樣沿著地面爬向隊伍。" },
+        { enemyId: "er-malenia-blade-miquella", title: "腐敗女神", text: "聖樹底層開出猩紅花海，瑪蓮妮亞抬起義手刀，水鳥亂舞已經在呼吸裡開始。" },
+        { enemyId: "er-radagon-elden-beast", title: "艾爾登王座", text: "拉達岡的金錘砸碎法環，星海深處的艾爾登獸隨著律法裂口浮現。" }
+      ]
     }
   };
 
@@ -988,6 +1326,35 @@
   });
 
   const legendaryRecruitmentPool = ["tanjiro-kamado", "giyu-tomioka", "naruto-uzumaki", "luffy-nika", "son-goku", "xiao-yan", "ichigo-kurosaki", "edward-elric", "eren-yeager", "mikasa-ackerman", "armin-arlert", "levi-ackerman", "gon-freecss", "kirito-kazuto"];
+
+  const characterSources = [
+    { id: "main", name: "中洲隊", description: "主神空間的核心輪迴隊伍，涵蓋近戰、精神力、狙擊、戰術與支援。", heroFileName: "roster-hero-main.png", memberIds: ["player-avatar", "zheng-zha", "zhan-lan", "zero", "li-xiaoyi", "mou-gang", "li-shuaixi", "chu-xuan", "zhao-yingkong", "ba-wang", "xiao-honglu", "qi-tengyi", "zhang-heng", "ming-yanwei", "cheng-xiao", "wang-xia", "luo-gandao", "liu-yu", "lin-juntian", "imhotep"] },
+    { id: "demon", name: "惡魔隊", description: "黑炎、因果律、空間斬與暴走機甲構成的極端攻擊隊伍。", heroFileName: "roster-hero-demon.png", memberIds: ["clone-zheng-zha", "clone-chu-xuan", "zhao-zhuikong", "clone-luo-gandao", "tom"] },
+    { id: "celestial", name: "天神隊", description: "補全指揮、修真劍仙與斬艦刀線組成的高階輪迴隊伍。", heroFileName: "roster-hero-celestial.png", memberIds: ["adam", "luo-yinglong", "song-tian", "sarah"] },
+    { id: "south", name: "南炎洲隊", description: "概率詐術與蠱毒追獵的靈活破局隊伍。", heroFileName: "roster-hero-south.png", memberIds: ["nios", "naya"] },
+    { id: "north", name: "北冰洲隊", description: "冰霜領域與磁暴改造火線，適合壓制與破甲。", heroFileName: "roster-hero-north.png", memberIds: ["gangnir", "victor"] },
+    { id: "india", name: "印洲隊", description: "業火、蛇瞳與亡靈召喚交織的咒術隊伍。", heroFileName: "roster-hero-india.png", memberIds: ["shiva-gangtian", "lamia", "arot"] },
+    { id: "west", name: "西海隊", description: "聖盾、防線醫療與雙槍處刑組成的穩定隊伍。", heroFileName: "roster-hero-west.png", memberIds: ["richard", "elena", "kevin"] },
+    { id: "forest", name: "森洲隊", description: "冥府死靈法術與不死恢復節奏。", heroFileName: "roster-hero-forest.png", memberIds: ["amon"] },
+    { id: "devil-hunter", name: "惡魔獵人", description: "Devil Breaker、魔獸召喚與魔劍連段的高速獵魔組。", heroFileName: "roster-hero-devil-hunter.png", memberIds: ["nero-dmc5", "v-dmc5", "dante-dmc5"] },
+    { id: "gintama", name: "銀魂", description: "萬事屋、真選組、夜兔與攘夷線的亂戰隊伍。", heroFileName: "roster-hero-gintama.png", memberIds: ["gintoki-sakata", "shinpachi-shimura", "kagura-yato", "tsukuyo-hyakka", "toshirou-hijikata", "sougo-okita", "kotaro-katsura", "shinsuke-takasugi"] },
+    { id: "avengers", name: "復仇者", description: "裝甲火力、星盾防線、雷霆與特工控制的城市戰隊伍。", heroFileName: "roster-hero-avengers.png", memberIds: ["tony-stark", "steve-rogers", "thor-odinson", "bruce-banner-hulk", "natasha-romanoff", "clint-barton"] },
+    { id: "justice-dawn", name: "正義黎明", description: "氪星爆發、蝙蝠戰術與亞馬遜武藝的三人防線。", heroFileName: "roster-hero-justice-dawn.png", memberIds: ["clark-kent-superman", "bruce-wayne-batman", "diana-prince-wonder-woman"] },
+    { id: "pacific-rim", name: "環太平洋", description: "獵人機甲駕駛與神經共感構成的對巨獸火線。", heroFileName: "roster-hero-pacific-rim.png", memberIds: ["raleigh-becket", "mako-mori", "stacker-pentecost", "herc-hansen"] },
+    { id: "fury-road", name: "狂怒公路", description: "荒原求生、戰爭車防線與救贖訊號的追逐隊伍。", heroFileName: "roster-hero-fury-road.png", memberIds: ["max-rockatansky", "imperator-furiosa", "nux-war-boy", "capable"] },
+    { id: "re6", name: "生化危機6", description: "C病毒全球戰線的特勤、BSAA、抗體血脈與合作掩護。", heroFileName: "roster-hero-re6.png", memberIds: ["leon-kennedy", "helena-harper", "chris-redfield", "piers-nivans", "jake-muller", "sherry-birkin", "ada-wong", "bsaa-agent"] },
+    { id: "elden-ring", name: "艾爾登法環", description: "賜福、暗月、黑刀與戰灰組成的地獄頭目戰隊伍。", heroFileName: "roster-hero-elden-ring.png", memberIds: ["tarnished-elden-lord", "melina-kindling-maiden", "ranni-dark-moon", "blaidd-half-wolf", "millicent-valkyrie", "alexander-warrior-jar", "black-knife-tiche", "nepheli-loux"] },
+    { id: "demon-slayer", name: "鬼滅之刃", description: "日之呼吸、水之呼吸與赫刀防線。", heroFileName: "roster-hero-demon-slayer.png", memberIds: ["tanjiro-kamado", "giyu-tomioka"] },
+    { id: "naruto", name: "火影忍者", description: "九尾查克拉與終末谷級別的忍者爆發。", heroFileName: "roster-hero-naruto.png", memberIds: ["naruto-uzumaki"] },
+    { id: "one-piece", name: "海賊王", description: "太陽神尼卡的自由破局與不屈續戰。", heroFileName: "roster-hero-one-piece.png", memberIds: ["luffy-nika"] },
+    { id: "dragon-ball", name: "龍珠", description: "賽亞戰鬥民族的界限突破與氣功爆發。", heroFileName: "roster-hero-dragon-ball.png", memberIds: ["son-goku"] },
+    { id: "battle-through-heavens", name: "鬥破蒼穹", description: "異火煉藥與佛怒火蓮的玄幻爆發。", heroFileName: "roster-hero-battle-through-heavens.png", memberIds: ["xiao-yan"] },
+    { id: "bleach", name: "死神", description: "斬魄刀、無月與靈壓斬線。", heroFileName: "roster-hero-bleach.png", memberIds: ["ichigo-kurosaki"] },
+    { id: "fullmetal-alchemist", name: "鋼之鍊金術師", description: "真理之門與戰術鍊成的代價交換。", heroFileName: "roster-hero-fullmetal-alchemist.png", memberIds: ["edward-elric"] },
+    { id: "attack-on-titan", name: "進擊的巨人", description: "始祖巨人、阿克曼斬擊、超大型戰術與調查兵團決戰線。", heroFileName: "roster-hero-attack-on-titan.png", memberIds: ["eren-yeager", "mikasa-ackerman", "armin-arlert", "levi-ackerman"] },
+    { id: "hunter", name: "獵人", description: "制約誓約與強化系爆發。", heroFileName: "roster-hero-hunter.png", memberIds: ["gon-freecss"] },
+    { id: "sword-art-online", name: "刀劍神域", description: "二刀流與星爆氣流斬的連段節奏。", heroFileName: "roster-hero-sword-art-online.png", memberIds: ["kirito-kazuto"] }
+  ];
 
   const cardSources = [
     { id: "main-god", name: "主神基礎", description: "原本的通用戰鬥卡，穩定、便宜，適合補足牌組骨架。" },
@@ -999,7 +1366,11 @@
     { id: "dmc5", name: "Devil May Cry 5", description: "惡魔獵人的高速連段、魔人爆發與召喚牽制。" },
     { id: "gintama", name: "銀魂", description: "萬事屋、真選組、夜兔與攘夷線的亂戰技能，重視穿甲、抽牌、護甲與壓力控制。" },
     { id: "avengers", name: "復仇者聯盟", description: "紐約之戰英雄技能，結合裝甲火力、盾牌防線、雷霆、浩克重擊與特工控制。" },
-    { id: "dc-movie", name: "超人大戰蝙蝠俠", description: "正義黎明電影線技能，混合氪星爆發、蝙蝠戰術、亞馬遜武藝與停戰支援。" }
+    { id: "dc-movie", name: "超人大戰蝙蝠俠", description: "正義黎明電影線技能，混合氪星爆發、蝙蝠戰術、亞馬遜武藝與停戰支援。" },
+    { id: "pacific-rim", name: "環太平洋", description: "獵人機甲技能，重視穿甲、燃燒、護甲與神經共感節奏。" },
+    { id: "fury-road", name: "瘋狂麥斯", description: "狂怒公路車隊技能，偏移動防線、燃燒、閃避與壓力控制。" },
+    { id: "re6", name: "生化危機6", description: "C病毒全球戰線技能，重視槍械穿甲、群體火線、抗體支援與合作快射。" },
+    { id: "elden-ring", name: "艾爾登法環", description: "交界地戰灰、魔法與祈禱，偏穿甲、燃燒、腐敗、中毒、閃避與地獄級爆發。" }
   ];
 
   const equipmentSources = [
@@ -1011,7 +1382,11 @@
     { id: "dmc5-equipment", name: "Devil May Cry 5", description: "尼祿、V與但丁的獵魔武器，強化開場、連段與爆發。" },
     { id: "gintama-equipment", name: "銀魂道具", description: "洞爺湖、夜兔戰傘、百華苦無與真選組裝備，偏開場節奏、穿甲與抗壓。" },
     { id: "avengers-equipment", name: "復仇者裝備", description: "方舟反應爐、星盾、雷霆碎片與特工裝備，強化開場能量、防線與首攻穿透。" },
-    { id: "dc-equipment", name: "正義黎明裝備", description: "氪石長矛、重裝蝙蝠戰甲、亞馬遜神盾與蝙蝠翼火控，偏穿甲、防線與開場節奏。" }
+    { id: "dc-equipment", name: "正義黎明裝備", description: "氪石長矛、重裝蝙蝠戰甲、亞馬遜神盾與蝙蝠翼火控，偏穿甲、防線與開場節奏。" },
+    { id: "pacific-rim-equipment", name: "環太平洋武裝", description: "神經共感駕駛艙、機甲電漿炮與鏈劍，強化開局與反巨獸爆發。" },
+    { id: "fury-road-equipment", name: "狂怒公路武裝", description: "戰爭車、雷矛與荒原補給，讓隊伍在追逐戰裡撐住壓力。" },
+    { id: "re6-equipment", name: "C病毒武裝", description: "Wing Shooter、Hydra、BSAA套件、反器材步槍與抗體血清，強化槍線與續戰。" },
+    { id: "elden-ring-equipment", name: "交界地神兵", description: "屍山血海、名刀月隱、黑劍、義手刀、仿身淚滴與靈藥，支援地獄頭目戰的爆發與續戰。" }
   ];
 
   const shop = [
@@ -1065,6 +1440,34 @@
     { id: "shop-bvs-batmobile-ram", kind: "card", itemId: "bvs-batmobile-ram", rewardPointCost: 1900, stock: 2 },
     { id: "shop-bvs-kryptonite-gas-grenade", kind: "card", itemId: "bvs-kryptonite-gas-grenade", rewardPointCost: 1500, stock: 2 },
     { id: "shop-bvs-justice-dawn-stand", kind: "card", itemId: "bvs-justice-dawn-stand", rewardPointCost: 3100, sideStoryCost: 1, stock: 1 },
+    { id: "shop-pacrim-rocket-elbow", kind: "card", itemId: "pacrim-rocket-elbow", rewardPointCost: 1050, stock: 2 },
+    { id: "shop-pacrim-plasma-caster", kind: "card", itemId: "pacrim-plasma-caster", rewardPointCost: 1800, stock: 2 },
+    { id: "shop-pacrim-chain-sword", kind: "card", itemId: "pacrim-chain-sword", rewardPointCost: 2800, sideStoryCost: 1, stock: 1 },
+    { id: "shop-pacrim-drift-protocol", kind: "card", itemId: "pacrim-drift-protocol", rewardPointCost: 2600, sideStoryCost: 1, stock: 1 },
+    { id: "shop-fury-war-rig-ram", kind: "card", itemId: "fury-war-rig-ram", rewardPointCost: 1000, stock: 2 },
+    { id: "shop-fury-thunderpoon-salvo", kind: "card", itemId: "fury-thunderpoon-salvo", rewardPointCost: 1850, stock: 2 },
+    { id: "shop-fury-polecat-boarding", kind: "card", itemId: "fury-polecat-boarding", rewardPointCost: 1700, stock: 2 },
+    { id: "shop-fury-green-place-oath", kind: "card", itemId: "fury-green-place-oath", rewardPointCost: 2600, sideStoryCost: 1, stock: 1 },
+    { id: "shop-re6-wing-shooter-burst", kind: "card", itemId: "re6-wing-shooter-burst", rewardPointCost: 1100, stock: 2 },
+    { id: "shop-re6-hydra-shotgun-sweep", kind: "card", itemId: "re6-hydra-shotgun-sweep", rewardPointCost: 1900, stock: 2 },
+    { id: "shop-re6-bsaa-assault-fireline", kind: "card", itemId: "re6-bsaa-assault-fireline", rewardPointCost: 1850, stock: 2 },
+    { id: "shop-re6-anti-materiel-shot", kind: "card", itemId: "re6-anti-materiel-shot", rewardPointCost: 2850, sideStoryCost: 1, stock: 1 },
+    { id: "shop-re6-elephant-killer", kind: "card", itemId: "re6-elephant-killer", rewardPointCost: 3000, sideStoryCost: 1, stock: 1 },
+    { id: "shop-re6-remote-bomb-breach", kind: "card", itemId: "re6-remote-bomb-breach", rewardPointCost: 1600, stock: 2 },
+    { id: "shop-re6-antiviral-serum", kind: "card", itemId: "re6-antiviral-serum", rewardPointCost: 2700, sideStoryCost: 1, stock: 1 },
+    { id: "shop-re6-coop-quick-shot", kind: "card", itemId: "re6-coop-quick-shot", rewardPointCost: 2550, sideStoryCost: 1, stock: 1 },
+    { id: "shop-er-transient-moonlight", kind: "card", itemId: "er-transient-moonlight", rewardPointCost: 1500, stock: 2 },
+    { id: "shop-er-corpse-piler-bloodflame", kind: "card", itemId: "er-corpse-piler-bloodflame", rewardPointCost: 3200, sideStoryCost: 1, stock: 1 },
+    { id: "shop-er-blasphemous-flame", kind: "card", itemId: "er-blasphemous-flame", rewardPointCost: 3300, sideStoryCost: 1, stock: 1 },
+    { id: "shop-er-lion-claw-crush", kind: "card", itemId: "er-lion-claw-crush", rewardPointCost: 2100, stock: 2 },
+    { id: "shop-er-black-knife-wave", kind: "card", itemId: "er-black-knife-wave", rewardPointCost: 2600, sideStoryCost: 1, stock: 1 },
+    { id: "shop-er-ancient-dragon-lightning", kind: "card", itemId: "er-ancient-dragon-lightning", rewardPointCost: 3400, sideStoryCost: 1, stock: 1 },
+    { id: "shop-er-scarlet-aeonia", kind: "card", itemId: "er-scarlet-aeonia", rewardPointCost: 4200, sideStoryCost: 2, stock: 1 },
+    { id: "shop-er-starscourge-arrow-rain", kind: "card", itemId: "er-starscourge-arrow-rain", rewardPointCost: 2200, stock: 2 },
+    { id: "shop-er-flame-redmanes", kind: "card", itemId: "er-flame-redmanes", rewardPointCost: 1900, stock: 2 },
+    { id: "shop-er-godslayer-blackflame", kind: "card", itemId: "er-godslayer-blackflame", rewardPointCost: 3500, sideStoryCost: 1, stock: 1 },
+    { id: "shop-er-golden-vow", kind: "card", itemId: "er-golden-vow", rewardPointCost: 3000, sideStoryCost: 1, stock: 1 },
+    { id: "shop-er-bloodhound-step", kind: "card", itemId: "er-bloodhound-step", rewardPointCost: 2800, sideStoryCost: 1, stock: 1 },
     { id: "shop-desert-eagle", kind: "equipment", itemId: "infinite-desert-eagle", rewardPointCost: 1200, sideStoryCost: 1, stock: 1 },
     { id: "shop-jade-amulet", kind: "equipment", itemId: "jade-amulet", rewardPointCost: 1800, sideStoryCost: 1, stock: 1 },
     { id: "shop-book-dead", kind: "equipment", itemId: "book-of-the-dead", rewardPointCost: 4200, sideStoryCost: 2, stock: 1 },
@@ -1110,7 +1513,35 @@
     { id: "shop-kryptonite-spear", kind: "equipment", itemId: "kryptonite-spear", rewardPointCost: 6200, sideStoryCost: 3, stock: 1 },
     { id: "shop-armored-batsuit", kind: "equipment", itemId: "armored-batsuit", rewardPointCost: 5600, sideStoryCost: 2, stock: 1 },
     { id: "shop-amazonian-shield", kind: "equipment", itemId: "amazonian-shield", rewardPointCost: 5200, sideStoryCost: 2, stock: 1 },
-    { id: "shop-batwing-remote", kind: "equipment", itemId: "batwing-remote", rewardPointCost: 3300, sideStoryCost: 1, stock: 1 }
+    { id: "shop-batwing-remote", kind: "equipment", itemId: "batwing-remote", rewardPointCost: 3300, sideStoryCost: 1, stock: 1 },
+    { id: "shop-neural-drift-rig", kind: "equipment", itemId: "neural-drift-rig", rewardPointCost: 5600, sideStoryCost: 2, stock: 1 },
+    { id: "shop-jaeger-plasma-cannon", kind: "equipment", itemId: "jaeger-plasma-cannon", rewardPointCost: 5800, sideStoryCost: 2, stock: 1 },
+    { id: "shop-jaeger-chain-sword", kind: "equipment", itemId: "jaeger-chain-sword", rewardPointCost: 6200, sideStoryCost: 3, stock: 1 },
+    { id: "shop-striker-reactor-core", kind: "equipment", itemId: "striker-reactor-core", rewardPointCost: 5400, sideStoryCost: 2, stock: 1 },
+    { id: "shop-max-double-barrel", kind: "equipment", itemId: "max-double-barrel", rewardPointCost: 3400, sideStoryCost: 1, stock: 1 },
+    { id: "shop-war-rig-armored-cab", kind: "equipment", itemId: "war-rig-armored-cab", rewardPointCost: 5200, sideStoryCost: 2, stock: 1 },
+    { id: "shop-thunderpoon-rack", kind: "equipment", itemId: "thunderpoon-rack", rewardPointCost: 3600, sideStoryCost: 1, stock: 1 },
+    { id: "shop-green-place-seed-bag", kind: "equipment", itemId: "green-place-seed-bag", rewardPointCost: 5000, sideStoryCost: 2, stock: 1 },
+    { id: "shop-wing-shooter-pistols", kind: "equipment", itemId: "wing-shooter-pistols", rewardPointCost: 3600, sideStoryCost: 1, stock: 1 },
+    { id: "shop-hydra-shotgun", kind: "equipment", itemId: "hydra-shotgun", rewardPointCost: 5200, sideStoryCost: 2, stock: 1 },
+    { id: "shop-bsaa-assault-kit", kind: "equipment", itemId: "bsaa-assault-kit", rewardPointCost: 3800, sideStoryCost: 1, stock: 1 },
+    { id: "shop-anti-materiel-rifle", kind: "equipment", itemId: "anti-materiel-rifle", rewardPointCost: 6400, sideStoryCost: 3, stock: 1 },
+    { id: "shop-elephant-killer-magnum", kind: "equipment", itemId: "elephant-killer-magnum", rewardPointCost: 6200, sideStoryCost: 3, stock: 1 },
+    { id: "shop-ada-tactical-crossbow", kind: "equipment", itemId: "ada-tactical-crossbow", rewardPointCost: 4400, sideStoryCost: 2, stock: 1 },
+    { id: "shop-c-virus-antibody-serum", kind: "equipment", itemId: "c-virus-antibody-serum", rewardPointCost: 5600, sideStoryCost: 2, stock: 1 },
+    { id: "shop-quad-tower-command-key", kind: "equipment", itemId: "quad-tower-command-key", rewardPointCost: 5400, sideStoryCost: 2, stock: 1 },
+    { id: "shop-rivers-of-blood-katana", kind: "equipment", itemId: "rivers-of-blood-katana", rewardPointCost: 6800, sideStoryCost: 3, stock: 1 },
+    { id: "shop-moonveil-katana", kind: "equipment", itemId: "moonveil-katana", rewardPointCost: 6600, sideStoryCost: 3, stock: 1 },
+    { id: "shop-blasphemous-blade", kind: "equipment", itemId: "blasphemous-blade", rewardPointCost: 7200, sideStoryCost: 3, stock: 1 },
+    { id: "shop-dark-moon-greatsword", kind: "equipment", itemId: "dark-moon-greatsword", rewardPointCost: 7000, sideStoryCost: 3, stock: 1 },
+    { id: "shop-maliketh-black-blade", kind: "equipment", itemId: "maliketh-black-blade", rewardPointCost: 8200, sideStoryCost: 4, stock: 1 },
+    { id: "shop-hand-of-malenia", kind: "equipment", itemId: "hand-of-malenia", rewardPointCost: 7800, sideStoryCost: 4, stock: 1 },
+    { id: "shop-starscourge-greatbow", kind: "equipment", itemId: "starscourge-greatbow", rewardPointCost: 5200, sideStoryCost: 2, stock: 1 },
+    { id: "shop-grafted-blade-greatsword", kind: "equipment", itemId: "grafted-blade-greatsword", rewardPointCost: 6200, sideStoryCost: 3, stock: 1 },
+    { id: "shop-azur-glintstone-staff", kind: "equipment", itemId: "azur-glintstone-staff", rewardPointCost: 6500, sideStoryCost: 3, stock: 1 },
+    { id: "shop-dragon-communion-seal", kind: "equipment", itemId: "dragon-communion-seal", rewardPointCost: 5600, sideStoryCost: 2, stock: 1 },
+    { id: "shop-mimic-tear-ashes", kind: "equipment", itemId: "mimic-tear-ashes", rewardPointCost: 7600, sideStoryCost: 4, stock: 1 },
+    { id: "shop-flask-wondrous-physick", kind: "equipment", itemId: "flask-wondrous-physick", rewardPointCost: 5000, sideStoryCost: 2, stock: 1 }
   ];
 
   const permanentUpgrades = [
@@ -1134,7 +1565,7 @@
     characterUpgradeCost: { rewardPointCost: 500, sideStoryCost: 1 },
     signatureUpgradeCost: { rewardPointCost: 1000, sideStoryCost: 1 },
     legendaryRecruitmentMinInfiniteTier: 3,
-    scenarioSideStoryRewards: { alien: 1, juon: 1, "mummy-curse": 1, "jurassic-island": 1, "abyssal-ark": 2, "evernight-castle": 2, "demon-frontier": 3, "main-god-trial": 3, "starship-troopers": 4, "avp-pyramid": 4, "nightmare-elm": 5, "lotr-war": 5, "rumbling-finale": 4, "infinity-castle": 5, "naruto-final-valley": 6, "bleach-false-karakura": 6, "gintama-yoshiwara": 6, "gintama-final-war": 7, "avengers-new-york": 7, "batman-v-superman": 7, "devil-may-cry-5": 6, "final-destination": 7, "jinyong-heroic-peak": 7 }
+    scenarioSideStoryRewards: { alien: 1, juon: 1, "mummy-curse": 1, "jurassic-island": 1, "abyssal-ark": 2, "evernight-castle": 2, "demon-frontier": 3, "main-god-trial": 3, "starship-troopers": 4, "avp-pyramid": 4, "nightmare-elm": 5, "lotr-war": 5, "rumbling-finale": 4, "infinity-castle": 5, "naruto-final-valley": 6, "bleach-false-karakura": 6, "gintama-yoshiwara": 6, "gintama-final-war": 7, "avengers-new-york": 7, "batman-v-superman": 7, "devil-may-cry-5": 6, "final-destination": 7, "jinyong-heroic-peak": 7, "pacific-rim-breach": 8, "fury-road-war-rig": 8, "resident-evil-6-c-virus": 9, "elden-ring-hell-run": 10 }
   };
 
   const bonds = [
@@ -1185,7 +1616,68 @@
     { id: "shield-and-spy", name: "盾牌與特工線", members: ["steve-rogers", "natasha-romanoff", "clint-barton"], text: "史蒂夫、娜塔莎與克林特同時上陣。每回合第一張攻擊牌穿透護甲；回合開始全隊壓力 -2。", effects: { firstAttackPierce: 1, turnReduceStressAll: 2 } },
     { id: "thunder-and-hulk", name: "雷霆與浩克", members: ["thor-odinson", "bruce-banner-hulk"], text: "索爾與浩克同時上陣。所有攻擊牌傷害 +4；回合開始全隊壓力 +1。", effects: { attackBonus: 4, turnStressAll: 1 } },
     { id: "worlds-finest-truce", name: "世界最佳停戰線", members: ["clark-kent-superman", "bruce-wayne-batman"], text: "超人與蝙蝠俠同時上陣。首回合能量 +1；所有攻擊牌傷害 +4；回合開始全隊壓力 -1。", effects: { openingEnergy: 1, attackBonus: 4, turnReduceStressAll: 1 } },
-    { id: "trinity-dawn", name: "正義三巨頭", members: ["clark-kent-superman", "bruce-wayne-batman", "diana-prince-wonder-woman"], text: "超人、蝙蝠俠與神力女超人同時上陣。開場抽 1 張牌；所有攻擊牌傷害 +5；回合開始全隊獲得 3 護甲。", effects: { openingDraw: 1, attackBonus: 5, turnBlockAll: 3 } }
+    { id: "trinity-dawn", name: "正義三巨頭", members: ["clark-kent-superman", "bruce-wayne-batman", "diana-prince-wonder-woman"], text: "超人、蝙蝠俠與神力女超人同時上陣。開場抽 1 張牌；所有攻擊牌傷害 +5；回合開始全隊獲得 3 護甲。", effects: { openingDraw: 1, attackBonus: 5, turnBlockAll: 3 } },
+    { id: "jaeger-drift-team", name: "獵人機甲漂移組", faction: "pacific-rim", count: 3, text: "三名以上環太平洋角色同時上陣。開場抽 1 張牌；每回合第一張攻擊牌穿透護甲；回合開始全隊獲得 2 護甲。", effects: { openingDraw: 1, firstAttackPierce: 1, turnBlockAll: 2 } },
+    { id: "war-rig-convoy", name: "戰爭車逃亡隊", faction: "fury-road", count: 3, text: "三名以上狂怒公路角色同時上陣。首回合能量 +1；回合開始全隊壓力 -2；每回合第 5 張牌為全隊恢復 4 生命。", effects: { openingEnergy: 1, turnReduceStressAll: 2, fifthCardHealAll: 4 } },
+    { id: "bsaa-c-virus-taskforce", name: "C病毒全球特遣隊", faction: "re6", count: 3, text: "三名以上生化危機6角色同時上陣。開場抽 1 張牌；每回合第一張攻擊牌穿透護甲；回合開始全隊恢復 2 生命。", effects: { openingDraw: 1, firstAttackPierce: 1, turnHealAll: 2 } },
+    { id: "cross-blood-sun-frontline", name: "血炎與星盾", crossWorld: true, members: ["zheng-zha", "tanjiro-kamado", "steve-rogers"], text: "鄭吒、炭治郎與史蒂夫同時上陣。開場抽 1 張牌；所有攻擊牌傷害 +2；回合開始全隊獲得 2 護甲。", effects: { openingDraw: 1, attackBonus: 2, turnBlockAll: 2 } },
+    { id: "cross-mind-map", name: "精神戰圖", crossWorld: true, members: ["zhan-lan", "armin-arlert", "v-dmc5"], text: "詹嵐、阿爾敏與 V 同時上陣。開場抽 1 張牌；每回合第一張戰術牌額外抽 1 張。", effects: { openingDraw: 1, firstTacticDraw: 1 } },
+    { id: "cross-silent-shot", name: "無聲命中線", crossWorld: true, members: ["zero", "clint-barton", "levi-ackerman"], text: "零點、克林特與兵長同時上陣。每回合第一張攻擊牌穿透護甲；群體傷害牌額外 +2 傷害。", effects: { firstAttackPierce: 1, damageAllBonus: 2 } },
+    { id: "cross-reckless-breakthrough", name: "莽撞突破口", crossWorld: true, members: ["li-xiaoyi", "naruto-uzumaki", "nero-dmc5"], text: "李蕭毅、鳴人與尼祿同時上陣。首回合能量 +1；每回合第二張牌追加 5 點穿甲傷害。", effects: { openingEnergy: 1, secondCardDamage: 5 } },
+    { id: "cross-shield-wall-oath", name: "盾牆誓約", crossWorld: true, members: ["mou-gang", "richard", "diana-prince-wonder-woman"], text: "牟剛、理查德與黛安娜同時上陣。回合開始全隊獲得 4 護甲並恢復 2 生命。", effects: { turnBlockAll: 4, turnHealAll: 2 } },
+    { id: "cross-survivor-comedy", name: "活下去的吐槽", crossWorld: true, members: ["li-shuaixi", "gon-freecss", "shinpachi-shimura"], text: "李帥西、小傑與新八同時上陣。開場抽 1 張牌；每回合第 5 張牌額外抽 1 張。", effects: { openingDraw: 1, fifthCardDraw: 1 } },
+    { id: "cross-genius-forge", name: "天才鍛造桌", crossWorld: true, members: ["chu-xuan", "tony-stark", "edward-elric"], text: "楚軒、托尼與愛德華同時上陣。每回合第一張戰術牌費用 -1、抽 1 張牌並獲得 1 能量。", effects: { firstTacticCostReduction: 1, firstTacticDraw: 1, firstTacticEnergy: 1 } },
+    { id: "cross-shadow-red-scarf", name: "紅影暗殺線", crossWorld: true, members: ["zhao-yingkong", "natasha-romanoff", "mikasa-ackerman"], text: "趙櫻空、娜塔莎與米卡莎同時上陣。每回合第二張牌追加 6 點穿甲傷害；回合開始全隊壓力 -1。", effects: { secondCardDamage: 6, turnReduceStressAll: 1 } },
+    { id: "cross-heavy-smash-chaos", name: "重拳亂入", crossWorld: true, members: ["ba-wang", "bruce-banner-hulk", "kagura-yato"], text: "霸王、浩克與神樂同時上陣。所有攻擊牌傷害 +4；回合開始全隊壓力 +1。", effects: { attackBonus: 4, turnStressAll: 1 } },
+    { id: "cross-probability-oracle", name: "概率預判室", crossWorld: true, members: ["xiao-honglu", "nios", "bruce-wayne-batman"], text: "蕭宏律、尼奧斯與布魯斯同時上陣。開場抽 1 張牌；每回合第一張戰術牌使所有敵人虛弱 3 點。", effects: { openingDraw: 1, firstTacticWeakAll: 3 } },
+    { id: "cross-artifact-truth-lasso", name: "神器真理線", crossWorld: true, members: ["qi-tengyi", "edward-elric", "diana-prince-wonder-woman"], text: "齊騰一、愛德華與黛安娜同時上陣。首回合能量 +1；每回合第一張戰術牌額外抽 1 張。", effects: { openingEnergy: 1, firstTacticDraw: 1 } },
+    { id: "cross-long-range-waterline", name: "遠程水線", crossWorld: true, members: ["zhang-heng", "giyu-tomioka", "clint-barton"], text: "張恆、富岡義勇與克林特同時上陣。開場抽 1 張牌；每回合第一張攻擊牌穿透護甲。", effects: { openingDraw: 1, firstAttackPierce: 1 } },
+    { id: "cross-soul-reaper-curse", name: "靈魂與斬魄", crossWorld: true, members: ["ming-yanwei", "ichigo-kurosaki", "lamia"], text: "銘煙薇、黑崎一護與拉米亞同時上陣。所有攻擊牌傷害 +3；攻擊帶有狀態的敵人時傷害 +4。", effects: { attackBonus: 3, statusExploitBonus: 4 } },
+    { id: "cross-field-medic-flame", name: "戰地火光", crossWorld: true, members: ["cheng-xiao", "elena", "tanjiro-kamado"], text: "程嘯、艾蓮娜與炭治郎同時上陣。回合開始全隊恢復 3 生命並降低 2 壓力。", effects: { turnHealAll: 3, turnReduceStressAll: 2 } },
+    { id: "cross-demolition-style", name: "爆破連段委託", crossWorld: true, members: ["wang-xia", "dante-dmc5", "tony-stark"], text: "王俠、但丁與托尼同時上陣。所有攻擊牌傷害 +3；群體傷害牌額外 +4 傷害。", effects: { attackBonus: 3, damageAllBonus: 4 } },
+    { id: "cross-mecha-bat-breaker", name: "機甲夜襲", crossWorld: true, members: ["luo-gandao", "nero-dmc5", "bruce-wayne-batman"], text: "羅甘道、尼祿與布魯斯同時上陣。首回合能量 +1；槍械類裝備傷害提高 25%。", effects: { openingEnergy: 1, firearmMultiplier: 1.25 } },
+    { id: "cross-clear-mind-courage", name: "清醒的普通人", crossWorld: true, members: ["liu-yu", "shinpachi-shimura", "armin-arlert"], text: "劉鬱、新八與阿爾敏同時上陣。開場抽 1 張牌；回合開始全隊壓力 -3。", effects: { openingDraw: 1, turnReduceStressAll: 3 } },
+    { id: "cross-adaptive-dual-fold", name: "適應與二刀流", crossWorld: true, members: ["lin-juntian", "kirito-kazuto", "sarah"], text: "林俊天、桐人與莎拉同時上陣。首回合能量 +1；每回合第二張牌追加 5 點穿甲傷害。", effects: { openingEnergy: 1, secondCardDamage: 5 } },
+    { id: "cross-undead-flame-pact", name: "不死異火契約", crossWorld: true, members: ["imhotep", "xiao-yan", "arot"], text: "伊莫頓、蕭炎與阿羅特同時上陣。所有攻擊牌傷害 +3；回合開始全隊恢復 2 生命。", effects: { attackBonus: 3, turnHealAll: 2 } },
+    { id: "cross-dark-mirror-sun", name: "暗鏡太陽拳", crossWorld: true, members: ["clone-zheng-zha", "son-goku", "clark-kent-superman"], text: "複製體鄭吒、孫悟空與克拉克同時上陣。所有攻擊牌傷害 +5；回合開始全隊壓力 +2。", effects: { attackBonus: 5, turnStressAll: 2 } },
+    { id: "cross-cold-equation-cave", name: "冷式推演洞窟", crossWorld: true, members: ["clone-chu-xuan", "adam", "bruce-wayne-batman"], text: "複製體楚軒、亞當與布魯斯同時上陣。開場抽 2 張牌；每回合第一張戰術牌費用 -1。", effects: { openingDraw: 2, firstTacticCostReduction: 1 } },
+    { id: "cross-execution-speed", name: "處刑速度線", crossWorld: true, members: ["zhao-zhuikong", "sougo-okita", "dante-dmc5"], text: "趙綴空、沖田與但丁同時上陣。所有攻擊牌傷害 +4；每回合第二張牌追加 6 點穿甲傷害。", effects: { attackBonus: 4, secondCardDamage: 6 } },
+    { id: "cross-overdrive-rail-armor", name: "暴走磁軌裝甲", crossWorld: true, members: ["clone-luo-gandao", "victor", "tony-stark"], text: "複製體羅甘道、維克多與托尼同時上陣。首回合能量 +1；槍械類裝備傷害提高 25%。", effects: { openingEnergy: 1, firearmMultiplier: 1.25 } },
+    { id: "cross-psychic-venom-nine-tails", name: "念毒九尾局", crossWorld: true, members: ["tom", "naya", "naruto-uzumaki"], text: "湯姆、娜雅與鳴人同時上陣。攻擊帶有狀態的敵人時傷害 +6；回合開始所有敵人虛弱 1 點。", effects: { statusExploitBonus: 6, turnWeakAll: 1 } },
+    { id: "cross-heaven-thunder-fire", name: "天雷業火劍", crossWorld: true, members: ["luo-yinglong", "thor-odinson", "shiva-gangtian"], text: "羅應龍、索爾與濕婆同時上陣。所有攻擊牌傷害 +4；每回合第一張攻擊牌穿透護甲。", effects: { attackBonus: 4, firstAttackPierce: 1 } },
+    { id: "cross-blade-saint-cleanup", name: "斬艦白夜叉", crossWorld: true, members: ["song-tian", "levi-ackerman", "gintoki-sakata"], text: "宋天、兵長與銀時同時上陣。所有攻擊牌傷害 +4；回合開始全隊壓力 -1。", effects: { attackBonus: 4, turnReduceStressAll: 1 } },
+    { id: "cross-ice-water-domain", name: "冰水領域", crossWorld: true, members: ["gangnir", "giyu-tomioka", "thor-odinson"], text: "崗尼爾、富岡義勇與索爾同時上陣。回合開始所有敵人虛弱 2 點；全隊獲得 2 護甲。", effects: { turnWeakAll: 2, turnBlockAll: 2 } },
+    { id: "cross-gun-duel-spy", name: "雙槍特工線", crossWorld: true, members: ["kevin", "natasha-romanoff", "clint-barton"], text: "凱文、娜塔莎與克林特同時上陣。開場抽 1 張牌；每回合第一張攻擊牌穿透護甲。", effects: { openingDraw: 1, firstAttackPierce: 1 } },
+    { id: "cross-necromancer-moonless", name: "冥府無月", crossWorld: true, members: ["amon", "ichigo-kurosaki", "imhotep"], text: "阿蒙、黑崎一護與伊莫頓同時上陣。攻擊帶有狀態的敵人時傷害 +5；回合開始全隊恢復 2 生命。", effects: { statusExploitBonus: 5, turnHealAll: 2 } },
+    { id: "cross-yoshiwara-huntress", name: "吉原獵影", crossWorld: true, members: ["tsukuyo-hyakka", "zhao-yingkong", "mikasa-ackerman"], text: "月詠、趙櫻空與米卡莎同時上陣。每回合第二張牌追加 6 點穿甲傷害；回合開始全隊獲得 2 護甲。", effects: { secondCardDamage: 6, turnBlockAll: 2 } },
+    { id: "cross-law-and-mayo", name: "紀律盾線", crossWorld: true, members: ["toshirou-hijikata", "steve-rogers", "richard"], text: "土方、史蒂夫與理查德同時上陣。回合開始全隊獲得 4 護甲；每回合第一張攻擊牌穿透護甲。", effects: { turnBlockAll: 4, firstAttackPierce: 1 } },
+    { id: "cross-escape-bomb-plan", name: "逃走爆破案", crossWorld: true, members: ["kotaro-katsura", "wang-xia", "bruce-wayne-batman"], text: "桂、王俠與布魯斯同時上陣。首回合能量 +1；群體傷害牌額外 +4 傷害。", effects: { openingEnergy: 1, damageAllBonus: 4 } },
+    { id: "cross-broken-rebel-blade", name: "破局叛逆刃", crossWorld: true, members: ["shinsuke-takasugi", "clone-zheng-zha", "eren-yeager"], text: "高杉、複製體鄭吒與艾連同時上陣。所有攻擊牌傷害 +5；回合開始全隊壓力 +2。", effects: { attackBonus: 5, turnStressAll: 2 } },
+    { id: "cross-freedom-breakers", name: "自由破局者", crossWorld: true, members: ["luffy-nika", "gintoki-sakata", "zheng-zha"], text: "路飛、銀時與鄭吒同時上陣。開場抽 1 張牌；所有攻擊牌傷害 +4；每回合第 5 張牌會為全隊恢復 4 生命。", effects: { openingDraw: 1, attackBonus: 4, fifthCardHealAll: 4 } },
+    { id: "cross-jaeger-mecha-line", name: "獵人機甲同步線", crossWorld: true, members: ["raleigh-becket", "mako-mori", "luo-gandao"], text: "羅利、真子與羅甘道同時上陣。開場抽 1 張牌；首回合能量 +1；回合開始全隊獲得 2 護甲。", effects: { openingDraw: 1, openingEnergy: 1, turnBlockAll: 2 } },
+    { id: "cross-shatterdome-command", name: "破碎穹頂指揮室", crossWorld: true, members: ["stacker-pentecost", "chu-xuan", "steve-rogers"], text: "潘特考斯特、楚軒與史蒂夫同時上陣。開場抽 1 張牌；每回合第一張戰術牌費用 -1；回合開始全隊壓力 -1。", effects: { openingDraw: 1, firstTacticCostReduction: 1, turnReduceStressAll: 1 } },
+    { id: "cross-missile-heavy-frame", name: "導彈重甲火線", crossWorld: true, members: ["herc-hansen", "ba-wang", "tony-stark"], text: "赫克、霸王與托尼同時上陣。所有攻擊牌傷害 +3；群體傷害牌額外 +4 傷害。", effects: { attackBonus: 3, damageAllBonus: 4 } },
+    { id: "cross-wasteland-survivors", name: "荒原活命隊", crossWorld: true, members: ["max-rockatansky", "li-shuaixi", "gintoki-sakata"], text: "麥斯、李帥西與銀時同時上陣。開場抽 1 張牌；回合開始全隊壓力 -2；每回合第 5 張牌額外抽 1 張。", effects: { openingDraw: 1, turnReduceStressAll: 2, fifthCardDraw: 1 } },
+    { id: "cross-war-rig-shield-wall", name: "戰爭車盾牆", crossWorld: true, members: ["imperator-furiosa", "mou-gang", "diana-prince-wonder-woman"], text: "芙莉歐莎、牟剛與黛安娜同時上陣。回合開始全隊獲得 5 護甲並恢復 2 生命。", effects: { turnBlockAll: 5, turnHealAll: 2 } },
+    { id: "cross-witness-overdrive", name: "見證衝鋒線", crossWorld: true, members: ["nux-war-boy", "li-xiaoyi", "nero-dmc5"], text: "納克斯、李蕭毅與尼祿同時上陣。首回合能量 +1；每回合第二張牌追加 6 點穿甲傷害；回合開始全隊壓力 +1。", effects: { openingEnergy: 1, secondCardDamage: 6, turnStressAll: 1 } },
+    { id: "cross-redemption-signal", name: "救贖訊號", crossWorld: true, members: ["capable", "elena", "shinpachi-shimura"], text: "卡帕布、艾蓮娜與新八同時上陣。回合開始全隊恢復 3 生命並降低 3 壓力。", effects: { turnHealAll: 3, turnReduceStressAll: 3 } },
+    { id: "cross-kennedy-protocol", name: "特勤推演協議", crossWorld: true, members: ["leon-kennedy", "chu-xuan", "bruce-wayne-batman"], text: "里昂、楚軒與布魯斯同時上陣。每回合第一張戰術牌費用 -1、抽 1 張牌；每回合第一張攻擊牌穿透護甲。", effects: { firstTacticCostReduction: 1, firstTacticDraw: 1, firstAttackPierce: 1 } },
+    { id: "cross-cathedral-survivors", name: "教堂倖存線", crossWorld: true, members: ["helena-harper", "zhan-lan", "capable"], text: "海蓮娜、詹嵐與卡帕布同時上陣。回合開始全隊恢復 3 生命並降低 3 壓力。", effects: { turnHealAll: 3, turnReduceStressAll: 3 } },
+    { id: "cross-bsaa-heavy-fireline", name: "BSAA重火線", crossWorld: true, members: ["chris-redfield", "ba-wang", "tony-stark"], text: "克里斯、霸王與托尼同時上陣。所有攻擊牌傷害 +4；群體傷害牌額外 +4 傷害。", effects: { attackBonus: 4, damageAllBonus: 4 } },
+    { id: "cross-sniper-sacrifice", name: "最後狙擊線", crossWorld: true, members: ["piers-nivans", "zero", "clint-barton"], text: "皮爾斯、零點與克林特同時上陣。開場抽 1 張牌；每回合第一張攻擊牌穿透護甲。", effects: { openingDraw: 1, firstAttackPierce: 1 } },
+    { id: "cross-c-virus-bloodline", name: "C病毒血脈破局", crossWorld: true, members: ["jake-muller", "zheng-zha", "clone-zheng-zha"], text: "傑克、鄭吒與複製體鄭吒同時上陣。所有攻擊牌傷害 +5；攻擊帶有狀態的敵人時傷害 +4；回合開始全隊壓力 +2。", effects: { attackBonus: 5, statusExploitBonus: 4, turnStressAll: 2 } },
+    { id: "cross-antibody-rescue", name: "抗體救援鏈", crossWorld: true, members: ["sherry-birkin", "cheng-xiao", "elena"], text: "雪莉、程嘯與艾蓮娜同時上陣。回合開始全隊恢復 4 生命並降低 2 壓力。", effects: { turnHealAll: 4, turnReduceStressAll: 2 } },
+    { id: "cross-shadow-agent-network", name: "暗線特工網", crossWorld: true, members: ["ada-wong", "zhao-yingkong", "natasha-romanoff"], text: "艾達、趙櫻空與娜塔莎同時上陣。每回合第二張牌追加 7 點穿甲傷害；回合開始全隊壓力 -1。", effects: { secondCardDamage: 7, turnReduceStressAll: 1 } },
+    { id: "cross-coop-cover-survivors", name: "合作掩護倖存者", crossWorld: true, members: ["bsaa-agent", "li-shuaixi", "max-rockatansky"], text: "BSAA特工、李帥西與麥斯同時上陣。開場抽 1 張牌；回合開始全隊獲得 3 護甲；每回合第 5 張牌額外抽 1 張。", effects: { openingDraw: 1, turnBlockAll: 3, fifthCardDraw: 1 } },
+    { id: "elden-ring-tarnished-oath", name: "交界地賜福誓約", faction: "elden-ring", count: 3, text: "三名以上艾爾登法環角色同時上陣。首回合能量 +1；所有攻擊牌傷害 +5；回合開始全隊壓力 -1。", effects: { openingEnergy: 1, attackBonus: 5, turnReduceStressAll: 1 } },
+    { id: "cross-great-rune-calculation", name: "大盧恩演算桌", crossWorld: true, members: ["tarnished-elden-lord", "chu-xuan", "edward-elric"], text: "褪色者、楚軒與愛德華同時上陣。每回合第一張戰術牌費用 -1、抽 1 張牌；所有攻擊牌傷害 +2。", effects: { firstTacticCostReduction: 1, firstTacticDraw: 1, attackBonus: 2 } },
+    { id: "cross-kindling-redemption", name: "火種救援線", crossWorld: true, members: ["melina-kindling-maiden", "zhan-lan", "capable"], text: "梅琳娜、詹嵐與卡帕布同時上陣。回合開始全隊恢復 3 生命並降低 4 壓力。", effects: { turnHealAll: 3, turnReduceStressAll: 4 } },
+    { id: "cross-dark-moon-oracle", name: "暗月預案", crossWorld: true, members: ["ranni-dark-moon", "xiao-honglu", "bruce-wayne-batman"], text: "菈妮、蕭宏律與布魯斯同時上陣。開場抽 1 張牌；每回合第一張戰術牌使所有敵人虛弱 4 點。", effects: { openingDraw: 1, firstTacticWeakAll: 4 } },
+    { id: "cross-half-wolf-cleaver", name: "半狼斬艦線", crossWorld: true, members: ["blaidd-half-wolf", "song-tian", "giyu-tomioka"], text: "布萊澤、宋天與富岡義勇同時上陣。每回合第一張攻擊牌穿透護甲；所有攻擊牌傷害 +3。", effects: { firstAttackPierce: 1, attackBonus: 3 } },
+    { id: "cross-scarlet-status-bloom", name: "猩紅狀態花", crossWorld: true, members: ["millicent-valkyrie", "naya", "tanjiro-kamado"], text: "米莉森、娜雅與炭治郎同時上陣。攻擊帶有狀態的敵人時傷害 +7；回合開始所有敵人虛弱 1 點。", effects: { statusExploitBonus: 7, turnWeakAll: 1 } },
+    { id: "cross-warrior-jar-shield", name: "戰士壺盾牆", crossWorld: true, members: ["alexander-warrior-jar", "mou-gang", "steve-rogers"], text: "亞歷山大、牟剛與史蒂夫同時上陣。回合開始全隊獲得 5 護甲並恢復 2 生命。", effects: { turnBlockAll: 5, turnHealAll: 2 } },
+    { id: "cross-black-knife-shadow", name: "黑刀暗殺線", crossWorld: true, members: ["black-knife-tiche", "zhao-yingkong", "natasha-romanoff"], text: "黑刀狄希、趙櫻空與娜塔莎同時上陣。每回合第二張牌追加 8 點穿甲傷害；回合開始全隊壓力 -1。", effects: { secondCardDamage: 8, turnReduceStressAll: 1 } },
+    { id: "cross-stormhawk-thunderfront", name: "風暴鷹雷線", crossWorld: true, members: ["nepheli-loux", "zheng-zha", "thor-odinson"], text: "涅斐麗、鄭吒與索爾同時上陣。開場抽 1 張牌；所有攻擊牌傷害 +4；群體傷害牌額外 +3。", effects: { openingDraw: 1, attackBonus: 4, damageAllBonus: 3 } }
   ];
 
   global.MainGodData = {
@@ -1197,6 +1689,9 @@
     scenarios,
     legendaryRecruitmentPool,
     shop,
+    playerProfessions,
+    playerPersonalities,
+    characterSources,
     cardSources,
     equipmentSources,
     permanentUpgrades,

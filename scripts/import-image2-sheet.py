@@ -8,7 +8,7 @@ from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BATCH_PATH = ROOT / "tmp" / "playtest" / "image2-batches.json"
+DEFAULT_BATCH_PATH = ROOT / "tmp" / "playtest" / "image2-batches.json"
 SHEET_DIR = ROOT / "tmp" / "playtest" / "image2-sheets"
 ASSET_DIR = ROOT / "src" / "assets" / "generated"
 CODEX_GENERATED = Path.home() / ".codex" / "generated_images"
@@ -21,11 +21,11 @@ def newest_generated_png() -> Path:
     return max(files, key=lambda path: path.stat().st_mtime)
 
 
-def crop_quadrants(source: Path, batch_index: int) -> list[str]:
-    batches = json.loads(BATCH_PATH.read_text(encoding="utf-8"))
+def crop_quadrants(source: Path, batch_index: int, batch_path: Path) -> list[str]:
+    batches = json.loads(batch_path.read_text(encoding="utf-8"))
     batch = next((item for item in batches if item["index"] == batch_index), None)
     if not batch:
-        raise RuntimeError(f"Batch {batch_index} not found in {BATCH_PATH}")
+        raise RuntimeError(f"Batch {batch_index} not found in {batch_path}")
 
     SHEET_DIR.mkdir(parents=True, exist_ok=True)
     ASSET_DIR.mkdir(parents=True, exist_ok=True)
@@ -58,10 +58,11 @@ def crop_quadrants(source: Path, batch_index: int) -> list[str]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Import the latest image2 2x2 sheet into project assets.")
     parser.add_argument("batch", type=int, help="1-based batch index from tmp/playtest/image2-batches.json")
+    parser.add_argument("--batch-path", type=Path, default=DEFAULT_BATCH_PATH, help="Batch JSON path. Defaults to tmp/playtest/image2-batches.json.")
     parser.add_argument("--source", type=Path, default=None, help="Specific generated PNG sheet. Defaults to newest Codex generated image.")
     args = parser.parse_args()
     source = args.source or newest_generated_png()
-    written = crop_quadrants(source, args.batch)
+    written = crop_quadrants(source, args.batch, args.batch_path)
     print(json.dumps({"batch": args.batch, "source": str(source), "written": written}, ensure_ascii=False, indent=2))
 
 
