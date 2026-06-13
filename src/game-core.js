@@ -12,10 +12,112 @@
   const bondsById = indexById(data.bonds || []);
   const playerProfessionsById = indexById(data.playerProfessions || []);
   const playerPersonalitiesById = indexById(data.playerPersonalities || []);
+  const customStats = data.customStats || [];
+  const customStatIds = customStats.map((stat) => stat.id);
+  const customTagsById = indexById(data.customTags || []);
+  const customMutationsById = indexById(data.customMutations || []);
   const economy = data.economy || {};
   const maxLog = 12;
   const dmc5FeaturedRecruitIds = ["nero-dmc5", "v-dmc5", "dante-dmc5"];
   const repeatableCardIds = new Set(["combat-knife", "guard-stance", "adrenaline-rush"]);
+  const eventApproachChoices = [
+    { id: "protagonist-line", title: "追蹤真正主角", text: "放棄最安全路線，追著劇本核心人物留下的痕跡前進。" },
+    { id: "artifact-line", title: "奪取劇本核心", text: "把注意力放在本劇本最危險的道具、血統、武器或封印上。" },
+    { id: "main-god-line", title: "逆讀主神提示", text: "不照任務文字走，嘗試從扣分規則與白光漏洞裡找捷徑。" }
+  ];
+  const eventSecondChoicesByApproach = {
+    "protagonist-line": [
+      { id: "protagonist-rescue", title: "先救人", text: "把隊伍資源用在救出關鍵人物，代價是戰線會被拉長。" },
+      { id: "protagonist-test", title: "試探立場", text: "不急著結盟，先用一次危險接觸確認對方是否可信。" },
+      { id: "protagonist-trade", title: "提出交易", text: "用主神情報換取對方出手，成功會很賺，失敗會被反利用。" }
+    ],
+    "artifact-line": [
+      { id: "artifact-infiltrate", title: "潛入取物", text: "避開主戰場摸向核心資源，但撤退路線會變得很窄。" },
+      { id: "artifact-assault", title: "正面強奪", text: "用火力和爆發硬搶，成功最快，代價也最重。" },
+      { id: "artifact-seal", title: "先封印再取", text: "花時間壓住反噬，獎勵較穩，但容易錯過最佳窗口。" }
+    ],
+    "main-god-line": [
+      { id: "main-god-decode", title: "解碼倒數", text: "把任務限制當成密碼讀，找出主神沒有明說的隱藏判定。" },
+      { id: "main-god-sacrifice", title: "承擔代價", text: "主動吃下一部分懲罰，換取劇本規則短暫鬆動。" },
+      { id: "main-god-feint", title: "偽裝失敗", text: "讓主神和劇本敵人以為隊伍走錯，反向引出隱藏路線。" }
+    ]
+  };
+  const eventFinalChoicesBySecond = {
+    "protagonist-rescue": [
+      { id: "rescue-break", title: "破門救援", text: "直接衝進最危險的房間，把人從死亡節點裡拖出來。" },
+      { id: "rescue-decoy", title: "分隊牽制", text: "讓一組人引開劇本殺機，另一組人接走關鍵人物。" },
+      { id: "rescue-wait", title: "等待他出手", text: "相信真正主角會自己突破，只在最後一秒補上缺口。" }
+    ],
+    "protagonist-test": [
+      { id: "test-duel", title: "一招試膽", text: "用一次短促交手確認對方的底線與戰意。" },
+      { id: "test-truth", title: "交出真相", text: "坦白輪迴者身份，賭對方能承受世界觀崩塌。" },
+      { id: "test-shadow", title: "跟蹤影子", text: "不正面接觸，只追蹤對方最想隱藏的行動。" }
+    ],
+    "protagonist-trade": [
+      { id: "trade-intel", title: "交換情報", text: "給出 Boss 弱點，要求對方加入一次關鍵行動。" },
+      { id: "trade-relic", title: "交出資源", text: "用主神道具或補給換取信任，隊伍會先吃虧。" },
+      { id: "trade-oath", title: "立下共戰誓約", text: "把利益換成承諾，讓雙方在本劇本內強行綁定。" }
+    ],
+    "artifact-infiltrate": [
+      { id: "infiltrate-steal", title: "無聲盜取", text: "只拿核心，不驚動守衛，失敗時會被包圍。" },
+      { id: "infiltrate-copy", title: "複製樣本", text: "不拿走原物，只複製可被主神承認的樣本。" },
+      { id: "infiltrate-leave-mark", title: "留下定位", text: "先不取物，留下標記讓之後的戰鬥導向該位置。" }
+    ],
+    "artifact-assault": [
+      { id: "assault-burst", title: "爆發突破", text: "用最大輸出撕開守衛線，所有風險集中在一瞬間。" },
+      { id: "assault-shield", title: "硬扛反噬", text: "讓前排吃下核心反擊，換後排完成奪取。" },
+      { id: "assault-overload", title: "引爆核心", text: "不完整奪取，直接把核心能量炸進隊伍武裝。" }
+    ],
+    "artifact-seal": [
+      { id: "seal-ritual", title: "完成封印", text: "穩定核心，讓它以裝備或技能形式被主神收錄。" },
+      { id: "seal-crack", title: "保留裂縫", text: "故意不封死，留下能在本劇本反覆利用的漏洞。" },
+      { id: "seal-reverse", title: "反轉咒式", text: "把詛咒導回劇本本身，但反噬可能先打在隊伍身上。" }
+    ],
+    "main-god-decode": [
+      { id: "decode-timer", title: "改寫倒數", text: "把任務倒數往後撥一格，換取更多探索空間。" },
+      { id: "decode-reward", title: "偷取獎勵判定", text: "在完成前提前截取一段主神獎勵。" },
+      { id: "decode-hidden", title: "打開隱藏判定", text: "專門尋找只有重玩時才會出現的隱藏取得條件。" }
+    ],
+    "main-god-sacrifice": [
+      { id: "sacrifice-blood", title: "用生命抵扣", text: "全隊承受真實傷害，換取劇本規則短暫讓步。" },
+      { id: "sacrifice-mind", title: "用精神抵扣", text: "讓精神壓力爆升，換一次突破不可能條件的機會。" },
+      { id: "sacrifice-curse", title: "接受負面咒詛", text: "主動收下一個詛咒，把它變成通往高獎勵的門票。" }
+    ],
+    "main-god-feint": [
+      { id: "feint-retreat", title: "假裝撤退", text: "讓劇本敵人追錯方向，再從死角切回主線。" },
+      { id: "feint-failure", title: "偽造失敗", text: "故意觸發低級懲罰，掩蓋真正目的。" },
+      { id: "feint-loop", title: "重演舊路線", text: "按上次通關的路線走，等待本次輪迴出現偏差。" }
+    ]
+  };
+  const eventOutcomeByFinalChoice = {
+    "rescue-break": { title: "真正主角現身", text: "你們把死亡節點打穿，劇本核心人物承認這次輪迴值得押上性命。", effects: [{ type: "recruit-hidden" }, { type: "stress", amount: 18 }] },
+    "rescue-decoy": { title: "牽制成功", text: "誘餌路線幾乎崩潰，但真正主角從另一側殺出，留下了可被主神承認的戰術。", effects: [{ type: "rare-card" }, { type: "damage-fraction", amount: 0.25 }] },
+    "rescue-wait": { title: "錯過三秒", text: "主角確實出手了，但隊伍等得太久，所有人都被拖入劇本殺機。", effects: [{ type: "stress", amount: 45 }, { type: "reward-points", amount: 500 }] },
+    "test-duel": { title: "短兵相認", text: "一招之後雙方都知道彼此不是雜兵，主角沒有加入，但留下了專屬戰鬥節奏。", effects: [{ type: "run-power", id: "event-duel-tempo", effect: "attackBonus", amount: 3 }, { type: "stress", amount: 12 }] },
+    "test-truth": { title: "世界觀崩裂", text: "真相讓對方停手，也讓隊伍承受劇本本身的排斥。", effects: [{ type: "side-story", amount: 1 }, { type: "curse" }] },
+    "test-shadow": { title: "影子反咬", text: "跟蹤路線把你們帶到真正弱點前，也暴露了隊伍的位置。", effects: [{ type: "legendary-equipment" }, { type: "stress", amount: 30 }] },
+    "trade-intel": { title: "情報成交", text: "Boss 弱點被交換出去，主角沒有立即入隊，但整個劇本的輸出窗口被打開。", effects: [{ type: "scenario-power" }] },
+    "trade-relic": { title: "被反向標價", text: "對方接受資源，卻要求你們先付出更多代價證明誠意。", effects: [{ type: "reward-points", amount: -700 }, { type: "recruit-candidate" }] },
+    "trade-oath": { title: "共戰誓約", text: "誓約成立後，劇本人物與隊伍短暫同步，直到本劇本完結前都能互相補位。", effects: [{ type: "run-power", id: "event-oath-guard", effect: "turnBlock", amount: 4 }, { type: "heal", amount: 0.15, stressRelief: 8 }] },
+    "infiltrate-steal": { title: "核心到手", text: "你們無聲取走核心，但撤退時每一步都踩在警報邊緣。", effects: [{ type: "legendary-equipment" }, { type: "damage-fraction", amount: 0.2 }] },
+    "infiltrate-copy": { title: "樣本被收錄", text: "主神承認複製樣本有效，將它轉成可加入牌組的劇本技能。", effects: [{ type: "rare-card" }, { type: "reward-points", amount: 400 }] },
+    "infiltrate-leave-mark": { title: "伏線標記", text: "標記暫時沒有獎勵，卻讓之後所有戰鬥都多一層準備。", effects: [{ type: "run-power", id: "event-marked-route", effect: "openingBlock", amount: 8 }] },
+    "assault-burst": { title: "爆發過熱", text: "核心被硬搶下來，代價是所有人像被劇本本身反擊。", effects: [{ type: "rare-card" }, { type: "damage-fraction", amount: 0.5 }] },
+    "assault-shield": { title: "前排扛住了", text: "盾線幾乎粉碎，但核心反擊被導入防護矩陣。", effects: [{ type: "run-power", id: "event-shield-matrix", effect: "turnBlock", amount: 6 }, { type: "stress", amount: 22 }] },
+    "assault-overload": { title: "核心超載", text: "你們沒有帶走原物，而是把它炸成一場只能維持到劇本完結的暴力增幅。", effects: [{ type: "run-power", id: "event-core-overload", effect: "attackBonus", amount: 6 }, { type: "curse" }] },
+    "seal-ritual": { title: "封印完成", text: "核心被穩定封裝，成為這次遠征最乾淨的一次大獎。", effects: [{ type: "legendary-equipment" }, { type: "side-story", amount: 1 }] },
+    "seal-crack": { title: "裂縫可控", text: "裂縫沒有閉合，卻被你們固定成一條持續增益線。", effects: [{ type: "scenario-power" }, { type: "run-power", id: "event-crack-guard", effect: "openingBlock", amount: 6 }] },
+    "seal-reverse": { title: "反咒成功一半", text: "咒式倒灌進劇本敵人身上，也在隊伍牌組裡留下污點。", effects: [{ type: "reward-points", amount: 1000 }, { type: "curse" }] },
+    "decode-timer": { title: "倒數延後", text: "主神倒數被往後撥動，本劇本的每場戰鬥都多出一口氣。", effects: [{ type: "run-power", id: "event-timer-buffer", effect: "turnBlock", amount: 3 }, { type: "heal", amount: 0.12, stressRelief: 6 }] },
+    "decode-reward": { title: "提前截獎", text: "獎勵判定被提前截取，主神立刻用壓力懲罰校正異常。", effects: [{ type: "reward-points", amount: 1500 }, { type: "stress", amount: 28 }] },
+    "decode-hidden": { title: "隱藏判定開啟", text: "這就是重玩舊劇本才會看到的縫隙，真正主角的取得條件短暫浮現。", effects: [{ type: "recruit-hidden" }, { type: "side-story", amount: 1 }] },
+    "sacrifice-blood": { title: "半血通行", text: "全隊生命被扣到危險線，但主神承認這是等價交換。", effects: [{ type: "damage-fraction", amount: 0.5 }, { type: "scenario-power" }, { type: "reward-points", amount: 800 }] },
+    "sacrifice-mind": { title: "壓力爆表", text: "精神抵扣打開了不可能路線，也幾乎把全隊推到崩潰邊緣。", effects: [{ type: "stress", amount: 60 }, { type: "legendary-equipment" }] },
+    "sacrifice-curse": { title: "咒詛成門", text: "詛咒進入牌組的一刻，另一扇本來不存在的獎勵門也開了。", effects: [{ type: "curse" }, { type: "rare-card" }, { type: "reward-points", amount: 700 }] },
+    "feint-retreat": { title: "退路是假", text: "敵人追向假的撤離線，你們從死角奪回主動。", effects: [{ type: "heal", amount: 0.2, stressRelief: 18 }, { type: "run-power", id: "event-ambush-line", effect: "attackBonus", amount: 2 }] },
+    "feint-failure": { title: "低級懲罰遮蔽", text: "一次小失敗騙過主神監測，但懲罰仍然落在隊伍身上。", effects: [{ type: "reward-points", amount: 1200 }, { type: "damage-fraction", amount: 0.3 }, { type: "stress", amount: 18 }] },
+    "feint-loop": { title: "舊路線偏差", text: "重演舊通關路線時，劇本在相同位置裂開了全新的結尾。", effects: [{ type: "recruit-hidden" }, { type: "curse" }, { type: "run-power", id: "event-loop-instinct", effect: "attackBonus", amount: 4 }] }
+  };
 
   function indexById(items) {
     return Object.fromEntries(items.map((item) => [item.id, item]));
@@ -25,9 +127,44 @@
     return typeof structuredClone === "function" ? structuredClone(value) : JSON.parse(JSON.stringify(value));
   }
 
+  function createPlayerGrowth(profile) {
+    const stats = baseStatsForProfile(profile);
+    return {
+      stats,
+      purchasedTags: [],
+      tagOffers: [],
+      mutations: [],
+      rerolls: 0,
+      art: null
+    };
+  }
+
+  function baseStatsForProfile(profile) {
+    const professionId = profile?.professionId || data.playerProfessions?.[0]?.id;
+    const base = data.playerProfessionStats?.[professionId] || {};
+    return Object.fromEntries(customStatIds.map((id) => [id, Number(base[id] || 50)]));
+  }
+
+  function normalizePlayerGrowth(growth, profile) {
+    const base = createPlayerGrowth(profile);
+    const next = { ...base, ...(growth && typeof growth === "object" ? clone(growth) : {}) };
+    const baseStats = baseStatsForProfile(profile);
+    next.stats = { ...baseStats, ...(next.stats || {}) };
+    customStatIds.forEach((id) => {
+      next.stats[id] = Math.max(0, Math.floor(Number(next.stats[id] ?? baseStats[id] ?? 50)));
+    });
+    next.purchasedTags = Array.isArray(next.purchasedTags) ? next.purchasedTags.filter((id) => customTagsById[id]) : [];
+    next.purchasedTags = [...new Set(next.purchasedTags)];
+    next.tagOffers = Array.isArray(next.tagOffers) ? next.tagOffers.filter((id) => customTagsById[id] && !next.purchasedTags.includes(id)) : [];
+    next.mutations = Array.isArray(next.mutations) ? next.mutations.filter((id) => customMutationsById[id]) : [];
+    next.rerolls = Math.max(0, Math.floor(Number(next.rerolls || 0)));
+    next.art = typeof next.art === "string" ? next.art : null;
+    return next;
+  }
+
   function createInitialState() {
     return {
-      version: 4,
+      version: 5,
       nextId: 1,
       randomSeed: 173205,
       screen: "onboarding",
@@ -35,6 +172,7 @@
       pending: null,
       onboarding: { stage: "invite", completed: false, draft: {} },
       playerProfile: null,
+      playerGrowth: createPlayerGrowth(null),
       teamName: "中洲隊",
       party: [],
       deck: [],
@@ -74,11 +212,12 @@
 
   function normalizeState(saved) {
     if (!saved || typeof saved !== "object") return createInitialState();
-    if (saved.version === 4) return normalizeModernState(saved);
+    if (saved.version === 5) return normalizeModernState(saved);
+    if (saved.version === 4) return normalizeModernState({ ...clone(saved), version: 5 });
     if (saved.version === 3) {
       return normalizeModernState({
         ...clone(saved),
-        version: 4,
+        version: 5,
         teamName: sanitizeTeamName(saved.teamName || "中洲隊", "中洲隊"),
         playerProfile: saved.playerProfile || null,
         onboarding: saved.onboarding || { stage: "complete", completed: true, draft: {} }
@@ -90,9 +229,10 @@
   function normalizeModernState(saved) {
     const base = createInitialState();
     const next = { ...base, ...clone(saved) };
-    next.version = 4;
+    next.version = 5;
     next.teamName = sanitizeTeamName(next.teamName || "中洲隊", "中洲隊");
     next.playerProfile = normalizePlayerProfile(next.playerProfile);
+    next.playerGrowth = normalizePlayerGrowth(next.playerGrowth, next.playerProfile);
     next.onboarding = normalizeOnboarding(next.onboarding, next.playerProfile);
     next.campaign = { ...base.campaign, ...(saved.campaign || {}) };
     reconcileCampaignUnlocks(next.campaign);
@@ -103,7 +243,7 @@
     next.permanentUpgrades.bloodlines = Array.isArray(next.permanentUpgrades.bloodlines) ? next.permanentUpgrades.bloodlines : [];
     next.party = (Array.isArray(saved.party) ? saved.party : base.party)
       .filter((member) => charactersById[member.id] && !(member.id === "zhang-jie" && next.campaign.tutorialComplete))
-      .map((member) => normalizePartyMember(member, next.playerProfile));
+      .map((member) => normalizePartyMember(member, next.playerProfile, next.playerGrowth));
     next.deck = (Array.isArray(saved.deck) ? saved.deck : base.deck)
       .map((entry) => typeof entry === "string" ? makeDeckEntry(next, entry, null) : entry)
       .filter((entry) => entry && cardsById[entry.cardId]);
@@ -121,6 +261,9 @@
     next.hand = (saved.hand || []).filter((entry) => cardsById[entry.cardId]);
     next.discardPile = (saved.discardPile || []).filter((entry) => cardsById[entry.cardId]);
     next.exhaustedPile = (saved.exhaustedPile || []).filter((entry) => cardsById[entry.cardId]);
+    syncCustomMutations(next);
+    refreshCustomTagOffers(next, { free: true, onlyIfEmpty: true });
+    applyPlayerGrowthToParty(next);
     ensureFormation(next);
     return next;
   }
@@ -172,7 +315,7 @@
 
   function migrateLegacyState(saved) {
     const next = createInitialState();
-    next.version = 4;
+    next.version = 5;
     next.teamName = "中洲隊";
     next.playerProfile = null;
     next.onboarding = { stage: "complete", completed: true, draft: {} };
@@ -253,10 +396,10 @@
     };
   }
 
-  function normalizePartyMember(member, playerProfile) {
+  function normalizePartyMember(member, playerProfile, playerGrowth) {
     const normalized = normalizeCharacter(member);
     if (member.id !== "player-avatar" || !playerProfile) return normalized;
-    const player = makePlayerCharacter(playerProfile, normalized.active);
+    const player = makePlayerCharacter(playerProfile, normalized.active, playerGrowth);
     return {
       ...normalized,
       name: player.name,
@@ -276,16 +419,18 @@
     return { ...clone(base), hp: base.maxHp, block: 0, evade: 0, active: Boolean(active) };
   }
 
-  function makePlayerCharacter(profile, active) {
+  function makePlayerCharacter(profile, active, playerGrowth = null) {
     const profession = playerProfessionsById[profile.professionId] || data.playerProfessions[0];
     const personality = playerPersonalitiesById[profile.personalityId] || data.playerPersonalities[0];
     const base = makeCharacter("player-avatar", active);
+    const staminaBonus = customStatTier({ playerGrowth: playerGrowth || createPlayerGrowth(profile) }, "stamina") * 10 + customEffectTotal({ playerGrowth: playerGrowth || createPlayerGrowth(profile) }, "maxHp");
+    const maxHp = profession.maxHp + staminaBonus;
     return {
       ...base,
       name: profile.name,
       role: profession.role,
-      maxHp: profession.maxHp,
-      hp: profession.maxHp,
+      maxHp,
+      hp: maxHp,
       stress: profession.stress,
       energyContribution: profession.energyContribution,
       passiveText: `${profession.name} · ${personality.name}：${profession.passiveText}`,
@@ -364,10 +509,13 @@
     if (!profile) return next;
     const profession = playerProfessionsById[profile.professionId];
     next.playerProfile = profile;
+    next.playerGrowth = createPlayerGrowth(profile);
+    refreshCustomTagOffers(next, { free: true, force: true });
+    syncCustomMutations(next);
     next.onboarding = { stage: "complete", completed: true, draft: {} };
     next.screen = "story";
     next.pending = { kind: "tutorial-intro" };
-    next.party = [makePlayerCharacter(profile, true), makeCharacter("zhang-jie", true)];
+    next.party = [makePlayerCharacter(profile, true, next.playerGrowth), makeCharacter("zhang-jie", true)];
     next.deck = profession.cardIds.map((cardId) => makeDeckEntry(next, cardId, null, false, "player-avatar"));
     next.equipped = {};
     next.hand = [];
@@ -556,6 +704,14 @@
       }
       layers.push(nodes);
     }
+    if (scenario.id !== "tutorial" && !layers.flat().some((node) => node.type === "event")) {
+      const eventCandidates = layers.flat().filter((node) => [2, 3, 6, 7].includes(node.layer));
+      const forcedEvent = randomChoice(state, eventCandidates);
+      if (forcedEvent) {
+        forcedEvent.type = "event";
+        forcedEvent.encounterId = null;
+      }
+    }
     return { layers };
   }
 
@@ -640,11 +796,12 @@
     applyBondTurnStartEffects(state);
     const passiveOpeningEnergy = state.turn === 1 && hasPassive(state, "opening-overdrive") ? 2 : 0;
     const bondOpeningEnergy = state.turn === 1 ? bondEffectTotal(state, "openingEnergy") : 0;
-    state.maxEnergy = calculateEnergy(state) + (state.turn === 1 ? equipmentEffectTotal(state, "openingEnergy") : 0) + passiveOpeningEnergy + bondOpeningEnergy;
+    state.maxEnergy = calculateEnergy(state) + (state.turn === 1 ? equipmentEffectTotal(state, "openingEnergy") + customEffectTotal(state, "openingEnergy") : 0) + passiveOpeningEnergy + bondOpeningEnergy;
     state.energy = state.maxEnergy;
     let handSize = 5;
     if (state.turn === 1) {
       handSize += equipmentEffectTotal(state, "openingDraw");
+      handSize += customStatTier(state, "technique") + customEffectTotal(state, "openingDraw");
       handSize += bondEffectTotal(state, "openingDraw");
       if (state.permanentUpgrades.team.includes("team-opening-draw")) handSize += 1;
       if (hasPassive(state, "opening-forecast")) handSize += 2;
@@ -667,6 +824,8 @@
     if (cost > next.energy) return next;
     const target = getLivingEnemy(next, targetEnemyUid || next.selectedTargetId) || getLivingEnemies(next)[0];
     if (card.damage && !target) return next;
+    const usesCustomFreePlay = next.turn === 1 && getCardCostBeforeCustomFree(next, instance) > 0 && Number(next.turnStats.customFreePlaysUsed || 0) < customOpeningFreePlays(next);
+    if (usesCustomFreePlay) next.turnStats.customFreePlaysUsed += 1;
     next.energy -= cost;
     next.hand.splice(handIndex, 1);
 
@@ -676,6 +835,10 @@
     let piercingAttack = Boolean(card.pierce || bloodline?.effect.pierce);
     let equipmentBurn = 0;
     let passiveBurn = 0;
+    let customAttackBurn = 0;
+    let customAttackPoison = 0;
+    let customFirstAttackBurn = 0;
+    let customFirstAttackPoison = 0;
     const executeApplies = Boolean(card.executeBelow && target && target.hp / target.maxHp <= card.executeBelow);
     if (card.type === "attack") {
       const applyAttackBonus = (bonus) => {
@@ -684,9 +847,14 @@
       };
       const sharedBonus = equipmentEffectTotal(next, "attackBonus") + temporaryPowerAmount(next, "attackBonus");
       applyAttackBonus(sharedBonus);
+      applyAttackBonus(customStatTier(next, "strength") + customEffectTotal(next, "attackBonus"));
+      if (instance.ownerId === "player-avatar") applyAttackBonus(customEffectTotal(next, "ownerAttackBonus"));
       applyAttackBonus(bondEffectTotal(next, "attackBonus"));
       if (card.damageAll) damageAll += bondEffectTotal(next, "damageAllBonus");
+      if (card.damageAll) damageAll += customEffectTotal(next, "damageAllBonus");
       if (instance.ownerId) applyAttackBonus(bondOwnerAttackBonus(next, instance.ownerId));
+      const player = next.party.find((member) => member.id === "player-avatar");
+      if (player?.hp > 0 && player.hp <= player.maxHp / 2) applyAttackBonus(customEffectTotal(next, "lowHpAttackBonus"));
       if (hasPassive(next, "first-attack") && !next.turnStats.firstAttackUsed) {
         applyAttackBonus(5);
         next.turnStats.firstAttackUsed = true;
@@ -703,6 +871,7 @@
       if (blackFlameUser?.stress >= 50) applyAttackBonus(5);
       if (card.damage && target && hasPassive(next, "status-exploit") && hasEnemyStatus(target)) damage += 6;
       if (card.damage && target && hasEnemyStatus(target)) damage += bondEffectTotal(next, "statusExploitBonus");
+      if (card.damage && target && hasEnemyStatus(target)) damage += customEffectTotal(next, "statusExploitBonus");
       if (card.damage && target?.block > 0 && hasPassive(next, "armor-breaker")) {
         damage += 5;
         piercingAttack = true;
@@ -718,6 +887,14 @@
       if (hasPassive(next, "first-attack-burn") && !next.turnStats.firstPassiveBurnUsed) {
         passiveBurn = 4;
         next.turnStats.firstPassiveBurnUsed = true;
+      }
+      customAttackBurn = customEffectTotal(next, "attackBurn");
+      customAttackPoison = customEffectTotal(next, "attackPoison");
+      if (!next.turnStats.customFirstAttackUsed) {
+        if (customEffectTotal(next, "firstAttackPierce") > 0) piercingAttack = true;
+        customFirstAttackBurn = customEffectTotal(next, "firstAttackBurn");
+        customFirstAttackPoison = customEffectTotal(next, "firstAttackPoison");
+        next.turnStats.customFirstAttackUsed = true;
       }
       if (!next.turnStats.equipmentFirstAttackUsed) {
         const bonus = equipmentEffectTotal(next, "firstAttackBonus");
@@ -736,9 +913,11 @@
         equipmentBurn = equipmentEffectTotal(next, "firstAttackBurn");
         if (equipmentBurn > 0) next.turnStats.equipmentFirstBurnUsed = true;
       }
-      if (bloodline?.effect.criticalMultiplier) {
-        damage = Math.ceil(damage * bloodline.effect.criticalMultiplier);
-        damageAll = Math.ceil(damageAll * bloodline.effect.criticalMultiplier);
+      const criticalMultiplier = Math.max(Number(bloodline?.effect.criticalMultiplier || 0), customEffectMax(next, "criticalMultiplier", 0));
+      if (criticalMultiplier) {
+        const finalCriticalMultiplier = criticalMultiplier + customLuckCritBonus(next);
+        damage = Math.ceil(damage * finalCriticalMultiplier);
+        damageAll = Math.ceil(damageAll * finalCriticalMultiplier);
       }
       if (card.ownerStressDamageRatio && instance.ownerId) {
         const owner = next.party.find((member) => member.id === instance.ownerId);
@@ -756,6 +935,16 @@
     if (passiveBurn > 0) {
       if (card.damageAll) getLivingEnemies(next).forEach((enemy) => addEnemyStatus(next, enemy.uid, "burn", passiveBurn));
       else if (target) addEnemyStatus(next, target.uid, "burn", passiveBurn);
+    }
+    if (customAttackBurn || customFirstAttackBurn) {
+      const burn = customAttackBurn + customFirstAttackBurn;
+      if (card.damageAll) getLivingEnemies(next).forEach((enemy) => addEnemyStatus(next, enemy.uid, "burn", burn));
+      else if (target) addEnemyStatus(next, target.uid, "burn", burn);
+    }
+    if (customAttackPoison || customFirstAttackPoison) {
+      const poison = customAttackPoison + customFirstAttackPoison;
+      if (card.damageAll) getLivingEnemies(next).forEach((enemy) => addEnemyStatus(next, enemy.uid, "poison", poison));
+      else if (target) addEnemyStatus(next, target.uid, "poison", poison);
     }
     if (card.type === "attack" && card.damage && hasPassive(next, "first-attack-splash") && !next.turnStats.firstSplashUsed) {
       getLivingEnemies(next).filter((enemy) => enemy.uid !== target?.uid).forEach((enemy) => damageEnemy(next, enemy.uid, 3, "王俠的定向爆破"));
@@ -776,6 +965,7 @@
     if (bloodline) applyBloodlineEffect(next, instance.ownerId, bloodline, target?.uid);
     const bondResult = applyBondCardEffects(next, instance, card, target?.uid);
     if (bondResult === "combat-complete") return completeCombat(next);
+    applyCustomCardEffects(next, instance, card, target?.uid);
     if (hasPassive(next, "first-card-draw") && next.turnStats.cardsPlayed === 0) drawCards(next, 1);
     if (card.type === "support" && hasPassive(next, "first-support-draw") && !next.turnStats.firstSupportUsed) {
       drawCards(next, 1);
@@ -913,7 +1103,7 @@
     state.deck.forEach((entry) => { if (entry.acquiredRunId === state.run.id) entry.acquiredRunId = null; });
     state.equipmentInventory.forEach((entry) => { if (entry.acquiredRunId === state.run.id) entry.acquiredRunId = null; });
     if (!state.campaign.completedScenarios.includes(scenarioId)) state.campaign.completedScenarios.push(scenarioId);
-    const nextScenario = { alien: "juon", juon: "mummy-curse", "mummy-curse": "jurassic-island", "jurassic-island": "abyssal-ark", "abyssal-ark": "evernight-castle", "evernight-castle": "demon-frontier", "demon-frontier": "main-god-trial", "main-god-trial": "starship-troopers", "starship-troopers": "avp-pyramid", "avp-pyramid": "nightmare-elm", "nightmare-elm": "lotr-war", "lotr-war": "rumbling-finale", "rumbling-finale": "infinity-castle", "infinity-castle": "naruto-final-valley", "naruto-final-valley": "bleach-false-karakura", "bleach-false-karakura": "gintama-yoshiwara", "gintama-yoshiwara": "gintama-final-war", "gintama-final-war": "avengers-new-york", "avengers-new-york": "batman-v-superman", "batman-v-superman": "devil-may-cry-5", "devil-may-cry-5": "final-destination", "final-destination": "jinyong-heroic-peak", "jinyong-heroic-peak": "pacific-rim-breach", "pacific-rim-breach": "fury-road-war-rig", "fury-road-war-rig": "resident-evil-6-c-virus", "resident-evil-6-c-virus": "elden-ring-hell-run" }[scenarioId];
+    const nextScenario = { alien: "juon", juon: "mummy-curse", "mummy-curse": "jurassic-island", "jurassic-island": "abyssal-ark", "abyssal-ark": "evernight-castle", "evernight-castle": "demon-frontier", "demon-frontier": "main-god-trial", "main-god-trial": "starship-troopers", "starship-troopers": "avp-pyramid", "avp-pyramid": "nightmare-elm", "nightmare-elm": "lotr-war", "lotr-war": "rumbling-finale", "rumbling-finale": "infinity-castle", "infinity-castle": "naruto-final-valley", "naruto-final-valley": "bleach-false-karakura", "bleach-false-karakura": "gintama-yoshiwara", "gintama-yoshiwara": "gintama-final-war", "gintama-final-war": "avengers-new-york", "avengers-new-york": "batman-v-superman", "batman-v-superman": "devil-may-cry-5", "devil-may-cry-5": "final-destination", "final-destination": "jinyong-heroic-peak", "jinyong-heroic-peak": "pacific-rim-breach", "pacific-rim-breach": "fury-road-war-rig", "fury-road-war-rig": "resident-evil-6-c-virus", "resident-evil-6-c-virus": "elden-ring-hell-run", "elden-ring-hell-run": "jujutsu-kaisen-shibuya" }[scenarioId];
     if (nextScenario && !state.campaign.unlockedScenarios.includes(nextScenario)) state.campaign.unlockedScenarios.push(nextScenario);
     if (scenarioId === "batman-v-superman") state.campaign.infiniteUnlocked = true;
     if (state.run.sourceScenarioId === "infinite") state.campaign.infiniteTier += 1;
@@ -938,37 +1128,192 @@
   }
 
   function buildEvent(state) {
+    const scenarioId = state.run?.scenarioId || null;
+    const scenario = scenariosById[scenarioId];
     const unlockedPool = new Set(
       data.scenarios
-        .filter((scenario) => scenario.id !== "tutorial" && (state.campaign.unlockedScenarios.includes(scenario.id) || scenario.id === state.run?.scenarioId))
-        .flatMap((scenario) => scenario.recruitmentPool)
+        .filter((item) => item.id !== "tutorial" && (state.campaign.unlockedScenarios.includes(item.id) || item.id === state.run?.scenarioId))
+        .flatMap((item) => item.recruitmentPool)
     );
-    const unowned = data.characters.filter((item) => unlockedPool.has(item.id) && !state.party.some((member) => member.id === item.id));
-    const candidate = unowned.length ? randomChoice(state, unowned).id : null;
-    return { kind: "event", candidate, scenarioId: state.run?.scenarioId || null };
+    const scenarioPool = new Set(
+      data.scenarios
+        .filter((item) => item.id === scenarioId)
+        .flatMap((item) => item.recruitmentPool)
+    );
+    const unownedScenario = data.characters.filter((item) => scenarioPool.has(item.id) && !state.party.some((member) => member.id === item.id));
+    const unownedUnlocked = data.characters.filter((item) => unlockedPool.has(item.id) && !state.party.some((member) => member.id === item.id));
+    const hiddenId = scenario?.hiddenProtagonistId;
+    const hiddenCandidate = hiddenId && !state.party.some((member) => member.id === hiddenId) ? hiddenId : null;
+    const candidate = unownedScenario.length ? randomChoice(state, unownedScenario).id : unownedUnlocked.length ? randomChoice(state, unownedUnlocked).id : null;
+    return {
+      kind: "event",
+      stage: 1,
+      path: [],
+      choices: eventChoicesFor(1, [], scenario),
+      candidate,
+      hiddenCandidate,
+      hiddenProtagonistId: hiddenId || null,
+      scenarioId
+    };
+  }
+
+  function scenarioEventChoicesFor(scenario, stage, path) {
+    if (!scenario?.eventChoices) return null;
+    if (stage === 1) return (scenario.eventChoices.stage1 || []).map(clone);
+    if (stage === 2) return (scenario.eventChoices.stage2?.[path[0]] || []).map(clone);
+    if (stage === 3) return (scenario.eventChoices.stage3?.[path[1]] || []).map(clone);
+    return null;
+  }
+
+  function eventChoicesFor(stage, path, scenario = null) {
+    const scenarioChoices = scenarioEventChoicesFor(scenario, stage, path);
+    if (scenarioChoices?.length) return scenarioChoices;
+    if (stage === 1) return eventApproachChoices.map(clone);
+    if (stage === 2) return (eventSecondChoicesByApproach[path[0]] || eventSecondChoicesByApproach["protagonist-line"]).map(clone);
+    if (stage === 3) return (eventFinalChoicesBySecond[path[1]] || eventFinalChoicesBySecond["protagonist-rescue"]).map(clone);
+    return [];
   }
 
   function resolveEvent(state, optionId) {
     const next = clone(state);
     if (next.screen !== "event" || !next.pending) return next;
-    if (optionId === "curse-story") {
-      const curseId = randomChoice(next, ["curse-panic", "curse-drain"]);
-      const curse = makeDeckEntry(next, curseId, next.run.id);
-      next.deck.push(curse);
-      next.curses.push(curse.instanceId);
-      next.rewardPoints += Number(economy.curseStoryReward || 900);
+    if (!next.pending.stage && isLegacyEventChoice(optionId)) {
+      applyLegacyEventChoice(next, optionId);
+      return completeCurrentNode(next);
     }
-    if (optionId === "temporary-power") next.run.temporaryPowers.push({ id: "battle-instinct", effect: "attackBonus", amount: 2 });
-    if (optionId === "scenario-power") {
-      const power = scenariosById[next.pending.scenarioId]?.scenarioPower;
-      if (power && !next.run.temporaryPowers.some((item) => item.id === power.id)) next.run.temporaryPowers.push(clone(power));
+    if (!next.pending.stage) {
+      next.pending.stage = 1;
+      next.pending.path = [];
+      const scenario = scenariosById[next.pending.scenarioId] || scenariosById[next.run?.scenarioId];
+      next.pending.choices = eventChoicesFor(1, [], scenario);
     }
-    if (optionId === "recruit" && next.pending.candidate) recruitCharacter(next, next.pending.candidate);
-    if (optionId === "qi-insight" && hasPassive(next, "artifact-sense")) {
-      next.sideStories += 1;
-      next.run.temporaryPowers.push({ id: "warded", effect: "openingBlock", amount: 4 });
+    const scenario = scenariosById[next.pending.scenarioId] || scenariosById[next.run?.scenarioId];
+    const choices = next.pending.choices || eventChoicesFor(next.pending.stage, next.pending.path || [], scenario);
+    const choice = choices.find((item) => item.id === optionId);
+    if (!choice) return next;
+    const path = [...(next.pending.path || []), optionId];
+    if (next.pending.stage < 3) {
+      next.pending.stage += 1;
+      next.pending.path = path;
+      next.pending.choices = eventChoicesFor(next.pending.stage, path, scenario);
+      return next;
     }
+    applyEventOutcome(next, next.pending, path);
     return completeCurrentNode(next);
+  }
+
+  function isLegacyEventChoice(optionId) {
+    return ["curse-story", "temporary-power", "scenario-power", "recruit", "qi-insight"].includes(optionId);
+  }
+
+  function applyLegacyEventChoice(state, optionId) {
+    if (optionId === "curse-story") {
+      addRandomCurse(state);
+      state.rewardPoints += Number(economy.curseStoryReward || 900);
+    }
+    if (optionId === "temporary-power") addTemporaryPower(state, { id: "battle-instinct", effect: "attackBonus", amount: 2 });
+    if (optionId === "scenario-power") applyScenarioPower(state, scenariosById[state.pending.scenarioId]);
+    if (optionId === "recruit" && state.pending.candidate) recruitCharacter(state, state.pending.candidate);
+    if (optionId === "qi-insight" && hasPassive(state, "artifact-sense")) {
+      state.sideStories += 1;
+      addTemporaryPower(state, { id: "warded", effect: "openingBlock", amount: 4 });
+    }
+  }
+
+  function applyEventOutcome(state, event, path) {
+    const finalChoiceId = path[2];
+    const scenario = scenariosById[event.scenarioId] || scenariosById[state.run?.scenarioId];
+    const outcome = scenario?.eventOutcomes?.[finalChoiceId] || eventOutcomeByFinalChoice[finalChoiceId];
+    if (!outcome) return;
+    outcome.effects.forEach((effect) => applyEventEffect(state, event, scenario, effect));
+    state.log = appendLog(state.log, `${scenario?.name || "輪迴"}奇遇：${outcome.title}。${outcome.text}`);
+  }
+
+  function applyEventEffect(state, event, scenario, effect) {
+    if (effect.type === "recruit-hidden") {
+      grantEventCharacter(state, event.hiddenCandidate || event.candidate);
+      return;
+    }
+    if (effect.type === "recruit-candidate") {
+      grantEventCharacter(state, event.candidate || event.hiddenCandidate);
+      return;
+    }
+    if (effect.type === "rare-card") {
+      const card = chooseCardRewards(state, 1, "elite")[0];
+      if (card) addRunCard(state, card.id);
+      else state.rewardPoints += 500;
+      return;
+    }
+    if (effect.type === "legendary-equipment") {
+      const equipment = chooseEquipmentRewardsByRarity(state, 1, ["legendary"])[0] || chooseEquipmentRewards(state, 1)[0];
+      if (equipment) addRunEquipment(state, equipment.id);
+      else state.rewardPoints += Number(economy.duplicateEquipmentReward || 600);
+      return;
+    }
+    if (effect.type === "scenario-power") {
+      applyScenarioPower(state, scenario);
+      return;
+    }
+    if (effect.type === "run-power") {
+      addTemporaryPower(state, effect);
+      return;
+    }
+    if (effect.type === "reward-points") {
+      state.rewardPoints = Math.max(0, state.rewardPoints + Number(effect.amount || 0));
+      return;
+    }
+    if (effect.type === "side-story") {
+      state.sideStories += Number(effect.amount || 1);
+      return;
+    }
+    if (effect.type === "curse") {
+      addRandomCurse(state);
+      return;
+    }
+    if (effect.type === "stress") {
+      const amount = Number(effect.amount || 0);
+      affectAliveActive(state, (member) => ({ ...member, stress: clamp(member.stress + amount, 0, 100) }));
+      return;
+    }
+    if (effect.type === "damage-fraction") {
+      const amount = Number(effect.amount || 0);
+      affectAliveActive(state, (member) => ({ ...member, hp: Math.max(1, Math.ceil(member.hp * (1 - amount))), stress: clamp(member.stress + Math.ceil(amount * 20), 0, 100) }));
+      return;
+    }
+    if (effect.type === "heal") healActive(state, Number(effect.amount || 0.1), Number(effect.stressRelief || 0));
+  }
+
+  function grantEventCharacter(state, characterId) {
+    if (characterId && charactersById[characterId] && !state.party.some((member) => member.id === characterId)) {
+      recruitCharacter(state, characterId);
+      return;
+    }
+    state.rewardPoints += 700;
+  }
+
+  function addRandomCurse(state) {
+    const curseId = randomChoice(state, ["curse-panic", "curse-drain"]);
+    const curse = makeDeckEntry(state, curseId, state.run?.id || null);
+    state.deck.push(curse);
+    state.curses.push(curse.instanceId);
+  }
+
+  function addTemporaryPower(state, power) {
+    if (!state.run) return;
+    if (state.run.temporaryPowers.some((item) => item.id === power.id)) {
+      state.rewardPoints += 400;
+      return;
+    }
+    const { type, ...storedPower } = power;
+    state.run.temporaryPowers.push(storedPower);
+  }
+
+  function applyScenarioPower(state, scenario) {
+    if (scenario?.scenarioPower) {
+      addTemporaryPower(state, clone(scenario.scenarioPower));
+      return;
+    }
+    addTemporaryPower(state, { id: "battle-instinct", effect: "attackBonus", amount: 2 });
   }
 
   function campAction(state, action, targetId) {
@@ -1050,6 +1395,9 @@
     state.activeEncounterId = null;
     state.activeEnemies = [];
     clearCombatPiles(state);
+    syncCustomMutations(state);
+    refreshCustomTagOffers(state, { free: true, force: true });
+    applyPlayerGrowthToParty(state);
     state.log = appendLog(state.log, `主神修復完成：${teamLabel(state)}支付 ${paid}/${fullCost} 點。`);
     return state;
   }
@@ -1068,7 +1416,7 @@
 
   function setHubTab(state, tabId) {
     const next = clone(state);
-    if (next.screen !== "hub" || !["deployment", "roster", "shop"].includes(tabId)) return next;
+    if (next.screen !== "hub" || !["deployment", "roster", "growth", "shop"].includes(tabId)) return next;
     next.hubTab = tabId;
     return next;
   }
@@ -1169,6 +1517,127 @@
     state.rewardPoints -= rewardPointCost;
     state.sideStories -= sideStoryCost;
     return true;
+  }
+
+  function buyCustomStat(state, statId, amount = 1) {
+    const next = clone(state);
+    if (next.screen !== "hub" || !customStatIds.includes(statId)) return next;
+    const count = Math.max(1, Math.floor(Number(amount || 1)));
+    const cost = count * Number(economy.customStatPointCost || 1000);
+    if (next.rewardPoints < cost) return next;
+    next.rewardPoints -= cost;
+    next.playerGrowth = normalizePlayerGrowth(next.playerGrowth, next.playerProfile);
+    next.playerGrowth.stats[statId] = Number(next.playerGrowth.stats[statId] || 0) + count;
+    syncCustomMutations(next);
+    applyPlayerGrowthToParty(next);
+    next.log = appendLog(next.log, `自創強化：${customStats.find((stat) => stat.id === statId)?.name || statId} +${count}。`);
+    return next;
+  }
+
+  function buyCustomTag(state, tagId) {
+    const next = clone(state);
+    if (next.screen !== "hub") return next;
+    next.playerGrowth = normalizePlayerGrowth(next.playerGrowth, next.playerProfile);
+    const tag = customTagsById[tagId];
+    if (!tag || next.playerGrowth.purchasedTags.includes(tagId) || !next.playerGrowth.tagOffers.includes(tagId)) return next;
+    const cost = customTagCost(tag);
+    if (next.rewardPoints < cost.rewardPointCost || next.sideStories < cost.sideStoryCost) return next;
+    next.rewardPoints -= cost.rewardPointCost;
+    next.sideStories -= cost.sideStoryCost;
+    next.playerGrowth.purchasedTags.push(tagId);
+    next.playerGrowth.tagOffers = next.playerGrowth.tagOffers.filter((id) => id !== tagId);
+    syncCustomMutations(next);
+    refreshCustomTagOffers(next, { free: true, onlyIfEmpty: true });
+    applyPlayerGrowthToParty(next);
+    next.log = appendLog(next.log, `主神標籤植入：「${tag.name}」。`);
+    return next;
+  }
+
+  function customTagCost(tag) {
+    const tier = String(tag?.tier || "B").toUpperCase();
+    const tierSideStoryCosts = economy.customTagTierSideStoryCosts || {};
+    return {
+      rewardPointCost: Number(tag?.rewardPointCost ?? tag?.cost ?? 0),
+      sideStoryCost: Number(tag?.sideStoryCost ?? tierSideStoryCosts[tier] ?? 0)
+    };
+  }
+
+  function rerollCustomTagOffers(state) {
+    const next = clone(state);
+    if (next.screen !== "hub") return next;
+    const cost = Number(economy.customTagRefreshCost || 300);
+    if (next.rewardPoints < cost) return next;
+    next.rewardPoints -= cost;
+    next.playerGrowth = normalizePlayerGrowth(next.playerGrowth, next.playerProfile);
+    next.playerGrowth.rerolls += 1;
+    refreshCustomTagOffers(next, { free: true, force: true });
+    next.log = appendLog(next.log, `主神刷新了本輪標籤候選。`);
+    return next;
+  }
+
+  function refreshCustomTagOffers(state, options = {}) {
+    state.playerGrowth = normalizePlayerGrowth(state.playerGrowth, state.playerProfile);
+    if (options.onlyIfEmpty && state.playerGrowth.tagOffers.length) return state;
+    const purchased = new Set(state.playerGrowth.purchasedTags);
+    const candidates = (data.customTags || []).filter((tag) => !purchased.has(tag.id));
+    const count = Number(economy.customTagOfferCount || 6);
+    state.playerGrowth.tagOffers = takeRandom(state, candidates, count).map((tag) => tag.id);
+    return state;
+  }
+
+  function syncCustomMutations(state) {
+    state.playerGrowth = normalizePlayerGrowth(state.playerGrowth, state.playerProfile);
+    const owned = new Set(state.playerGrowth.purchasedTags);
+    state.playerGrowth.mutations = (data.customMutations || [])
+      .filter((mutation) => (mutation.requiredTags || []).every((tagId) => owned.has(tagId)))
+      .map((mutation) => mutation.id);
+    const activeMutation = [...state.playerGrowth.mutations].reverse().map((id) => customMutationsById[id]).find(Boolean);
+    const activeTag = [...state.playerGrowth.purchasedTags].reverse().map((id) => customTagsById[id]).find(Boolean);
+    state.playerGrowth.art = activeMutation?.art || activeTag?.art || null;
+    return state;
+  }
+
+  function applyPlayerGrowthToParty(state) {
+    const member = state.party.find((item) => item.id === "player-avatar");
+    if (!member || !state.playerProfile) return state;
+    const desiredMaxHp = playerMaxHpFromGrowth(state.playerProfile, state.playerGrowth);
+    const delta = desiredMaxHp - Number(member.maxHp || desiredMaxHp);
+    member.maxHp = desiredMaxHp;
+    member.hp = Math.max(1, Math.min(desiredMaxHp, Number(member.hp || desiredMaxHp) + Math.max(0, delta)));
+    return state;
+  }
+
+  function playerMaxHpFromGrowth(profile, growth) {
+    const profession = playerProfessionsById[profile?.professionId] || data.playerProfessions[0];
+    const growthState = { playerGrowth: growth || createPlayerGrowth(profile) };
+    return Number(profession?.maxHp || 60) + customStatTier(growthState, "stamina") * 10 + customEffectTotal(growthState, "maxHp");
+  }
+
+  function customStatTier(state, statId) {
+    return Math.floor(Number(state.playerGrowth?.stats?.[statId] || 0) / 100);
+  }
+
+  function customLuckCritBonus(state) {
+    return customStatTier(state, "luck") * 0.5;
+  }
+
+  function customSources(state) {
+    const growth = state.playerGrowth || {};
+    const tags = (growth.purchasedTags || []).map((id) => customTagsById[id]).filter(Boolean);
+    const mutations = (growth.mutations || []).map((id) => customMutationsById[id]).filter(Boolean);
+    return [...tags, ...mutations];
+  }
+
+  function customEffectTotal(state, effect) {
+    return customSources(state).reduce((sum, source) => sum + Number(source.effects?.[effect] || 0), 0);
+  }
+
+  function customEffectMax(state, effect, fallback = 0) {
+    return customSources(state).reduce((max, source) => Math.max(max, Number(source.effects?.[effect] || fallback)), fallback);
+  }
+
+  function customOpeningFreePlays(state) {
+    return customStatTier(state, "speed") + customEffectTotal(state, "openingFreePlays");
   }
 
   function removeCurse(state, deckInstanceId) {
@@ -1312,15 +1781,25 @@
     const turnBlock = equipmentEffectTotal(state, "turnBlock") + temporaryPowerAmount(state, "turnBlock");
     const stressRelief = equipmentEffectTotal(state, "turnStressRelief");
     const turnHealLowest = equipmentEffectTotal(state, "turnHealLowest");
+    const customTurnBlock = customEffectTotal(state, "turnBlockAll");
+    const customTurnHeal = customEffectTotal(state, "turnHealAll");
+    const customTurnStress = customEffectTotal(state, "turnStressAll");
+    const customTurnReduceStress = customEffectTotal(state, "turnReduceStressAll");
+    const customOwnerHeal = customEffectTotal(state, "turnHealOwner");
     const temporaryBlock = state.turn === 1 ? temporaryPowerAmount(state, "openingBlock") : 0;
-    if (turnBlock || temporaryBlock) affectAliveActive(state, (member) => ({ ...member, block: member.block + turnBlock + temporaryBlock }));
+    const customOpeningBlock = state.turn === 1 ? customEffectTotal(state, "openingBlockAll") : 0;
+    if (turnBlock || temporaryBlock || customTurnBlock || customOpeningBlock) affectAliveActive(state, (member) => ({ ...member, block: member.block + turnBlock + temporaryBlock + customTurnBlock + customOpeningBlock }));
     if (stressRelief) affectAliveActive(state, (member) => ({ ...member, stress: Math.max(0, member.stress - stressRelief) }));
+    if (customTurnStress) affectAliveActive(state, (member) => ({ ...member, stress: clamp(member.stress + customTurnStress, 0, 100) }));
+    if (customTurnReduceStress) affectAliveActive(state, (member) => ({ ...member, stress: Math.max(0, member.stress - customTurnReduceStress) }));
+    if (customTurnHeal) affectAliveActive(state, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + customTurnHeal) }));
+    if (customOwnerHeal) updateMember(state, "player-avatar", (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + customOwnerHeal) }));
     if (turnHealLowest) {
       const lowest = [...getAliveActiveParty(state)].sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
       if (lowest) updateMember(state, lowest.id, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + turnHealLowest) }));
     }
     if (state.turn === 1) {
-      const openingEvade = equipmentEffectTotal(state, "openingEvade");
+      const openingEvade = equipmentEffectTotal(state, "openingEvade") + customEffectTotal(state, "openingEvade");
       if (openingEvade) affectAliveActive(state, (member) => ({ ...member, evade: Number(member.evade || 0) + openingEvade }));
     }
     if (state.turn === 1 && state.permanentUpgrades.team.includes("team-opening-block")) affectAliveActive(state, (member) => ({ ...member, block: member.block + 4 }));
@@ -1423,6 +1902,64 @@
     return null;
   }
 
+  function applyCustomCardEffects(state, instance, card, targetEnemyUid) {
+    const currentCardNumber = state.turnStats.cardsPlayed + 1;
+    const target = state.activeEnemies.find((enemy) => enemy.uid === targetEnemyUid) || getLivingEnemies(state)[0];
+    const ownerId = instance.ownerId || getLeaderId(state);
+    if (card.type === "tactic" && !state.turnStats.customFirstTacticUsed) {
+      const draw = customEffectTotal(state, "firstTacticDraw");
+      const energy = customEffectTotal(state, "firstTacticEnergy");
+      const weakAll = customEffectTotal(state, "firstTacticWeakAll");
+      if (draw) drawCards(state, draw);
+      if (energy) state.energy += energy;
+      if (weakAll) getLivingEnemies(state).forEach((enemy) => addEnemyStatus(state, enemy.uid, "weak", weakAll));
+      if (draw || energy || weakAll) {
+        state.turnStats.customFirstTacticUsed = true;
+        state.log = appendLog(state.log, "自創標籤戰術迴路啟動。");
+      }
+    }
+    if (card.type === "support" && !state.turnStats.customFirstSupportUsed) {
+      const draw = customEffectTotal(state, "firstSupportDraw");
+      if (draw) {
+        drawCards(state, draw);
+        state.turnStats.customFirstSupportUsed = true;
+      }
+    }
+    if (card.type === "guard" && !state.turnStats.customFirstGuardUsed) {
+      const weakAll = customEffectTotal(state, "firstGuardWeakAll");
+      if (weakAll) {
+        getLivingEnemies(state).forEach((enemy) => addEnemyStatus(state, enemy.uid, "weak", weakAll));
+        state.turnStats.customFirstGuardUsed = true;
+      }
+    }
+    if (currentCardNumber === 2) {
+      const damage = customEffectTotal(state, "secondCardDamage");
+      if (damage && target) damageEnemy(state, target.uid, damage, "自創標籤追擊", { pierce: true });
+    }
+    if (currentCardNumber === 3) {
+      const draw = customEffectTotal(state, "thirdCardDraw");
+      const blockAll = customEffectTotal(state, "thirdCardBlockAll");
+      const evadeOwner = customEffectTotal(state, "thirdCardEvadeOwner");
+      if (draw) drawCards(state, draw);
+      if (blockAll) affectAliveActive(state, (member) => ({ ...member, block: member.block + blockAll }));
+      if (evadeOwner && ownerId) updateMember(state, ownerId, (member) => ({ ...member, evade: Number(member.evade || 0) + evadeOwner }));
+    }
+    if (currentCardNumber === 5) {
+      const draw = customEffectTotal(state, "fifthCardDraw");
+      const healAll = customEffectTotal(state, "fifthCardHealAll");
+      const blockAll = customEffectTotal(state, "fifthCardBlockAll");
+      const damageAll = customEffectTotal(state, "fifthCardDamageAll");
+      if (draw) drawCards(state, draw);
+      if (healAll) affectAliveActive(state, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + healAll) }));
+      if (blockAll) affectAliveActive(state, (member) => ({ ...member, block: member.block + blockAll }));
+      if (damageAll) getLivingEnemies(state).forEach((enemy) => damageEnemy(state, enemy.uid, damageAll, "自創標籤連段", { pierce: true }));
+    }
+    if (card.type === "attack") {
+      const heal = customEffectTotal(state, "healOwnerOnAttack");
+      if (heal) updateMember(state, "player-avatar", (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + heal) }));
+    }
+  }
+
   function getUnlockedBloodline(state, characterId) {
     const bloodline = bloodlinesByCharacterId[characterId];
     if (!bloodline) return null;
@@ -1498,6 +2035,8 @@
   }
 
   function resolveEnemyDamageOverTime(state, enemy) {
+    const deepen = enemy.burn > 0 && enemy.poison > 0 ? customEffectTotal(state, "poisonBurnDeepen") : 0;
+    if (deepen > 0) damageEnemy(state, enemy.uid, deepen, "毒火變異", { pierce: true });
     if (enemy.burn > 0) {
       damageEnemy(state, enemy.uid, enemy.burn, "燃燒", { pierce: true });
       enemy.burn = Math.max(0, enemy.burn - 2);
@@ -1608,6 +2147,12 @@
   }
 
   function getCardCost(state, instance) {
+    const cost = getCardCostBeforeCustomFree(state, instance);
+    if (state.turn === 1 && cost > 0 && Number(state.turnStats?.customFreePlaysUsed || 0) < customOpeningFreePlays(state)) return 0;
+    return cost;
+  }
+
+  function getCardCostBeforeCustomFree(state, instance) {
     const card = effectiveCard(instance);
     if (!card) return 99;
     let cost = card.cost;
@@ -1656,7 +2201,8 @@
   function calculateEnergy(state) {
     return getAliveActiveParty(state).reduce((sum, member) => {
       const crisisEnergy = member.passiveId === "low-health-energy" && member.hp <= member.maxHp / 2 ? 1 : 0;
-      return sum + member.energyContribution + crisisEnergy;
+      const customEnergy = member.id === "player-avatar" ? customStatTier(state, "intelligence") : 0;
+      return sum + member.energyContribution + crisisEnergy + customEnergy;
     }, 0);
   }
 
@@ -1742,7 +2288,12 @@
       firstGuardWeakUsed: false,
       equipmentFirstAttackUsed: false,
       equipmentFirstPierceUsed: false,
-      equipmentFirstBurnUsed: false
+      equipmentFirstBurnUsed: false,
+      customFirstAttackUsed: false,
+      customFirstTacticUsed: false,
+      customFirstSupportUsed: false,
+      customFirstGuardUsed: false,
+      customFreePlaysUsed: 0
     };
   }
 
@@ -1786,6 +2337,7 @@
     if (campaign.completedScenarios.includes("pacific-rim-breach")) unlock("fury-road-war-rig");
     if (campaign.completedScenarios.includes("fury-road-war-rig")) unlock("resident-evil-6-c-virus");
     if (campaign.completedScenarios.includes("resident-evil-6-c-virus")) unlock("elden-ring-hell-run");
+    if (campaign.completedScenarios.includes("elden-ring-hell-run")) unlock("jujutsu-kaisen-shibuya");
     if (campaign.completedScenarios.includes("batman-v-superman")) campaign.infiniteUnlocked = true;
   }
 
@@ -1862,6 +2414,7 @@
     claimBossReward,
     claimTreasure,
     resolveEvent,
+    eventOutcomeCount: Object.keys(eventOutcomeByFinalChoice).length,
     campAction,
     returnAfterDefeat,
     toggleActive,
@@ -1872,6 +2425,15 @@
     upgradeCharacter,
     upgradeSignature,
     upgradeBloodline,
+    buyCustomStat,
+    buyCustomTag,
+    rerollCustomTagOffers,
+    refreshCustomTagOffers,
+    syncCustomMutations,
+    customStatTier,
+    customEffectTotal,
+    customEffectMax,
+    customTagCost,
     removeCurse,
     removeDeckCard,
     calculateEnergy,
@@ -1900,6 +2462,8 @@
     scenariosById,
     shopById,
     bloodlinesByCharacterId,
-    bondsById
+    bondsById,
+    customTagsById,
+    customMutationsById
   };
 })(globalThis);

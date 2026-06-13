@@ -252,7 +252,7 @@
 
   function renderOnboardingCardPreview(cardId) {
     const card = core.cardsById[cardId];
-    return `<article class="skill-card onboarding-skill-card hidden-card ${card.type}"><strong>${escapeHtml(card.name)}</strong></article>`;
+    return `<article class="skill-card onboarding-skill-card ${card.type}">${renderCardArtFrame(card)}<strong>${escapeHtml(card.name)}</strong><p>${escapeHtml(card.text)}</p></article>`;
   }
 
   function playerDraftName() {
@@ -513,7 +513,7 @@
       const ownership = cardOwnershipState(card.id);
       return `<button class="loot-card boss-card-reward rarity-${cardRarityTier(card)} ownership-${ownership.status}" data-action="boss-reward" data-reward-id="${reward.id}">${renderCardArtFrame(card, "loot-art")}<span class="eyebrow">${rewardKindLabel(reward.kind)} · ${cardRarityLabel(card)}</span><strong>${reward.name}</strong>${ownership.status === "upgrade" ? `<span class="ownership-chip upgrade-ready">領取後強化+</span>` : ""}<p>${reward.text}</p></button>`;
     }
-    return `<button class="loot-card" data-action="boss-reward" data-reward-id="${reward.id}">${image(reward.kind === "equipment" ? equipmentArt(reward.itemId) : "./src/assets/main-god-space.svg", "", "loot-art")}<span class="eyebrow">${rewardKindLabel(reward.kind)}</span><strong>${reward.name}</strong><p>${reward.text}</p></button>`;
+    return `<button class="loot-card" data-action="boss-reward" data-reward-id="${reward.id}">${image(reward.kind === "equipment" ? equipmentArt(reward.itemId) : "./src/assets/generated/reward-upgrade-token.png", "", "loot-art")}<span class="eyebrow">${rewardKindLabel(reward.kind)}</span><strong>${reward.name}</strong><p>${reward.text}</p></button>`;
   }
 
   function renderTreasure() {
@@ -523,7 +523,7 @@
         <div class="screen-title"><span class="eyebrow">寶箱</span><h2>封存物資</h2><p>選擇一件裝備。裝備不進牌組，每名角色只能攜帶一件。</p></div>
         <div class="choice-grid">
           ${choices.map((item) => renderEquipmentChoice(item, "treasure")).join("")}
-          ${choices.length === 0 ? `<button class="loot-card" data-action="treasure" data-reward-id="salvage">${image("./src/assets/main-god-space.svg", "", "loot-art")}<span class="eyebrow">替代獎勵</span><strong>回收裝備殘件</strong><p>所有唯一裝備均已持有，改為獲得 ${data.economy?.treasureSalvageReward || 700} 獎勵點。</p></button>` : ""}
+          ${choices.length === 0 ? `<button class="loot-card" data-action="treasure" data-reward-id="salvage">${image("./src/assets/generated/reward-salvage-cache.png", "", "loot-art")}<span class="eyebrow">替代獎勵</span><strong>回收裝備殘件</strong><p>所有唯一裝備均已持有，改為獲得 ${data.economy?.treasureSalvageReward || 700} 獎勵點。</p></button>` : ""}
           ${core.getAliveActiveParty(state).some((member) => member.passiveId === "artifact-sense") ? `<button class="loot-card" data-action="treasure" data-reward-id="qi-secret">${image(characterArt("qi-tengyi"), "", "loot-art")}<span class="eyebrow">齊騰一 · 鑑定</span><strong>辨認隱藏夾層</strong><p>獲得 1 支線劇情與 ${data.economy?.qiSecretReward || 500} 獎勵點。</p></button>` : ""}
         </div>
       </section>
@@ -536,19 +536,32 @@
 
   function renderEvent() {
     const candidate = state.pending?.candidate ? core.charactersById[state.pending.candidate] : null;
+    const hidden = state.pending?.hiddenProtagonistId ? core.charactersById[state.pending.hiddenProtagonistId] : null;
     const scenario = state.pending?.scenarioId ? core.scenariosById[state.pending.scenarioId] : null;
+    const stage = state.pending?.stage || 1;
+    const choices = state.pending?.choices || [];
+    const path = state.pending?.path || [];
+    const stageTitle = { 1: "介入", 2: "深入", 3: "定局" }[stage] || "奇遇";
     return `
       <section class="choice-screen">
-        <div class="screen-title"><span class="eyebrow">${scenario?.name || "輪迴"} · 奇遇</span><h2>${scenario?.eventTitle || "黑暗中的回應"}</h2><p>${scenario?.eventText || "訊號時有時無。每一個選擇都可能在之後索取代價。"}</p></div>
+        <div class="screen-title">
+          <span class="eyebrow">${scenario?.name || "輪迴"} · 奇遇 · ${stageTitle} ${stage}/3</span>
+          <h2>${scenario?.eventTitle || "黑暗中的回應"}</h2>
+          <p>${eventStageText(stage, scenario, candidate, hidden, path)}</p>
+        </div>
+        ${hidden ? `<div class="event-signal">${image(characterArt(hidden.id), `${escapeHtml(hidden.name)}插畫`, "event-signal-art")}<div><span class="eyebrow">劇本深層訊號</span><strong>${escapeHtml(hidden.name)}</strong><p>${escapeHtml(hidden.role)}的命運線正在附近偏移。</p></div></div>` : ""}
         <div class="choice-grid">
-          <button class="choice-card danger" data-action="event" data-option-id="curse-story"><strong>觸碰支線線索</strong><p>獲得 ${data.economy?.curseStoryReward || 900} 獎勵點，但加入一張隨機詛咒。</p></button>
-          <button class="choice-card" data-action="event" data-option-id="temporary-power"><strong>接受危險強化</strong><p>本次遠征所有攻擊牌傷害 +2。</p></button>
-          ${scenario?.scenarioPower ? `<button class="choice-card scenario-choice" data-action="event" data-option-id="scenario-power"><strong>${scenario.scenarioPowerName}</strong><p>${scenario.scenarioPowerText}</p></button>` : ""}
-          ${candidate ? `<button class="choice-card" data-action="event" data-option-id="recruit"><strong>救出 ${escapeHtml(candidate.name)}</strong><p>${escapeHtml(candidate.role)}將永久加入隊伍。</p></button>` : ""}
-          ${core.getAliveActiveParty(state).some((member) => member.passiveId === "artifact-sense") ? `<button class="choice-card" data-action="event" data-option-id="qi-insight"><strong>齊騰一：解讀痕跡</strong><p>獲得 1 支線劇情，本次遠征開場全隊獲得 4 護甲。</p></button>` : ""}
+          ${choices.map((choice, index) => `<button class="choice-card ${stage === 3 && index === 0 ? "danger" : ""}" data-action="event" data-option-id="${choice.id}"><strong>${escapeHtml(choice.title)}</strong><p>${escapeHtml(choice.text)}</p></button>`).join("")}
         </div>
       </section>
     `;
+  }
+
+  function eventStageText(stage, scenario, candidate, hidden, path) {
+    if (stage === 1) return scenario?.eventText || "訊號時有時無。每一個選擇都可能在之後索取代價。";
+    if (stage === 2) return `${hidden ? hidden.name : candidate?.name || "某個劇本人物"}的命運線開始靠近隊伍。第一步已經不可撤回，下一步會決定你們要承擔哪一種代價。`;
+    const prior = path.length ? "前兩步選擇已經把劇本推離原本軌道。" : "";
+    return `${prior}最後一次行動會導向完全不同的結尾：可能是傳說加入、劇本強化、技能裝備，也可能是半血、壓力爆發或詛咒。`;
   }
 
   function renderCamp() {
@@ -591,15 +604,121 @@
         <nav class="hub-tabs" role="tablist" aria-label="主神空間功能">
           ${renderHubTab("deployment", "出戰部署", "選劇本與編隊", tab)}
           ${renderHubTab("roster", "角色整備", "人物、生命與裝備", tab)}
+          ${renderHubTab("growth", "自創強化", "六維、標籤與變異", tab)}
           ${renderHubTab("shop", "強化商店", "永久強化與兌換", tab)}
         </nav>
-        <section class="hub-workspace">${tab === "roster" ? renderRosterHub() : tab === "shop" ? renderShopHub() : renderDeploymentHub()}</section>
+        <section class="hub-workspace">${tab === "roster" ? renderRosterHub() : tab === "growth" ? renderGrowthHub() : tab === "shop" ? renderShopHub() : renderDeploymentHub()}</section>
       </section>
     `;
   }
 
   function renderHubTab(id, title, subtitle, activeTab) {
     return `<button class="hub-tab ${activeTab === id ? "active" : ""}" role="tab" aria-selected="${activeTab === id}" data-action="hub-tab" data-tab-id="${id}"><strong>${title}</strong><span>${subtitle}</span></button>`;
+  }
+
+  function renderGrowthHub() {
+    const growth = state.playerGrowth || {};
+    const player = state.party.find((member) => member.id === "player-avatar");
+    const purchasedTags = (growth.purchasedTags || []).map((id) => core.customTagsById[id]).filter(Boolean);
+    const offers = (growth.tagOffers || []).map((id) => core.customTagsById[id]).filter(Boolean);
+    const mutations = (growth.mutations || []).map((id) => core.customMutationsById[id]).filter(Boolean);
+    const branchName = mutations.at(-1)?.name || purchasedTags.at(-1)?.name || "未植入血統";
+    return `
+      <section class="growth-console">
+        <aside class="growth-identity-panel">
+          ${image(customGrowthArt(), `${escapeHtml(player?.name || "自創輪迴者")}強化形態`, "growth-portrait")}
+          <div class="growth-identity-copy">
+            <span class="eyebrow">自創輪迴者</span>
+            <h2>${escapeHtml(player?.name || state.playerProfile?.name || "無名者")}</h2>
+            <p>${escapeHtml(player?.role || "自創輪迴者")} · ${escapeHtml(branchName)}</p>
+          </div>
+          <div class="growth-summary-grid">
+            <div><span>已購標籤</span><strong>${purchasedTags.length}</strong></div>
+            <div><span>變異</span><strong>${mutations.length}</strong></div>
+            <div><span>候選池</span><strong>${offers.length}<small>/${data.customTags.length}</small></strong></div>
+          </div>
+        </aside>
+        <section class="growth-main-stack">
+          <section class="panel growth-stat-panel">
+            <div class="section-heading"><div><span class="eyebrow">RPG 六維</span><h2>獎勵點數強化</h2></div><p>每 +1 消耗 ${data.economy?.customStatPointCost || 1000} 點；每 100 點解鎖一階被動。</p></div>
+            <div class="growth-stat-grid">${data.customStats.map(renderGrowthStat).join("")}</div>
+          </section>
+          <section class="panel growth-offer-panel">
+            <div class="section-heading"><div><span class="eyebrow">主神候選池</span><h2>本輪標籤</h2></div><p>${state.rewardPoints} 獎勵點 · ${state.sideStories} 支線 · ${data.customTags.length} 個標籤，${data.customMutations.length} 條變異配方</p></div>
+            <div class="growth-tag-grid">${offers.map((tag) => renderCustomTagCard(tag, "offer")).join("") || "<p class=\"empty-state\">所有標籤都已植入。</p>"}</div>
+            <button class="secondary-action growth-reroll" data-action="reroll-custom-tags" ${state.rewardPoints < Number(data.economy?.customTagRefreshCost || 300) ? "disabled" : ""}>刷新候選 · ${data.economy?.customTagRefreshCost || 300} 點</button>
+          </section>
+          <section class="growth-library-row">
+            <section class="panel">
+              <div class="section-heading"><div><span class="eyebrow">已植入</span><h2>標籤矩陣</h2></div></div>
+              <div class="growth-owned-list">${purchasedTags.map((tag) => renderCustomTagCard(tag, "owned")).join("") || "<p class=\"empty-state\">尚未購買任何標籤。</p>"}</div>
+            </section>
+            <section class="panel">
+              <div class="section-heading"><div><span class="eyebrow">自動變異</span><h2>組合效果</h2></div></div>
+              <div class="growth-mutation-list">${mutations.map(renderCustomMutation).join("") || "<p class=\"empty-state\">湊齊指定標籤後，變異會自動啟動。</p>"}</div>
+            </section>
+          </section>
+        </section>
+      </section>
+      ${renderLog()}
+    `;
+  }
+
+  function renderGrowthStat(stat) {
+    const value = Number(state.playerGrowth?.stats?.[stat.id] || 0);
+    const tier = Math.floor(value / 100);
+    const next = Math.ceil((value + 1) / 100) * 100;
+    const progress = Math.min(100, value % 100);
+    const pointCost = Number(data.economy?.customStatPointCost || 1000);
+    const canBuyOne = state.rewardPoints >= pointCost;
+    const canBuyTen = state.rewardPoints >= pointCost * 10;
+    return `
+      <article class="growth-stat-card">
+        <div class="growth-stat-head"><span>${escapeHtml(stat.shortName)}</span><strong>${escapeHtml(stat.name)}</strong><em>${value}</em></div>
+        <div class="growth-stat-track"><span style="width:${progress}%"></span></div>
+        <p>${escapeHtml(stat.text)}</p>
+        <small>目前 ${tier} 階 · 下一檻 ${next}</small>
+        <div class="growth-stat-actions">
+          <button data-action="buy-custom-stat" data-stat-id="${stat.id}" data-amount="1" ${canBuyOne ? "" : "disabled"}>+1</button>
+          <button data-action="buy-custom-stat" data-stat-id="${stat.id}" data-amount="10" ${canBuyTen ? "" : "disabled"}>+10</button>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderCustomTagCard(tag, mode) {
+    const owned = mode === "owned";
+    const cost = core.customTagCost(tag);
+    const costText = formatCustomTagCost(cost);
+    const canBuy = state.rewardPoints >= cost.rewardPointCost && state.sideStories >= cost.sideStoryCost;
+    return `
+      <article class="growth-tag-card tier-${escapeHtml(String(tag.tier || "B").toLowerCase())}">
+        ${image(tag.art || "./src/assets/generated/source-cover-main-god.png", `${tag.name}插畫`, "growth-tag-art")}
+        <div>
+          <span class="eyebrow">${escapeHtml(tag.family)} · ${escapeHtml(tag.tier || "B")}級</span>
+          <h3>${escapeHtml(tag.name)}</h3>
+          <p>${escapeHtml(tag.text)}</p>
+          ${owned ? `<span class="ownership-chip max">已植入</span>` : `<button data-action="buy-custom-tag" data-tag-id="${tag.id}" ${canBuy ? "" : "disabled"}>植入 · ${costText}</button>`}
+        </div>
+      </article>
+    `;
+  }
+
+  function formatCustomTagCost(cost) {
+    return [
+      cost.rewardPointCost ? `${cost.rewardPointCost} 點` : "",
+      cost.sideStoryCost ? `${cost.sideStoryCost} 支線` : ""
+    ].filter(Boolean).join(" / ") || "免費";
+  }
+
+  function renderCustomMutation(mutation) {
+    const required = (mutation.requiredTags || []).map((id) => core.customTagsById[id]?.name || id).join(" + ");
+    return `
+      <article class="growth-mutation-card">
+        ${image(mutation.art || "./src/assets/generated/source-cover-main-god.png", `${mutation.name}插畫`, "growth-mutation-art")}
+        <div><span class="eyebrow">${escapeHtml(required)}</span><strong>${escapeHtml(mutation.name)}</strong><p>${escapeHtml(mutation.text)}</p></div>
+      </article>
+    `;
   }
 
   function renderShopHub() {
@@ -1178,6 +1297,9 @@
         if (action === "upgrade-character") dispatch(core.upgradeCharacter(state, element.dataset.characterId), { action, characterId: element.dataset.characterId });
         if (action === "upgrade-signature") dispatch(core.upgradeSignature(state, element.dataset.characterId), { action, characterId: element.dataset.characterId });
         if (action === "upgrade-bloodline") dispatch(core.upgradeBloodline(state, element.dataset.characterId), { action, characterId: element.dataset.characterId });
+        if (action === "buy-custom-stat") dispatch(core.buyCustomStat(state, element.dataset.statId, element.dataset.amount), { action, statId: element.dataset.statId, amount: element.dataset.amount });
+        if (action === "buy-custom-tag") dispatch(core.buyCustomTag(state, element.dataset.tagId), { action, tagId: element.dataset.tagId });
+        if (action === "reroll-custom-tags") dispatch(core.rerollCustomTagOffers(state), { action });
         if (action === "remove-curse") dispatch(core.removeCurse(state, element.dataset.deckId), { action, deckId: element.dataset.deckId });
         if (action === "remove-deck-card") dispatch(core.removeDeckCard(state, element.dataset.deckId), { action, deckId: element.dataset.deckId });
       });
@@ -1206,7 +1328,7 @@
     const storyArt = scenarioArt(scenarioId);
     if (storyArt) return image(storyArt, "", "scenario-intro-art scenario-wide-art");
     const firstPanel = opening.panels?.[0];
-    return image(firstPanel?.enemyId ? enemyArt(firstPanel.enemyId) : "./src/assets/main-god-space.svg", "", "scenario-intro-art");
+    return image(firstPanel?.enemyId ? enemyArt(firstPanel.enemyId) : "./src/assets/generated/ui-main-god-nexus.png", "", "scenario-intro-art");
   }
 
   function scenarioArt(id) {
@@ -1237,7 +1359,8 @@
       "pacific-rim-breach": "./src/assets/generated/scenario-pacific-rim-breach.png",
       "fury-road-war-rig": "./src/assets/generated/scenario-fury-road-war-rig.png",
       "resident-evil-6-c-virus": "./src/assets/generated/scenario-resident-evil-6-c-virus.png",
-      "elden-ring-hell-run": "./src/assets/generated/scenario-elden-ring-hell-run.png"
+      "elden-ring-hell-run": "./src/assets/generated/scenario-elden-ring-hell-run.png",
+      "jujutsu-kaisen-shibuya": "./src/assets/generated/scenario-jujutsu-kaisen-shibuya.png"
     };
     return art[id] || "";
   }
@@ -1245,9 +1368,16 @@
   function characterArt(id) {
     if (id === "player-avatar") {
       const profile = state.playerProfile || state.party.find((member) => member.id === "player-avatar")?.playerProfile;
+      const growthArt = state.playerGrowth?.art;
+      if (growthArt) return growthArt;
       if (profile?.professionId && profile?.gender) return professionArt(profile.professionId, profile.gender);
     }
     return `./src/assets/generated/character-${id}.png`;
+  }
+
+  function customGrowthArt() {
+    if (state.playerGrowth?.art) return state.playerGrowth.art;
+    return characterArt("player-avatar");
   }
 
   function professionArt(professionId, gender) {
@@ -1321,7 +1451,49 @@
   }
 
   function powerName(power) {
-    return { "battle-instinct": "戰鬥本能：攻擊 +2", warded: "古物護佑：開場護甲 +4", "book-of-amun-ra": "復活真經殘頁：開場護甲 +6", "electric-fence": "高壓電網：每回合護甲 +2", "pressure-suit": "壓力密封服：每回合護甲 +2", "silvered-weapons": "鍍銀武裝：攻擊 +3", "black-flame-overclock": "黑炎超載：攻擊 +5", "main-god-calibration": "主神白光校準：每回合護甲 +4", "federal-fireline": "聯邦火力校準：攻擊 +4", "predator-hunt-mark": "獵人熱視標記：攻擊 +4", "lucid-anchor": "清醒錨點：每回合護甲 +3", "mithril-stand": "秘銀遠征誓約：開場護甲 +12", "thunder-spear-route": "雷槍與立體機動線：攻擊 +4", "nichirin-counteroffensive": "赫刀連攜：攻擊 +6", "kurama-chakra-link": "九尾查克拉連結：攻擊 +5", "mugetsu-final-window": "無月出刀窗口：攻擊 +6", "yorozuya-last-stand": "萬事屋逆境連攜：每回合護甲 +4", "joyo-final-blade-line": "攘夷終局斬線：攻擊 +5", "avengers-assemble-protocol": "復仇者集結：攻擊 +4", "justice-dawn-truce": "正義黎明停戰：攻擊 +4", "stylish-combo-rating": "Stylish連段評級：攻擊 +5", "premonition-loop": "死亡設計預判：每回合護甲 +3", "wulin-manual-focus": "武林盟誓：攻擊 +4", "great-rune-overload": "大盧恩超載：攻擊 +7" }[power.id] || power.id;
+    return {
+      "battle-instinct": "戰鬥本能：攻擊 +2",
+      warded: "古物護佑：開場護甲 +4",
+      "book-of-amun-ra": "復活真經殘頁：開場護甲 +6",
+      "electric-fence": "高壓電網：每回合護甲 +2",
+      "pressure-suit": "壓力密封服：每回合護甲 +2",
+      "silvered-weapons": "鍍銀武裝：攻擊 +3",
+      "black-flame-overclock": "黑炎超載：攻擊 +5",
+      "main-god-calibration": "主神白光校準：每回合護甲 +4",
+      "federal-fireline": "聯邦火力校準：攻擊 +4",
+      "predator-hunt-mark": "獵人熱視標記：攻擊 +4",
+      "lucid-anchor": "清醒錨點：每回合護甲 +3",
+      "mithril-stand": "秘銀遠征誓約：開場護甲 +12",
+      "thunder-spear-route": "雷槍與立體機動線：攻擊 +4",
+      "nichirin-counteroffensive": "赫刀連攜：攻擊 +6",
+      "kurama-chakra-link": "九尾查克拉連結：攻擊 +5",
+      "mugetsu-final-window": "無月出刀窗口：攻擊 +6",
+      "yorozuya-last-stand": "萬事屋逆境連攜：每回合護甲 +4",
+      "joyo-final-blade-line": "攘夷終局斬線：攻擊 +5",
+      "avengers-assemble-protocol": "復仇者集結：攻擊 +4",
+      "justice-dawn-truce": "正義黎明停戰：攻擊 +4",
+      "stylish-combo-rating": "Stylish連段評級：攻擊 +5",
+      "premonition-loop": "死亡設計預判：每回合護甲 +3",
+      "wulin-manual-focus": "武林盟誓：攻擊 +4",
+      "jaeger-drift-sync": "獵人機甲同步：攻擊 +5",
+      "war-rig-breakthrough": "狂怒公路衝刺：開場護甲 +12",
+      "c-virus-antibody-window": "C病毒抗體窗口：攻擊 +5",
+      "great-rune-overload": "大盧恩超載：攻擊 +7",
+      "black-flash-chain-window": "黑閃連續校準：攻擊 +6",
+      "prison-realm-break": "獄門疆破碎：攻擊 +6",
+      "prison-realm-shard-route": "獄門疆殘片：開場護甲 +10",
+      "boogie-woogie-feint": "不義遊戲佯攻：攻擊 +4",
+      "mahoraga-adaptive-guard": "魔虛羅適應護牆：每回合護甲 +7",
+      "event-duel-tempo": "短兵相認：攻擊 +3",
+      "event-oath-guard": "共戰誓約：每回合護甲 +4",
+      "event-marked-route": "伏線標記：開場護甲 +8",
+      "event-shield-matrix": "核心盾矩陣：每回合護甲 +6",
+      "event-core-overload": "核心超載：攻擊 +6",
+      "event-crack-guard": "裂縫護佑：開場護甲 +6",
+      "event-timer-buffer": "倒數延後：每回合護甲 +3",
+      "event-ambush-line": "假退伏擊：攻擊 +2",
+      "event-loop-instinct": "輪迴偏差：攻擊 +4"
+    }[power.id] || power.id;
   }
 
   function intentText(intent) {

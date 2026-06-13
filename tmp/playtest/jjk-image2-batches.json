@@ -1,0 +1,79 @@
+[
+  {
+    "index": 1,
+    "grid": 4,
+    "assets": [
+      { "fileName": "character-yuji-itadori.png", "name": "虎杖悠仁" },
+      { "fileName": "character-megumi-fushiguro.png", "name": "伏黑惠" },
+      { "fileName": "character-nobara-kugisaki.png", "name": "釘崎野薔薇" },
+      { "fileName": "character-yuta-okkotsu.png", "name": "乙骨憂太" },
+      { "fileName": "character-maki-zenin.png", "name": "禪院真希" },
+      { "fileName": "character-toge-inumaki.png", "name": "狗卷棘" },
+      { "fileName": "character-panda-jjk.png", "name": "熊貓" },
+      { "fileName": "character-nanami-kento.png", "name": "七海建人" },
+      { "fileName": "character-aoi-todo.png", "name": "東堂葵" },
+      { "fileName": "character-choso.png", "name": "脹相" },
+      { "fileName": "character-hakari-kinji.png", "name": "秤金次" },
+      { "fileName": "character-higuruma-hiromi.png", "name": "日車寬見" },
+      { "fileName": "character-satoru-gojo.png", "name": "五條悟" },
+      { "fileName": "scenario-jujutsu-kaisen-shibuya.png", "name": "澀谷結界與獄門疆" },
+      { "fileName": "source-cover-jujutsu-kaisen.png", "name": "咒術回戰技能來源封面" },
+      { "fileName": "roster-hero-jujutsu-kaisen.png", "name": "咒術高專群像" }
+    ]
+  },
+  {
+    "index": 2,
+    "grid": 4,
+    "assets": [
+      { "fileName": "skill-jjk-divergent-fist.png", "name": "逕庭拳" },
+      { "fileName": "skill-jjk-black-flash-chain.png", "name": "黑閃連打" },
+      { "fileName": "skill-jjk-ten-shadows-nue.png", "name": "十種影法術鵺" },
+      { "fileName": "skill-jjk-straw-doll-resonance.png", "name": "芻靈咒法共鳴" },
+      { "fileName": "skill-jjk-cursed-speech-stop.png", "name": "咒言停下" },
+      { "fileName": "skill-jjk-ratio-collapse.png", "name": "十劃咒法瓦落瓦落" },
+      { "fileName": "skill-jjk-simple-domain-guard.png", "name": "簡易領域" },
+      { "fileName": "skill-jjk-reverse-cursed-technique.png", "name": "反轉術式" },
+      { "fileName": "skill-jjk-domain-clash.png", "name": "領域展開對抗" },
+      { "fileName": "skill-yuji-black-flash-core.png", "name": "虎杖黑閃臨界" },
+      { "fileName": "skill-megumi-chimera-shadow-garden.png", "name": "伏黑嵌合暗翳庭" },
+      { "fileName": "skill-nobara-resonance-hairpin.png", "name": "釘崎共鳴簪" },
+      { "fileName": "skill-yuta-rika-copy.png", "name": "乙骨里香複寫" },
+      { "fileName": "skill-maki-playful-cloud.png", "name": "真希游雲破陣" },
+      { "fileName": "skill-toge-cursed-speech-crush.png", "name": "狗卷咒言壓碎" },
+      { "fileName": "skill-panda-gorilla-mode.png", "name": "熊貓大猩猩模式" }
+    ]
+  },
+  {
+    "index": 3,
+    "grid": 4,
+    "assets": [
+      { "fileName": "skill-nanami-ratio-overtime.png", "name": "七海十劃加班" },
+      { "fileName": "skill-aoi-todo-boogie-woogie.png", "name": "東堂不義遊戲" },
+      { "fileName": "skill-choso-piercing-blood.png", "name": "脹相穿血" },
+      { "fileName": "skill-hakari-jackpot-domain.png", "name": "秤坐殺博徒大獎" },
+      { "fileName": "skill-higuruma-deadly-sentencing.png", "name": "日車誅伏賜死" },
+      { "fileName": "skill-satoru-gojo-limitless-void.png", "name": "五條無量空處" },
+      { "fileName": "equipment-slaughter-demon-dagger.png", "name": "屠坐魔" },
+      { "fileName": "equipment-playful-cloud-staff.png", "name": "特級咒具游雲" },
+      { "fileName": "equipment-inverted-spear-fragment.png", "name": "天逆鉾碎片" },
+      { "fileName": "equipment-prison-realm-shard.png", "name": "獄門疆殘片" }
+    ]
+  },
+  {
+    "index": 4,
+    "grid": 4,
+    "assets": [
+      { "fileName": "enemy-jjk-cursed-spirit-swarm.png", "name": "低階咒靈群" },
+      { "fileName": "enemy-jjk-finger-bearer.png", "name": "宿儺手指持有者" },
+      { "fileName": "enemy-jjk-mahito-idle-transfiguration.png", "name": "真人無為轉變" },
+      { "fileName": "enemy-jjk-hanami-cursed-root.png", "name": "花御森羅咒根" },
+      { "fileName": "enemy-jjk-toji-inventory-curse.png", "name": "伏黑甚爾咒靈武庫" },
+      { "fileName": "enemy-jjk-jogo-volcano.png", "name": "漏瑚火山頭" },
+      { "fileName": "enemy-jjk-dagon-domain.png", "name": "陀艮蕩蘊平線" },
+      { "fileName": "enemy-jjk-kenjaku-barrier-master.png", "name": "羂索結界操盤者" },
+      { "fileName": "enemy-jjk-culling-game-player.png", "name": "死滅回游術師" },
+      { "fileName": "enemy-jjk-mahoraga-adaptation.png", "name": "魔虛羅適應" },
+      { "fileName": "enemy-jjk-sukuna-shinjuku.png", "name": "宿儺新宿決戰" }
+    ]
+  }
+]

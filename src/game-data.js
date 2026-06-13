@@ -98,7 +98,20 @@
     { id: "millicent-valkyrie", name: "米莉森", role: "腐敗劍舞者", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 96, stress: 14, energyContribution: 2, passiveId: "status-exploit", passiveText: "攻擊帶有負面狀態的敵人時，傷害 +6。腐敗之花會逼敵人露出下一個傷口。", signatureCardId: "millicent-scarlet-waterfowl", unlock: "elden-ring-hell-run" },
     { id: "alexander-warrior-jar", name: "壺戰士亞歷山大", role: "戰士壺", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 122, stress: 10, energyContribution: 1, passiveId: "front-guard", passiveText: "回合開始時，前排與生命比例最低的隊員獲得 4 護甲。戰士壺會把自己頂在最危險的位置。", signatureCardId: "alexander-jar-cannon-charge", unlock: "elden-ring-hell-run" },
     { id: "black-knife-tiche", name: "黑刀狄希", role: "死亡符文刺客", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 90, stress: 9, energyContribution: 2, passiveId: "second-card-strike", passiveText: "每回合打出第二張牌時，追加 5 點傷害。黑刀會在第二道陰影裡割開生命線。", signatureCardId: "tiche-destined-death", unlock: "elden-ring-hell-run" },
-    { id: "nepheli-loux", name: "涅斐麗·露", role: "風暴斧戰士", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 104, stress: 11, energyContribution: 2, passiveId: "first-attack-splash", passiveText: "每回合第一張單體攻擊牌，對其他敵人造成 3 點傷害。風暴斧會把第一個落點炸成整片缺口。", signatureCardId: "nepheli-stormhawk-axe", unlock: "elden-ring-hell-run" }
+    { id: "nepheli-loux", name: "涅斐麗·露", role: "風暴斧戰士", faction: "艾爾登法環", factionId: "elden-ring", maxHp: 104, stress: 11, energyContribution: 2, passiveId: "first-attack-splash", passiveText: "每回合第一張單體攻擊牌，對其他敵人造成 3 點傷害。風暴斧會把第一個落點炸成整片缺口。", signatureCardId: "nepheli-stormhawk-axe", unlock: "elden-ring-hell-run" },
+    { id: "yuji-itadori", name: "虎杖悠仁", role: "宿儺容器黑閃拳手", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 112, stress: 16, energyContribution: 2, passiveId: "second-card-strike", passiveText: "每回合打出第二張牌時，追加 5 點傷害。黑閃的節奏會把近身戰推到失控邊緣。", signatureCardId: "yuji-black-flash-core", unlock: "jujutsu-kaisen-shibuya" },
+    { id: "megumi-fushiguro", name: "伏黑惠", role: "十種影法術師", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 88, stress: 12, energyContribution: 2, passiveId: "opening-forecast", passiveText: "每場戰鬥第一回合額外抽 2 張牌。影子裡永遠藏著下一個式神或退路。", signatureCardId: "megumi-chimera-shadow-garden", unlock: "jujutsu-kaisen-shibuya" },
+    { id: "nobara-kugisaki", name: "釘崎野薔薇", role: "芻靈咒法釘錘手", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 82, stress: 13, energyContribution: 2, passiveId: "status-exploit", passiveText: "攻擊帶有負面狀態的敵人時，傷害 +6。共鳴會把敵人的破綻釘回本體。", signatureCardId: "nobara-resonance-hairpin", unlock: "jujutsu-kaisen-shibuya" },
+    { id: "yuta-okkotsu", name: "乙骨憂太", role: "特級咒術師與里香", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 118, stress: 9, energyContribution: 3, passiveId: "first-support-draw", passiveText: "每回合第一張支援牌額外抽 1 張牌。里香與反轉術式讓他能同時救人和壓制。", signatureCardId: "yuta-rika-copy", unlock: "jujutsu-kaisen-shibuya" },
+    { id: "maki-zenin", name: "禪院真希", role: "天與咒縛咒具使", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 108, stress: 10, energyContribution: 2, passiveId: "first-attack-pierce", passiveText: "每回合第一張攻擊牌穿透敵方護甲。沒有咒力的身體反而切進規則死角。", signatureCardId: "maki-playful-cloud", unlock: "jujutsu-kaisen-shibuya" },
+    { id: "toge-inumaki", name: "狗卷棘", role: "咒言師", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 74, stress: 8, energyContribution: 2, passiveId: "intent-draw", passiveText: "敵人準備防禦或施加壓力時，回合開始額外抽 1 張牌。咒言會在敵意成形前先壓住喉嚨。", signatureCardId: "toge-cursed-speech-crush", unlock: "jujutsu-kaisen-shibuya" },
+    { id: "panda-jjk", name: "熊貓", role: "咒骸三核心鬥士", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 116, stress: 8, energyContribution: 2, passiveId: "front-guard", passiveText: "回合開始時，前排與生命比例最低的隊員獲得 4 護甲。三核心讓他能替隊伍頂住第一波崩線。", signatureCardId: "panda-gorilla-mode", unlock: "jujutsu-kaisen-shibuya" },
+    { id: "nanami-kento", name: "七海建人", role: "十劃咒法術師", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 96, stress: 7, energyContribution: 2, passiveId: "first-heavy-attack", passiveText: "每回合第一張費用 2 以上的攻擊牌傷害 +6。七三分點會把敵人的硬度拆成可計算弱點。", signatureCardId: "nanami-ratio-overtime", unlock: "jujutsu-kaisen-shibuya" },
+    { id: "aoi-todo", name: "東堂葵", role: "不義遊戲換位手", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 110, stress: 14, energyContribution: 2, passiveId: "fourth-card-energy", passiveText: "每回合打出第四張牌時，獲得 1 點能量。拍手換位會把戰鬥節拍切到下一格。", signatureCardId: "aoi-todo-boogie-woogie", unlock: "jujutsu-kaisen-shibuya" },
+    { id: "choso", name: "脹相", role: "咒胎九相圖長兄", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 102, stress: 11, energyContribution: 2, passiveId: "first-attack-pierce", passiveText: "每回合第一張攻擊牌穿透敵方護甲。穿血會沿著最短路線貫穿防線。", signatureCardId: "choso-piercing-blood", unlock: "jujutsu-kaisen-shibuya" },
+    { id: "hakari-kinji", name: "秤金次", role: "坐殺博徒不死賭徒", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 124, stress: 18, energyContribution: 2, passiveId: "last-chance", passiveText: "每場戰鬥首次受到致命傷害時保留 1 生命。只要大獎還在轉，他就不會承認敗北。", signatureCardId: "hakari-jackpot-domain", unlock: "jujutsu-kaisen-shibuya" },
+    { id: "higuruma-hiromi", name: "日車寬見", role: "死滅回游裁判術師", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 92, stress: 9, energyContribution: 2, passiveId: "first-tactic-discount", passiveText: "每回合第一張戰術牌費用 -1，最低為 0。領域審判會先把敵人的規則攤在桌面上。", signatureCardId: "higuruma-deadly-sentencing", unlock: "jujutsu-kaisen-shibuya" },
+    { id: "satoru-gojo", name: "五條悟", role: "最強六眼無下限術師", faction: "咒術回戰", factionId: "jujutsu-kaisen", maxHp: 150, stress: 4, energyContribution: 3, passiveId: "opening-forecast", passiveText: "隱藏人物。每場戰鬥第一回合額外抽 2 張牌；六眼與無下限讓他成為主神也必須重新估算的戰力。", signatureCardId: "satoru-gojo-limitless-void", unlock: "hidden-prison-realm", hidden: true }
   ];
 
   const playerProfessions = [
@@ -125,6 +138,100 @@
     { id: "humorous", name: "幽默", cardId: "player-personality-humorous", text: "在死亡面前還能吐槽的人，至少能讓手不抖。" },
     { id: "cruel", name: "殘酷", cardId: "player-personality-cruel", text: "不把怪物當謎題，只當作必須補刀的目標。" },
     { id: "conviction", name: "信念", cardId: "player-personality-conviction", text: "白光可以把人丟進地獄，但不能命令你後退。" }
+  ];
+
+  const customStats = [
+    { id: "strength", name: "力量", shortName: "力", text: "每 100 點，所有攻擊牌傷害 +1。" },
+    { id: "intelligence", name: "智力", shortName: "智", text: "每 100 點，戰鬥能量 +1。" },
+    { id: "technique", name: "技巧", shortName: "技", text: "每 100 點，第一回合手牌 +1。" },
+    { id: "luck", name: "運氣", shortName: "運", text: "每 100 點，暴擊傷害 +50%。" },
+    { id: "speed", name: "速度", shortName: "速", text: "每 100 點，第一回合可免費打出 1 張手牌。" },
+    { id: "stamina", name: "體力", shortName: "體", text: "每 100 點，最大生命 +10。" }
+  ];
+
+  const playerProfessionStats = {
+    "emergency-medic": { strength: 45, intelligence: 85, technique: 60, luck: 55, speed: 50, stamina: 55 },
+    "systems-engineer": { strength: 40, intelligence: 95, technique: 65, luck: 55, speed: 55, stamina: 45 },
+    "criminal-profiler": { strength: 45, intelligence: 85, technique: 75, luck: 65, speed: 55, stamina: 50 },
+    archaeologist: { strength: 45, intelligence: 80, technique: 80, luck: 60, speed: 55, stamina: 55 },
+    "retired-mercenary": { strength: 85, intelligence: 55, technique: 70, luck: 50, speed: 65, stamina: 80 },
+    "fire-rescuer": { strength: 90, intelligence: 45, technique: 55, luck: 50, speed: 55, stamina: 90 },
+    "underground-boxer": { strength: 95, intelligence: 45, technique: 65, luck: 50, speed: 60, stamina: 85 },
+    "parkour-courier": { strength: 55, intelligence: 50, technique: 75, luck: 60, speed: 95, stamina: 65 },
+    "stage-magician": { strength: 50, intelligence: 60, technique: 85, luck: 70, speed: 65, stamina: 55 },
+    "stunt-double": { strength: 70, intelligence: 60, technique: 90, luck: 55, speed: 85, stamina: 60 }
+  };
+
+  const customTags = [
+    { id: "vampire-seed", name: "初階血族", family: "血族", tier: "B", cost: 2400, art: "./src/assets/generated/skill-blood-awakening.png", text: "暴擊倍率 1.5；攻擊後恢復自創角色 2 生命。", effects: { criticalMultiplier: 1.5, healOwnerOnAttack: 2 } },
+    { id: "vampire-count", name: "伯爵血核", family: "血族", tier: "A", cost: 6600, art: "./src/assets/generated/character-zheng-zha.png", text: "攻擊帶狀態的敵人傷害 +4，暴擊倍率 1.8。", effects: { statusExploitBonus: 4, criticalMultiplier: 1.8 } },
+    { id: "inner-qi-breath", name: "內功吐納", family: "內功", tier: "B", cost: 2200, art: "./src/assets/generated/skill-jy-yiyang-finger.png", text: "回合開始全隊獲得 2 護甲；每回合第一張戰術牌抽 1 張。", effects: { turnBlockAll: 2, firstTacticDraw: 1 } },
+    { id: "nine-yang-mantra", name: "九陽心法", family: "武俠心法", tier: "A", cost: 7000, art: "./src/assets/generated/source-cover-jinyong.png", text: "回合開始全隊恢復 2 生命並降低 1 壓力。", effects: { turnHealAll: 2, turnReduceStressAll: 1 } },
+    { id: "dugu-sword-intent", name: "獨孤劍意", family: "武俠心法", tier: "A", cost: 7600, art: "./src/assets/generated/skill-jy-dugu-nine-swords.png", text: "每回合第一張攻擊牌穿甲；所有攻擊牌傷害 +2。", effects: { firstAttackPierce: 1, attackBonus: 2 } },
+    { id: "spider-sense", name: "蜘蛛感應", family: "蜘蛛強化", tier: "B", cost: 2600, art: "./src/assets/generated/skill-er-bloodhound-step.png", text: "開場獲得 1 次閃避；第一回合手牌 +1。", effects: { openingEvade: 1, openingDraw: 1 } },
+    { id: "spider-web-combo", name: "蛛絲連擊", family: "蜘蛛強化", tier: "A", cost: 6800, art: "./src/assets/generated/skill-odm-dual-blade-slash.png", text: "每回合第 3 張牌抽 1 張；自創角色獲得 1 次閃避。", effects: { thirdCardDraw: 1, thirdCardEvadeOwner: 1 } },
+    { id: "super-soldier-serum", name: "超級血清", family: "超級血清", tier: "B", cost: 3000, art: "./src/assets/generated/character-steve-rogers.png", text: "最大生命 +10；回合開始全隊獲得 2 護甲。", effects: { maxHp: 10, turnBlockAll: 2 } },
+    { id: "gamma-rage-cell", name: "伽瑪怒細胞", family: "超級血清", tier: "A", cost: 7600, art: "./src/assets/generated/character-bruce-banner-hulk.png", text: "所有攻擊牌傷害 +3；回合開始全隊壓力 +1。", effects: { attackBonus: 3, turnStressAll: 1 } },
+    { id: "t-virus-adaptation", name: "T病毒適應", family: "病毒", tier: "B", cost: 2600, art: "./src/assets/generated/scenario-resident-evil-6-c-virus.png", text: "每回合第一張攻擊牌使命中目標中毒 4 點。", effects: { firstAttackPoison: 4 } },
+    { id: "g-virus-regeneration", name: "G病毒再生", family: "病毒", tier: "A", cost: 7200, art: "./src/assets/generated/skill-sherry-g-virus-regeneration.png", text: "回合開始自創角色恢復 4 生命；最大生命 +10。", effects: { turnHealOwner: 4, maxHp: 10 } },
+    { id: "c-virus-antibody", name: "C病毒抗體", family: "病毒", tier: "A", cost: 7400, art: "./src/assets/generated/equipment-c-virus-antibody-serum.png", text: "攻擊帶狀態敵人傷害 +5；回合開始全隊恢復 1 生命。", effects: { statusExploitBonus: 5, turnHealAll: 1 } },
+    { id: "toxin-craft", name: "毒素調製", family: "毒素", tier: "B", cost: 2300, art: "./src/assets/generated/enemy-jy-poison-cultist.png", text: "所有攻擊牌使命中目標中毒 2 點。", effects: { attackPoison: 2 } },
+    { id: "black-flame-seed", name: "黑炎火種", family: "燃燒", tier: "B", cost: 2800, art: "./src/assets/generated/skill-black-flame-annihilation.png", text: "每回合第一張攻擊牌使命中目標燃燒 4 點。", effects: { firstAttackBurn: 4 } },
+    { id: "hinokami-breath", name: "火之神神樂", family: "呼吸法", tier: "A", cost: 7800, art: "./src/assets/generated/skill-hinokami-water-dragon.png", text: "攻擊牌傷害 +2，第一張攻擊牌額外燃燒 6 點。", effects: { attackBonus: 2, firstAttackBurn: 6 } },
+    { id: "nichirin-focus", name: "日輪刀專注", family: "呼吸法", tier: "B", cost: 2500, art: "./src/assets/generated/equipment-tanjiro-nichirin-blade.png", text: "每回合第一張攻擊牌穿甲。", effects: { firstAttackPierce: 1 } },
+    { id: "demon-slayer-mark", name: "斑紋覺醒", family: "呼吸法", tier: "S", cost: 11800, art: "./src/assets/generated/character-tanjiro-kamado.png", text: "暴擊倍率 2；每回合第 5 張牌全隊恢復 4 生命。", effects: { criticalMultiplier: 2, fifthCardHealAll: 4 } },
+    { id: "titan-shifter", name: "巨人化因子", family: "巨人", tier: "A", cost: 8200, art: "./src/assets/generated/character-eren-yeager.png", text: "最大生命 +20；每回合第 5 張牌對所有敵人造成 5 穿甲傷害。", effects: { maxHp: 20, fifthCardDamageAll: 5 } },
+    { id: "ackerman-instinct", name: "阿克曼本能", family: "巨人", tier: "A", cost: 7600, art: "./src/assets/generated/character-mikasa-ackerman.png", text: "每回合第 2 張牌追加 6 穿甲傷害。", effects: { secondCardDamage: 6 } },
+    { id: "nine-tail-chakra", name: "九尾查克拉", family: "查克拉", tier: "A", cost: 8200, art: "./src/assets/generated/character-naruto-uzumaki.png", text: "第一回合能量 +1；每回合第 5 張牌抽 1 張。", effects: { openingEnergy: 1, fifthCardDraw: 1 } },
+    { id: "sharingan-prediction", name: "寫輪眼預判", family: "瞳術", tier: "A", cost: 8000, art: "./src/assets/generated/scenario-naruto-final-valley.png", text: "開場閃避 +1；每回合第一張戰術牌使全體敵人虛弱 3 點。", effects: { openingEvade: 1, firstTacticWeakAll: 3 } },
+    { id: "soul-reaper-shunpo", name: "死神瞬步", family: "死神", tier: "B", cost: 3200, art: "./src/assets/generated/character-ichigo-kurosaki.png", text: "第一回合可額外免費打出 1 張手牌。", effects: { openingFreePlays: 1 } },
+    { id: "getsuga-edge", name: "月牙刀壓", family: "死神", tier: "A", cost: 7800, art: "./src/assets/generated/skill-final-getsuga-tensho.png", text: "攻擊牌傷害 +3；每回合第一張攻擊牌穿甲。", effects: { attackBonus: 3, firstAttackPierce: 1 } },
+    { id: "observation-haki", name: "見聞色霸氣", family: "霸氣", tier: "B", cost: 3100, art: "./src/assets/generated/skill-probability-swindle.png", text: "開場抽 1 張牌；每場戰鬥開場閃避 +1。", effects: { openingDraw: 1, openingEvade: 1 } },
+    { id: "rubber-body", name: "橡膠之身", family: "惡魔果實", tier: "A", cost: 7400, art: "./src/assets/generated/character-luffy-nika.png", text: "最大生命 +15；回合開始全隊壓力 -1。", effects: { maxHp: 15, turnReduceStressAll: 1 } },
+    { id: "saiyan-battle-blood", name: "賽亞戰鬥血", family: "賽亞人", tier: "S", cost: 12800, art: "./src/assets/generated/character-son-goku.png", text: "攻擊牌傷害 +4；生命低於一半時額外 +3。", effects: { attackBonus: 4, lowHpAttackBonus: 3 } },
+    { id: "truth-gate-alchemy", name: "真理之門鍊成", family: "鍊金術", tier: "A", cost: 8400, art: "./src/assets/generated/skill-truth-gate-alchemy.png", text: "每回合第一張戰術牌抽 1 張並獲得 1 能量。", effects: { firstTacticDraw: 1, firstTacticEnergy: 1 } },
+    { id: "nen-ren", name: "念能力·練", family: "念能力", tier: "B", cost: 2900, art: "./src/assets/generated/skill-jajanken-covenant.png", text: "所有攻擊牌傷害 +1；回合開始全隊護甲 +1。", effects: { attackBonus: 1, turnBlockAll: 1 } },
+    { id: "nen-gyo", name: "念能力·凝", family: "念能力", tier: "A", cost: 7000, art: "./src/assets/generated/character-gon-freecss.png", text: "攻擊帶狀態敵人傷害 +4；第一張攻擊牌穿甲。", effects: { statusExploitBonus: 4, firstAttackPierce: 1 } },
+    { id: "dual-blade-system", name: "二刀流系統", family: "遊戲技能", tier: "A", cost: 7600, art: "./src/assets/generated/character-kirito-kazuto.png", text: "每回合第 2 張牌追加 5 穿甲傷害；第 3 張牌抽 1 張。", effects: { secondCardDamage: 5, thirdCardDraw: 1 } },
+    { id: "devil-trigger", name: "魔人化", family: "惡魔獵人", tier: "A", cost: 8200, art: "./src/assets/generated/skill-sin-devil-trigger.png", text: "暴擊倍率 1.8；攻擊後自創角色恢復 3 生命。", effects: { criticalMultiplier: 1.8, healOwnerOnAttack: 3 } },
+    { id: "royal-guard-style", name: "皇家防禦風格", family: "惡魔獵人", tier: "B", cost: 3400, art: "./src/assets/generated/skill-guard-stance.png", text: "開場全隊護甲 +5；每回合第一張防護牌使敵人虛弱 3 點。", effects: { openingBlockAll: 5, firstGuardWeakAll: 3 } },
+    { id: "elden-rune-graft", name: "大盧恩接枝", family: "交界地", tier: "S", cost: 13000, art: "./src/assets/generated/character-tarnished-elden-lord.png", text: "第一回合能量 +1，最大生命 +20，回合開始壓力 +1。", effects: { openingEnergy: 1, maxHp: 20, turnStressAll: 1 } },
+    { id: "bloodhound-step", name: "獵犬步伐", family: "交界地", tier: "A", cost: 7600, art: "./src/assets/generated/skill-er-bloodhound-step.png", text: "第一回合可額外免費打出 1 張手牌；開場閃避 +1。", effects: { openingFreePlays: 1, openingEvade: 1 } },
+    { id: "scarlet-rot-bloom", name: "猩紅腐敗花", family: "交界地", tier: "S", cost: 12600, art: "./src/assets/generated/skill-er-scarlet-aeonia.png", text: "攻擊使目標中毒 4 點；毒與燃燒同時存在時額外腐蝕 3 傷害。", effects: { attackPoison: 4, poisonBurnDeepen: 3 } },
+    { id: "dark-moon-rite", name: "暗月儀式", family: "交界地", tier: "A", cost: 8000, art: "./src/assets/generated/character-ranni-dark-moon.png", text: "第一張戰術牌使所有敵人虛弱 4 點並抽 1 張牌。", effects: { firstTacticWeakAll: 4, firstTacticDraw: 1 } },
+    { id: "mako-infusion", name: "魔晄注入", family: "魔晄", tier: "A", cost: 7200, art: "./src/assets/generated/source-cover-ff7.png", text: "第一回合能量 +1；攻擊牌傷害 +1。", effects: { openingEnergy: 1, attackBonus: 1 } },
+    { id: "limit-break", name: "極限技槽", family: "魔晄", tier: "S", cost: 12400, art: "./src/assets/generated/skill-ff7-omnislash.png", text: "每回合第 5 張牌造成 10 穿甲傷害並抽 1 張。", effects: { fifthCardDamageAll: 10, fifthCardDraw: 1 } },
+    { id: "jaeger-drift", name: "獵人機甲漂移", family: "機甲同步", tier: "A", cost: 8200, art: "./src/assets/generated/scenario-pacific-rim-breach.png", text: "開場全隊護甲 +8；第一回合能量 +1。", effects: { openingBlockAll: 8, openingEnergy: 1 } },
+    { id: "war-rig-fury", name: "戰爭車狂飆", family: "荒原", tier: "B", cost: 3300, art: "./src/assets/generated/scenario-fury-road-war-rig.png", text: "第一回合手牌 +1；每回合第 3 張牌全隊護甲 +3。", effects: { openingDraw: 1, thirdCardBlockAll: 3 } },
+    { id: "predator-mark", name: "鐵血熱視標記", family: "獵手科技", tier: "A", cost: 7600, art: "./src/assets/generated/scenario-avp-pyramid.png", text: "攻擊帶狀態敵人傷害 +6；第一張攻擊牌穿甲。", effects: { statusExploitBonus: 6, firstAttackPierce: 1 } },
+    { id: "xenomorph-adrenal", name: "異形腎上腺", family: "異形", tier: "B", cost: 3000, art: "./src/assets/generated/enemy-alien-warrior.png", text: "每回合第 2 張牌追加 4 穿甲傷害；回合開始壓力 +1。", effects: { secondCardDamage: 4, turnStressAll: 1 } }
+  ];
+
+  const customMutations = [
+    { id: "blood-virus-core", name: "逆種血核", requiredTags: ["vampire-seed", "t-virus-adaptation"], art: "./src/assets/generated/enemy-re6-bloodshot-pack.png", text: "毒素與血族互相餵養：攻擊中毒敵人時傷害 +8 並恢復 4 生命。", effects: { statusExploitBonus: 8, healOwnerOnAttack: 4 } },
+    { id: "daywalker-symbiote", name: "日行共生體", requiredTags: ["vampire-count", "devil-trigger"], art: "./src/assets/generated/skill-venom-hive.png", text: "血族暴擊被惡魔化包覆：暴擊倍率提升至 2.3，攻擊後恢復 4 生命。", effects: { criticalMultiplier: 2.3, healOwnerOnAttack: 4 } },
+    { id: "spider-qi-step", name: "蛛影凌波", requiredTags: ["spider-sense", "inner-qi-breath"], art: "./src/assets/generated/skill-er-bloodhound-step.png", text: "第 3 張牌額外抽 1 張，並讓自創角色再獲得 1 次閃避。", effects: { thirdCardDraw: 1, thirdCardEvadeOwner: 1 } },
+    { id: "spider-sharingan-web", name: "預判蛛網", requiredTags: ["spider-sense", "sharingan-prediction"], art: "./src/assets/generated/skill-probability-swindle.png", text: "開場閃避 +1；第一張戰術牌使所有敵人虛弱 5 點。", effects: { openingEvade: 1, firstTacticWeakAll: 5 } },
+    { id: "super-gamma-warform", name: "戰場綠巨化", requiredTags: ["super-soldier-serum", "gamma-rage-cell"], art: "./src/assets/generated/skill-hulk-smash-leap.png", text: "最大生命 +30，攻擊牌傷害 +4，但回合開始全隊壓力 +1。", effects: { maxHp: 30, attackBonus: 4, turnStressAll: 1 } },
+    { id: "black-sun-breath", name: "黑日呼吸", requiredTags: ["black-flame-seed", "hinokami-breath"], art: "./src/assets/generated/skill-flame-breathing-unknown-fire.png", text: "第一張攻擊牌燃燒 +10；燃燒中的敵人受到攻擊時額外 +5 傷害。", effects: { firstAttackBurn: 10, statusExploitBonus: 5 } },
+    { id: "marked-nichirin", name: "斑紋赫刀", requiredTags: ["nichirin-focus", "demon-slayer-mark"], art: "./src/assets/generated/character-tanjiro-kamado.png", text: "第一張攻擊牌穿甲且暴擊倍率至少 2.2。", effects: { firstAttackPierce: 1, criticalMultiplier: 2.2 } },
+    { id: "ackerman-titan-break", name: "阿克曼反巨人骨架", requiredTags: ["titan-shifter", "ackerman-instinct"], art: "./src/assets/generated/character-levi-ackerman.png", text: "第 2 張牌追加 10 穿甲傷害；開場閃避 +1。", effects: { secondCardDamage: 10, openingEvade: 1 } },
+    { id: "sage-nine-tail", name: "仙狐查克拉", requiredTags: ["nine-tail-chakra", "nen-ren"], art: "./src/assets/generated/skill-kurama-rasenshuriken.png", text: "第一回合能量 +1；第 5 張牌抽 1 張並造成 6 穿甲傷害。", effects: { openingEnergy: 1, fifthCardDraw: 1, fifthCardDamageAll: 6 } },
+    { id: "sharingan-getsuga", name: "月牙瞳術", requiredTags: ["sharingan-prediction", "getsuga-edge"], art: "./src/assets/generated/scenario-bleach-false-karakura.png", text: "第一張攻擊牌穿甲；第一張戰術牌使所有敵人虛弱 5 點。", effects: { firstAttackPierce: 1, firstTacticWeakAll: 5 } },
+    { id: "nika-observation", name: "尼卡見聞色", requiredTags: ["observation-haki", "rubber-body"], art: "./src/assets/generated/character-luffy-nika.png", text: "開場手牌 +2、閃避 +1，回合開始壓力 -1。", effects: { openingDraw: 2, openingEvade: 1, turnReduceStressAll: 1 } },
+    { id: "saiyan-limit", name: "賽亞極限突破", requiredTags: ["saiyan-battle-blood", "limit-break"], art: "./src/assets/generated/character-son-goku.png", text: "攻擊牌傷害 +6；第 5 張牌造成 12 穿甲傷害。", effects: { attackBonus: 6, fifthCardDamageAll: 12 } },
+    { id: "truth-rune-array", name: "真理盧恩陣", requiredTags: ["truth-gate-alchemy", "elden-rune-graft"], art: "./src/assets/generated/enemy-er-radagon-elden-beast.png", text: "第一張戰術牌抽 2 張並獲得 1 能量；最大生命 +15。", effects: { firstTacticDraw: 2, firstTacticEnergy: 1, maxHp: 15 } },
+    { id: "devil-bloodhound", name: "魔人獵犬步", requiredTags: ["devil-trigger", "bloodhound-step"], art: "./src/assets/generated/skill-devil-breaker-buster.png", text: "開場閃避 +2；第一回合額外免費打出 1 張牌。", effects: { openingEvade: 2, openingFreePlays: 1 } },
+    { id: "darkmoon-truth", name: "暗月真理門", requiredTags: ["dark-moon-rite", "truth-gate-alchemy"], art: "./src/assets/generated/character-ranni-dark-moon.png", text: "第一張戰術牌使敵人虛弱 6 點、抽 2 張，並獲得 1 能量。", effects: { firstTacticWeakAll: 6, firstTacticDraw: 2, firstTacticEnergy: 1 } },
+    { id: "scarlet-symbiote", name: "猩紅共生花", requiredTags: ["scarlet-rot-bloom", "toxin-craft"], art: "./src/assets/generated/skill-er-scarlet-aeonia.png", text: "所有攻擊中毒 +5；毒與燃燒同時存在時額外腐蝕 6 傷害。", effects: { attackPoison: 5, poisonBurnDeepen: 6 } },
+    { id: "mako-devil-drive", name: "魔晄魔人驅動", requiredTags: ["mako-infusion", "devil-trigger"], art: "./src/assets/generated/source-cover-ff7.png", text: "第一回合能量 +1；暴擊倍率至少 2。", effects: { openingEnergy: 1, criticalMultiplier: 2 } },
+    { id: "jaeger-super-serum", name: "超級士兵漂移", requiredTags: ["jaeger-drift", "super-soldier-serum"], art: "./src/assets/generated/scenario-pacific-rim-breach.png", text: "開場護甲 +12、能量 +1，最大生命 +10。", effects: { openingBlockAll: 12, openingEnergy: 1, maxHp: 10 } },
+    { id: "predator-war-rig", name: "荒原獵手車隊", requiredTags: ["war-rig-fury", "predator-mark"], art: "./src/assets/generated/scenario-fury-road-war-rig.png", text: "第一回合手牌 +1；攻擊帶狀態敵人傷害 +8。", effects: { openingDraw: 1, statusExploitBonus: 8 } },
+    { id: "corrosive-blackfire", name: "腐蝕黑火", requiredTags: ["toxin-craft", "black-flame-seed"], art: "./src/assets/generated/enemy-black-flame-shard.png", text: "攻擊同時附加毒與燃燒；雙狀態每回合額外腐蝕 5 傷害。", effects: { attackPoison: 2, attackBurn: 2, poisonBurnDeepen: 5 } },
+    { id: "jiuyang-dugu", name: "九陽獨孤體", requiredTags: ["nine-yang-mantra", "dugu-sword-intent"], art: "./src/assets/generated/skill-jy-dugu-nine-swords.png", text: "攻擊牌傷害 +4；回合開始全隊恢復 2 生命。", effects: { attackBonus: 4, turnHealAll: 2 } },
+    { id: "royal-ackerman", name: "皇家阿克曼反制", requiredTags: ["royal-guard-style", "ackerman-instinct"], art: "./src/assets/generated/character-mikasa-ackerman.png", text: "開場護甲 +8；第 2 張牌追加 8 穿甲傷害。", effects: { openingBlockAll: 8, secondCardDamage: 8 } },
+    { id: "c-g-virus-stabilized", name: "C/G病毒穩定株", requiredTags: ["g-virus-regeneration", "c-virus-antibody"], art: "./src/assets/generated/equipment-c-virus-antibody-serum.png", text: "最大生命 +20；回合開始全隊恢復 2 生命，自創角色額外恢復 4。", effects: { maxHp: 20, turnHealAll: 2, turnHealOwner: 4 } },
+    { id: "xeno-predator-hunt", name: "異形獵殺本能", requiredTags: ["xenomorph-adrenal", "predator-mark"], art: "./src/assets/generated/scenario-avp-pyramid.png", text: "第 2 張牌追加 8 穿甲傷害；攻擊帶狀態敵人傷害 +5。", effects: { secondCardDamage: 8, statusExploitBonus: 5 } }
   ];
 
   const playerProfessionCards = [
@@ -362,6 +469,28 @@
     { id: "alexander-jar-cannon-charge", name: "亞歷山大·戰士壺衝鋒", category: "signature", type: "guard", rarity: "signature", cost: 2, damageAll: 18, blockAll: 22, addStress: 3, text: "戰士壺用全身撞進敵陣，對所有敵人造成 18 傷害，全隊獲得 22 護甲；全隊壓力 +3。", upgrade: { damageAll: 26, blockAll: 32, addStress: 1 }, tags: ["亞歷山大", "戰士壺"] },
     { id: "tiche-destined-death", name: "狄希·命定之死黑刀", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 36, pierce: true, poisonTarget: 8, stunTarget: 1, text: "黑刀劃過生命線，穿透護甲造成 36 傷害，施加 8 中毒並封鎖目標下一次行動。", upgrade: { damage: 50, poisonTarget: 12 }, tags: ["黑刀狄希", "命定之死"] },
     { id: "nepheli-stormhawk-axe", name: "涅斐麗·風暴鷹戰斧", category: "signature", type: "attack", rarity: "signature", cost: 2, damageAll: 22, blockAll: 10, draw: 1, text: "風暴鷹盤旋，戰斧劈開前線，對所有敵人造成 22 傷害，全隊獲得 10 護甲，抽 1 張牌。", upgrade: { damageAll: 32, blockAll: 15, draw: 2 }, tags: ["涅斐麗", "風暴"] },
+    { id: "jjk-divergent-fist", name: "逕庭拳", category: "general", type: "attack", rarity: "common", cost: 1, damage: 13, weakTarget: 2, text: "造成 13 傷害，使目標虛弱 2 點。咒力延遲命中會讓敵人節奏錯拍。", upgrade: { damage: 19, weakTarget: 4 }, tags: ["咒術回戰", "虎杖"], sourceId: "jujutsu-kaisen", sourceName: "咒術回戰" },
+    { id: "jjk-black-flash-chain", name: "黑閃連打", category: "general", type: "attack", rarity: "rare", cost: 2, damage: 26, pierce: true, gainEnergy: 1, text: "穿透護甲造成 26 傷害，獲得 1 能量。命中後的空間扭曲會把下一擊推到臨界。", upgrade: { damage: 36 }, tags: ["咒術回戰", "黑閃"], sourceId: "jujutsu-kaisen", sourceName: "咒術回戰" },
+    { id: "jjk-ten-shadows-nue", name: "十種影法術·鵺", category: "general", type: "attack", rarity: "uncommon", cost: 2, damageAll: 13, weakAll: 3, text: "對所有敵人造成 13 傷害，並使其虛弱 3 點。鵺從陰影上方落雷。", upgrade: { damageAll: 19, weakAll: 5 }, tags: ["咒術回戰", "十種影法術"], sourceId: "jujutsu-kaisen", sourceName: "咒術回戰" },
+    { id: "jjk-straw-doll-resonance", name: "芻靈咒法·共鳴", category: "general", type: "attack", rarity: "uncommon", cost: 1, damage: 11, poisonTarget: 5, draw: 1, text: "造成 11 傷害並施加 5 中毒，抽 1 張牌。稻草人與釘子把傷害回傳本體。", upgrade: { damage: 16, poisonTarget: 8, draw: 2 }, tags: ["咒術回戰", "芻靈咒法"], sourceId: "jujutsu-kaisen", sourceName: "咒術回戰" },
+    { id: "jjk-cursed-speech-stop", name: "咒言·停下", category: "general", type: "tactic", rarity: "uncommon", cost: 1, damage: 8, stunTarget: 1, draw: 1, text: "造成 8 傷害，封鎖目標下一次行動，抽 1 張牌。聲音先於動作抵達。", upgrade: { damage: 13, draw: 2 }, tags: ["咒術回戰", "咒言"], sourceId: "jujutsu-kaisen", sourceName: "咒術回戰" },
+    { id: "jjk-ratio-collapse", name: "十劃咒法·瓦落瓦落", category: "general", type: "attack", rarity: "uncommon", cost: 2, damage: 22, blockAll: 5, text: "造成 22 傷害，全隊獲得 5 護甲。七三分點被切開後，崩塌會沿著弱點擴散。", upgrade: { damage: 30, blockAll: 8 }, tags: ["咒術回戰", "十劃咒法"], sourceId: "jujutsu-kaisen", sourceName: "咒術回戰" },
+    { id: "jjk-simple-domain-guard", name: "簡易領域", category: "general", type: "guard", rarity: "rare", cost: 2, blockAll: 18, evadeAll: 1, text: "全隊獲得 18 護甲與 1 次閃避。用最小術式抵住必中效果。", upgrade: { blockAll: 26 }, tags: ["咒術回戰", "領域對策"], sourceId: "jujutsu-kaisen", sourceName: "咒術回戰" },
+    { id: "jjk-reverse-cursed-technique", name: "反轉術式", category: "general", type: "support", rarity: "rare", cost: 2, healAll: 10, reduceStress: 8, draw: 1, text: "全隊恢復 10 生命並降低 8 壓力，抽 1 張牌。將負的咒力反轉成治療。", upgrade: { healAll: 15, reduceStress: 12, draw: 2 }, tags: ["咒術回戰", "反轉術式"], sourceId: "jujutsu-kaisen", sourceName: "咒術回戰" },
+    { id: "jjk-domain-clash", name: "領域展開對抗", category: "general", type: "tactic", rarity: "rare", cost: 3, damageAll: 18, weakAll: 6, blockAll: 12, exhaust: true, text: "對所有敵人造成 18 傷害並虛弱 6 點，全隊獲得 12 護甲，耗盡。用領域邊界撞開必中規則。", upgrade: { damageAll: 26, weakAll: 9, blockAll: 18 }, tags: ["咒術回戰", "領域展開"], sourceId: "jujutsu-kaisen", sourceName: "咒術回戰" },
+    { id: "yuji-black-flash-core", name: "虎杖·黑閃核心", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 34, pierce: true, gainEnergy: 1, addStress: 3, text: "虎杖把咒力與拳頭壓進同一瞬間，穿透護甲造成 34 傷害，獲得 1 能量；全隊壓力 +3。", upgrade: { damage: 48, addStress: 1 }, tags: ["虎杖悠仁", "黑閃"] },
+    { id: "megumi-chimera-shadow-garden", name: "伏黑·嵌合暗翳庭", category: "signature", type: "tactic", rarity: "signature", cost: 2, damageAll: 18, draw: 2, weakAll: 5, blockAll: 8, text: "未完成領域吞下地面，對所有敵人造成 18 傷害並虛弱 5 點，抽 2 張牌，全隊獲得 8 護甲。", upgrade: { damageAll: 26, draw: 3, weakAll: 8 }, tags: ["伏黑惠", "領域展開"] },
+    { id: "nobara-resonance-hairpin", name: "釘崎·共鳴簪", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 30, poisonTarget: 8, weakTarget: 5, draw: 1, text: "釘崎將咒釘打進媒介，造成 30 傷害，施加 8 中毒與 5 虛弱，抽 1 張牌。", upgrade: { damage: 42, poisonTarget: 12, weakTarget: 8 }, tags: ["釘崎野薔薇", "芻靈咒法"] },
+    { id: "yuta-rika-copy", name: "乙骨·里香完全顯現", category: "signature", type: "support", rarity: "signature", cost: 3, damageAll: 24, healAll: 12, draw: 2, blockAll: 10, text: "里香完全顯現，對所有敵人造成 24 傷害，全隊恢復 12 生命、獲得 10 護甲，抽 2 張牌。", upgrade: { damageAll: 34, healAll: 18, blockAll: 15, draw: 3 }, tags: ["乙骨憂太", "里香"] },
+    { id: "maki-playful-cloud", name: "真希·游雲破陣", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 38, pierce: true, blockAll: 8, text: "真希以純粹肉體揮下游雲，穿透護甲造成 38 傷害，全隊獲得 8 護甲。", upgrade: { damage: 54, blockAll: 12 }, tags: ["禪院真希", "咒具"] },
+    { id: "toge-cursed-speech-crush", name: "狗卷·咒言崩碎", category: "signature", type: "tactic", rarity: "signature", cost: 2, damageAll: 16, stunTarget: 1, weakAll: 6, addStress: 3, text: "狗卷以咒言壓碎敵意，對所有敵人造成 16 傷害並虛弱 6 點，封鎖目標下一次行動；全隊壓力 +3。", upgrade: { damageAll: 24, weakAll: 9, addStress: 1 }, tags: ["狗卷棘", "咒言"] },
+    { id: "panda-gorilla-mode", name: "熊貓·猩猩核心", category: "signature", type: "guard", rarity: "signature", cost: 2, damageAll: 15, blockAll: 24, text: "熊貓切換猩猩核心，對所有敵人造成 15 傷害，全隊獲得 24 護甲。", upgrade: { damageAll: 22, blockAll: 34 }, tags: ["熊貓", "咒骸"] },
+    { id: "nanami-ratio-overtime", name: "七海·十劃加班", category: "signature", type: "attack", rarity: "signature", cost: 3, damage: 48, executeBelow: 0.4, executeDamage: 24, blockAll: 6, text: "七海進入加班時間，造成 48 傷害；目標生命低於 40% 時追加 24 穿甲傷害，全隊獲得 6 護甲。", upgrade: { damage: 66, executeDamage: 36, blockAll: 10 }, tags: ["七海建人", "十劃咒法"] },
+    { id: "aoi-todo-boogie-woogie", name: "東堂·不義遊戲", category: "signature", type: "tactic", rarity: "signature", cost: 1, damage: 16, draw: 3, gainEnergy: 1, weakTarget: 4, text: "拍手換位打亂敵我距離，造成 16 傷害，使目標虛弱 4 點，抽 3 張牌並獲得 1 能量。", upgrade: { damage: 24, weakTarget: 7 }, tags: ["東堂葵", "不義遊戲"] },
+    { id: "choso-piercing-blood", name: "脹相·穿血", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 36, pierce: true, poisonTarget: 7, text: "高速壓縮血線貫穿目標，穿透護甲造成 36 傷害並施加 7 中毒。", upgrade: { damage: 50, poisonTarget: 11 }, tags: ["脹相", "赤血操術"] },
+    { id: "hakari-jackpot-domain", name: "秤·坐殺博徒大獎", category: "signature", type: "support", rarity: "signature", cost: 2, healAll: 16, blockAll: 16, gainEnergy: 2, addStress: 6, exhaust: true, text: "領域抽中大獎，全隊恢復 16 生命、獲得 16 護甲與 2 能量；全隊壓力 +6，耗盡。", upgrade: { healAll: 24, blockAll: 24, addStress: 3 }, tags: ["秤金次", "領域展開"] },
+    { id: "higuruma-deadly-sentencing", name: "日車·誅伏賜死", category: "signature", type: "tactic", rarity: "signature", cost: 2, damage: 22, stunTarget: 1, weakAll: 8, draw: 2, text: "審判領域宣讀罪狀，造成 22 傷害，封鎖目標下一次行動，使所有敵人虛弱 8 點，抽 2 張牌。", upgrade: { damage: 32, weakAll: 12, draw: 3 }, tags: ["日車寬見", "領域展開"] },
+    { id: "satoru-gojo-limitless-void", name: "五條悟·無量空處", category: "signature", type: "attack", rarity: "signature", cost: 3, damageAll: 60, pierce: true, stunTarget: 1, weakAll: 12, draw: 3, gainEnergy: 1, text: "五條展開無量空處，穿透護甲對所有敵人造成 60 傷害，使所有敵人虛弱 12 點，封鎖目標下一次行動，抽 3 張牌並獲得 1 能量。", upgrade: { damageAll: 82, weakAll: 16, draw: 4 }, tags: ["五條悟", "無下限", "領域展開"] },
     { id: "curse-panic", name: "恐慌殘響", category: "curse", type: "curse", rarity: "curse", cost: 99, unplayable: true, onDrawStress: 5, text: "抽到時全隊壓力 +5；無法打出。", tags: ["詛咒"] },
     { id: "curse-drain", name: "生命流失", category: "curse", type: "curse", rarity: "curse", cost: 99, unplayable: true, onDrawDamage: 2, text: "抽到時全隊失去 2 生命；無法打出。", tags: ["詛咒"] }
   ];
@@ -442,7 +571,11 @@
     { id: "azur-glintstone-staff", name: "亞茲勒輝石杖", rarity: "legendary", effect: "openingEnergy", amount: 1, upgradedAmount: 2, text: "每場戰鬥第一回合額外獲得 1 點能量。魔力洪流會把開場變成彗星窗口。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
     { id: "dragon-communion-seal", name: "龍饗印記", rarity: "rare", effect: "firstAttackBurn", amount: 7, upgradedAmount: 11, text: "每回合第一張攻擊牌使命中的敵人燃燒 7 點。龍焰會替第一擊補上古龍怒火。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
     { id: "mimic-tear-ashes", name: "仿身淚滴骨灰", rarity: "legendary", effect: "openingDraw", amount: 3, upgradedAmount: 4, text: "每場戰鬥第一回合額外抽 3 張牌。另一個自己會把手牌路線提前展開。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
-    { id: "flask-wondrous-physick", name: "靈藥聖杯瓶", rarity: "rare", effect: "turnStressRelief", amount: 4, upgradedAmount: 6, text: "回合開始時全隊壓力 -4。調配後的靈藥能把一次失誤從腦中洗掉。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" }
+    { id: "flask-wondrous-physick", name: "靈藥聖杯瓶", rarity: "rare", effect: "turnStressRelief", amount: 4, upgradedAmount: 6, text: "回合開始時全隊壓力 -4。調配後的靈藥能把一次失誤從腦中洗掉。", sourceId: "elden-ring-equipment", sourceName: "交界地神兵" },
+    { id: "slaughter-demon-dagger", name: "屠坐魔", rarity: "rare", effect: "firstAttackBonus", amount: 10, upgradedAmount: 16, text: "每回合第一張攻擊牌額外造成 10 點傷害。新手咒具也能在咒胎裂口裡切出第一條生路。", sourceId: "jujutsu-tools", sourceName: "咒術咒具" },
+    { id: "playful-cloud-staff", name: "特級咒具·游雲", rarity: "legendary", effect: "attackBonus", amount: 5, upgradedAmount: 8, text: "持有者存活時，所有攻擊牌傷害 +5。游雲不講術式，只把身體能力放大到能砸碎結界。", sourceId: "jujutsu-tools", sourceName: "咒術咒具" },
+    { id: "inverted-spear-fragment", name: "天逆鉾碎片", rarity: "legendary", effect: "firstAttackPierce", amount: 9, upgradedAmount: 14, text: "每回合第一張攻擊牌穿透護甲，並額外造成 9 點傷害。殘片仍能短暫切斷術式防線。", sourceId: "jujutsu-tools", sourceName: "咒術咒具" },
+    { id: "prison-realm-shard", name: "獄門疆殘片", rarity: "legendary", effect: "openingDraw", amount: 2, upgradedAmount: 3, text: "每場戰鬥第一回合額外抽 2 張牌。封印碎片會把不存在的縫隙提前暴露給隊伍。", sourceId: "jujutsu-tools", sourceName: "咒術咒具" }
   ];
 
   const bloodlines = [
@@ -544,7 +677,20 @@
     { characterId: "millicent-valkyrie", name: "腐敗義手劍舞", text: "米莉森·腐敗水鳥穿透護甲，額外對所有敵人造成 10 傷害並中毒 6 點。", sideStoryCost: { rewardPointCost: 11000, sideStoryCost: 5 }, effect: { pierce: true, extraDamageAll: 10, poisonAll: 6 } },
     { characterId: "alexander-warrior-jar", name: "戰士壺碎片", text: "亞歷山大·戰士壺衝鋒額外提供全隊 14 護甲，並使所有敵人虛弱 4 點。", sideStoryCost: { rewardPointCost: 9400, sideStoryCost: 4 }, effect: { blockAll: 14, weakAll: 4 } },
     { characterId: "black-knife-tiche", name: "命定之死殘片", text: "狄希·命定之死黑刀造成 1.7 倍暴擊傷害，追加 8 中毒，並讓狄希獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 10800, sideStoryCost: 4 }, effect: { criticalMultiplier: 1.7, poisonTarget: 8, evadeOwner: 1 } },
-    { characterId: "nepheli-loux", name: "風暴王血脈", text: "涅斐麗·風暴鷹戰斧額外對所有敵人造成 8 點穿甲傷害，全隊再獲得 8 護甲。", sideStoryCost: { rewardPointCost: 9600, sideStoryCost: 4 }, effect: { extraDamageAll: 8, blockAll: 8 } }
+    { characterId: "nepheli-loux", name: "風暴王血脈", text: "涅斐麗·風暴鷹戰斧額外對所有敵人造成 8 點穿甲傷害，全隊再獲得 8 護甲。", sideStoryCost: { rewardPointCost: 9600, sideStoryCost: 4 }, effect: { extraDamageAll: 8, blockAll: 8 } },
+    { characterId: "yuji-itadori", name: "宿儺容器黑閃連鎖", text: "虎杖·黑閃臨界額外造成 1.6 倍暴擊傷害，並使目標虛弱 6 點。", sideStoryCost: { rewardPointCost: 10200, sideStoryCost: 4 }, effect: { criticalMultiplier: 1.6, weakAll: 6 } },
+    { characterId: "megumi-fushiguro", name: "十種影法術調伏線", text: "伏黑·嵌合暗翳庭額外抽 2 張牌，全隊獲得 8 護甲，並封鎖目標下一次行動。", sideStoryCost: { rewardPointCost: 10400, sideStoryCost: 4 }, effect: { draw: 2, blockAll: 8, stunTarget: 1 } },
+    { characterId: "nobara-kugisaki", name: "共鳴釘咒反饋", text: "釘崎·共鳴簪額外使所有敵人中毒 6 點並虛弱 4 點。", sideStoryCost: { rewardPointCost: 9000, sideStoryCost: 4 }, effect: { poisonAll: 6, weakAll: 4 } },
+    { characterId: "yuta-okkotsu", name: "里香完全顯現", text: "乙骨·里香複寫額外治療全隊 10 生命，抽 1 張牌並獲得 1 能量。", sideStoryCost: { rewardPointCost: 12000, sideStoryCost: 5 }, effect: { healAll: 10, draw: 1, gainEnergy: 1 } },
+    { characterId: "maki-zenin", name: "天與咒縛完全解放", text: "真希·游雲破陣穿透護甲，額外對所有敵人造成 12 傷害並獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 10800, sideStoryCost: 4 }, effect: { pierce: true, extraDamageAll: 12, evadeOwner: 1 } },
+    { characterId: "toge-inumaki", name: "咒言反噬控制", text: "狗卷·咒言壓碎額外封鎖所有敵人下一次行動，並讓全隊壓力降低 6 點。", sideStoryCost: { rewardPointCost: 9600, sideStoryCost: 4 }, effect: { stunAll: 1, reduceStress: 6 } },
+    { characterId: "panda-jjk", name: "三核心咒骸切換", text: "熊貓·大猩猩模式額外提供全隊 14 護甲並恢復 4 生命。", sideStoryCost: { rewardPointCost: 9200, sideStoryCost: 3 }, effect: { blockAll: 14, healAll: 4 } },
+    { characterId: "nanami-kento", name: "七三分點加班解放", text: "七海·十劃加班造成 1.7 倍暴擊傷害，穿透護甲並額外追加 10 單體傷害。", sideStoryCost: { rewardPointCost: 9800, sideStoryCost: 4 }, effect: { criticalMultiplier: 1.7, pierce: true, extraDamageTarget: 10 } },
+    { characterId: "aoi-todo", name: "不義遊戲換位拍手", text: "東堂·不義遊戲額外抽 2 張牌，獲得 1 能量，並使所有敵人虛弱 4 點。", sideStoryCost: { rewardPointCost: 9800, sideStoryCost: 4 }, effect: { draw: 2, gainEnergy: 1, weakAll: 4 } },
+    { characterId: "choso", name: "赤血操術長兄誓約", text: "脹相·穿血穿透護甲，額外使所有敵人中毒 7 點並提供全隊 6 護甲。", sideStoryCost: { rewardPointCost: 10000, sideStoryCost: 4 }, effect: { pierce: true, poisonAll: 7, blockAll: 6 } },
+    { characterId: "hakari-kinji", name: "坐殺博徒大獎連轉", text: "秤·大獎不死額外恢復全隊 12 生命，獲得 2 能量並降低 8 壓力。", sideStoryCost: { rewardPointCost: 11800, sideStoryCost: 5 }, effect: { healAll: 12, gainEnergy: 2, reduceStress: 8 } },
+    { characterId: "higuruma-hiromi", name: "誅伏賜死審判", text: "日車·誅伏賜死額外封鎖目標下一次行動，抽 2 張牌並使所有敵人虛弱 7 點。", sideStoryCost: { rewardPointCost: 11200, sideStoryCost: 5 }, effect: { stunTarget: 1, draw: 2, weakAll: 7 } },
+    { characterId: "satoru-gojo", name: "六眼無下限完全校準", text: "五條悟·無量空處穿透護甲，額外對所有敵人造成 20 傷害，使所有敵人虛弱 8 點，抽 1 張牌並獲得 1 能量。", sideStoryCost: { rewardPointCost: 16000, sideStoryCost: 6 }, effect: { pierce: true, extraDamageAll: 20, weakAll: 8, draw: 1, gainEnergy: 1 } }
   ];
 
   const enemies = [
@@ -691,7 +837,18 @@
     { id: "er-maliketh-black-blade", name: "黑劍瑪利喀斯", maxHp: 980, stressAura: 33, intents: [{ kind: "attack", label: "獸爪裂地", amount: 96, targetMode: "random" }, { kind: "cleave", label: "岩石彈幕", amount: 48, targetMode: "all" }, { kind: "guard", label: "野獸祭司披風", amount: 66 }, { kind: "stress", label: "死亡盧恩封存", amount: 52, targetMode: "all" }], phaseTwo: { name: "瑪利喀斯 命定之死", maxHp: 820, stressAura: 38, regen: 12, intents: [{ kind: "cleave", label: "黑劍死亡波", amount: 66, targetMode: "all" }, { kind: "attack", label: "空翻黑刃處刑", amount: 124, targetMode: "front" }, { kind: "stress", label: "命定之死釋放", amount: 62, targetMode: "all" }, { kind: "regen", label: "黑焰殘痕", amount: 54, block: 34 }] } },
     { id: "er-malenia-blade-miquella", name: "米凱拉的鋒刃瑪蓮妮亞", maxHp: 1040, stressAura: 35, regen: 30, intents: [{ kind: "attack", label: "水鳥亂舞點名", amount: 112, targetMode: "random" }, { kind: "cleave", label: "義手刀連舞", amount: 56, targetMode: "all" }, { kind: "regen", label: "命中吸血再生", amount: 74, block: 26 }, { kind: "stress", label: "從未敗北", amount: 56, targetMode: "all" }], phaseTwo: { name: "腐敗女神瑪蓮妮亞", maxHp: 900, stressAura: 41, regen: 38, intents: [{ kind: "cleave", label: "猩紅艾奧尼亞盛放", amount: 72, targetMode: "all" }, { kind: "attack", label: "腐敗幻影連斬", amount: 132, targetMode: "random" }, { kind: "stress", label: "腐敗花海", amount: 68, targetMode: "all" }, { kind: "regen", label: "女神再生", amount: 90, block: 44 }] } },
     { id: "er-godfrey-hoarah-loux", name: "初始王葛孚雷", maxHp: 1080, stressAura: 34, intents: [{ kind: "cleave", label: "王斧震地", amount: 56, targetMode: "all" }, { kind: "attack", label: "黃金王斧處刑", amount: 108, targetMode: "front" }, { kind: "guard", label: "王者踏步", amount: 76 }, { kind: "stress", label: "初始王威壓", amount: 54, targetMode: "all" }], phaseTwo: { name: "荷萊·露 戰士本能", maxHp: 880, stressAura: 40, intents: [{ kind: "cleave", label: "撼地咆哮", amount: 70, targetMode: "all" }, { kind: "attack", label: "摔投撕裂", amount: 136, targetMode: "random" }, { kind: "stress", label: "戰士咆哮", amount: 66, targetMode: "all" }, { kind: "guard", label: "獸性霸體", amount: 88 }] } },
-    { id: "er-radagon-elden-beast", name: "拉達岡與艾爾登獸", maxHp: 1180, stressAura: 36, regen: 18, intents: [{ kind: "cleave", label: "黃金錘光爆", amount: 62, targetMode: "all" }, { kind: "attack", label: "律法破碎重擊", amount: 118, targetMode: "front" }, { kind: "stress", label: "黃金律法審判", amount: 60, targetMode: "all" }, { kind: "regen", label: "法環修復", amount: 70, block: 44 }], phaseTwo: { name: "艾爾登獸 星海律法", maxHp: 980, stressAura: 42, regen: 32, intents: [{ kind: "cleave", label: "艾爾登流星雨", amount: 78, targetMode: "all" }, { kind: "attack", label: "星海聖劍", amount: 144, targetMode: "random" }, { kind: "stress", label: "世界律法重寫", amount: 72, targetMode: "all" }, { kind: "regen", label: "星海重構", amount: 92, block: 48 }] } }
+    { id: "er-radagon-elden-beast", name: "拉達岡與艾爾登獸", maxHp: 1180, stressAura: 36, regen: 18, intents: [{ kind: "cleave", label: "黃金錘光爆", amount: 62, targetMode: "all" }, { kind: "attack", label: "律法破碎重擊", amount: 118, targetMode: "front" }, { kind: "stress", label: "黃金律法審判", amount: 60, targetMode: "all" }, { kind: "regen", label: "法環修復", amount: 70, block: 44 }], phaseTwo: { name: "艾爾登獸 星海律法", maxHp: 980, stressAura: 42, regen: 32, intents: [{ kind: "cleave", label: "艾爾登流星雨", amount: 78, targetMode: "all" }, { kind: "attack", label: "星海聖劍", amount: 144, targetMode: "random" }, { kind: "stress", label: "世界律法重寫", amount: 72, targetMode: "all" }, { kind: "regen", label: "星海重構", amount: 92, block: 48 }] } },
+    { id: "jjk-cursed-spirit-swarm", name: "低階咒靈群", maxHp: 210, stressAura: 13, intents: [{ kind: "cleave", label: "咒骸撲咬", amount: 22, targetMode: "all" }, { kind: "stress", label: "負面情緒潮", amount: 20, targetMode: "all" }, { kind: "guard", label: "咒力黏膜", amount: 32 }] },
+    { id: "jjk-finger-bearer", name: "特級咒胎·宿儺手指持有者", maxHp: 420, stressAura: 18, regen: 10, intents: [{ kind: "attack", label: "咒力重拳", amount: 58, targetMode: "front" }, { kind: "cleave", label: "領域雛形震盪", amount: 30, targetMode: "all" }, { kind: "regen", label: "手指咒力再生", amount: 30, block: 20 }] },
+    { id: "jjk-mahito-idle-transfiguration", name: "真人·無為轉變", maxHp: 620, stressAura: 24, regen: 12, intents: [{ kind: "stress", label: "靈魂觸碰", amount: 34, targetMode: "all" }, { kind: "attack", label: "改造人突刺", amount: 72, targetMode: "random" }, { kind: "cleave", label: "多重改造體", amount: 36, targetMode: "all" }, { kind: "regen", label: "靈魂輪廓修補", amount: 44, block: 22 }] },
+    { id: "jjk-hanami-cursed-root", name: "花御·森羅咒根", maxHp: 700, stressAura: 22, regen: 18, intents: [{ kind: "guard", label: "花御硬質化", amount: 62 }, { kind: "cleave", label: "咒根穿林", amount: 34, targetMode: "all" }, { kind: "stress", label: "生命咒語低鳴", amount: 30, targetMode: "all" }, { kind: "regen", label: "森域回復", amount: 42, block: 28 }] },
+    { id: "jjk-toji-inventory-curse", name: "伏黑甚爾·咒靈武庫", maxHp: 760, stressAura: 20, intents: [{ kind: "attack", label: "天與咒縛突襲", amount: 88, targetMode: "random" }, { kind: "cleave", label: "游雲橫掃", amount: 40, targetMode: "all" }, { kind: "guard", label: "咒具換手", amount: 54 }, { kind: "stress", label: "無咒力壓迫", amount: 32, targetMode: "all" }] },
+    { id: "jjk-jogo-volcano", name: "漏瑚·火山頭", maxHp: 820, stressAura: 25, regen: 10, intents: [{ kind: "cleave", label: "火礫噴發", amount: 44, targetMode: "all" }, { kind: "attack", label: "極之番·隕", amount: 96, targetMode: "front" }, { kind: "stress", label: "灼熱領域壓迫", amount: 38, targetMode: "all" }, { kind: "regen", label: "熔岩外殼", amount: 46, block: 30 }] },
+    { id: "jjk-dagon-domain", name: "陀艮·蕩蘊平線", maxHp: 880, stressAura: 26, regen: 14, intents: [{ kind: "cleave", label: "死累累湧軍", amount: 48, targetMode: "all" }, { kind: "attack", label: "必中魚群撕裂", amount: 92, targetMode: "random" }, { kind: "guard", label: "海域結界", amount: 70 }, { kind: "stress", label: "領域閉合", amount: 42, targetMode: "all" }] },
+    { id: "jjk-kenjaku-barrier-master", name: "羂索·結界操盤者", maxHp: 940, stressAura: 28, regen: 16, intents: [{ kind: "stress", label: "結界規則改寫", amount: 46, targetMode: "all" }, { kind: "cleave", label: "咒靈操術洪流", amount: 50, targetMode: "all" }, { kind: "attack", label: "獄門疆誘導", amount: 100, targetMode: "random" }, { kind: "regen", label: "幕後換腦續行", amount: 52, block: 34 }] },
+    { id: "jjk-culling-game-player", name: "死滅回游術師", maxHp: 560, stressAura: 21, intents: [{ kind: "attack", label: "術式公開強化", amount: 70, targetMode: "random" }, { kind: "guard", label: "殖民結界規則", amount: 46 }, { kind: "cleave", label: "點數獵殺", amount: 32, targetMode: "all" }, { kind: "stress", label: "強制參賽壓力", amount: 30, targetMode: "all" }] },
+    { id: "jjk-mahoraga-adaptation", name: "八握劍異戒神將魔虛羅", maxHp: 1060, stressAura: 30, regen: 24, intents: [{ kind: "attack", label: "退魔之劍斬落", amount: 108, targetMode: "front" }, { kind: "cleave", label: "適應輪轉", amount: 56, targetMode: "all" }, { kind: "regen", label: "法輪再適應", amount: 70, block: 44 }, { kind: "stress", label: "調伏失敗陰影", amount: 48, targetMode: "all" }] },
+    { id: "jjk-sukuna-shinjuku", name: "兩面宿儺·新宿決戰", maxHp: 1260, stressAura: 38, regen: 20, intents: [{ kind: "cleave", label: "解·斬擊雨", amount: 68, targetMode: "all" }, { kind: "attack", label: "捌·空間切斷", amount: 138, targetMode: "random" }, { kind: "stress", label: "伏魔御廚子壓迫", amount: 62, targetMode: "all" }, { kind: "regen", label: "反轉術式修復", amount: 76, block: 46 }], phaseTwo: { name: "宿儺 完全詠唱", maxHp: 980, stressAura: 44, regen: 28, intents: [{ kind: "cleave", label: "世界斬展開", amount: 82, targetMode: "all" }, { kind: "attack", label: "斬擊處刑", amount: 158, targetMode: "front" }, { kind: "stress", label: "咒王嘲笑", amount: 72, targetMode: "all" }, { kind: "regen", label: "咒力重構", amount: 88, block: 52 }] } }
   ];
 
   const encounters = [
@@ -837,7 +994,17 @@
     { id: "er-maliketh-death", name: "法姆亞茲拉·黑劍瑪利喀斯", tier: "boss", enemies: ["er-maliketh-black-blade"], rewardPoints: 18400 },
     { id: "er-malenia-haligtree", name: "聖樹底層·瑪蓮妮亞", tier: "boss", enemies: ["er-malenia-blade-miquella"], rewardPoints: 19000 },
     { id: "er-godfrey-ashen-capital", name: "灰燼王城·初始王葛孚雷", tier: "boss", enemies: ["er-godfrey-hoarah-loux"], rewardPoints: 18600 },
-    { id: "er-radagon-elden-throne", name: "艾爾登王座·拉達岡與艾爾登獸", tier: "boss", enemies: ["er-radagon-elden-beast"], rewardPoints: 20000 }
+    { id: "er-radagon-elden-throne", name: "艾爾登王座·拉達岡與艾爾登獸", tier: "boss", enemies: ["er-radagon-elden-beast"], rewardPoints: 20000 },
+    { id: "jjk-fearsome-womb", name: "咒胎戴天·少年院", tier: "normal", enemies: ["jjk-cursed-spirit-swarm", "jjk-finger-bearer"], rewardPoints: 5200 },
+    { id: "jjk-vs-mahito", name: "真人線·靈魂改造", tier: "normal", enemies: ["jjk-mahito-idle-transfiguration"], rewardPoints: 6600 },
+    { id: "jjk-goodwill-hanami", name: "京都交流會·花御入侵", tier: "elite", enemies: ["jjk-hanami-cursed-root", "jjk-cursed-spirit-swarm"], rewardPoints: 8200 },
+    { id: "jjk-hidden-inventory-toji", name: "懷玉玉折·甚爾伏擊", tier: "elite", enemies: ["jjk-toji-inventory-curse"], rewardPoints: 9000 },
+    { id: "jjk-shibuya-jogo", name: "澀谷站·漏瑚火山", tier: "elite", enemies: ["jjk-jogo-volcano", "jjk-cursed-spirit-swarm"], rewardPoints: 9800 },
+    { id: "jjk-shibuya-dagon", name: "澀谷站·陀艮領域", tier: "elite", enemies: ["jjk-dagon-domain"], rewardPoints: 10200 },
+    { id: "jjk-kenjaku-prison-realm", name: "獄門疆封印點·羂索結界", tier: "miniboss", enemies: ["jjk-kenjaku-barrier-master"], rewardPoints: 12800 },
+    { id: "jjk-culling-colony", name: "死滅回游·殖民結界", tier: "normal", enemies: ["jjk-culling-game-player", "jjk-cursed-spirit-swarm"], rewardPoints: 7600 },
+    { id: "jjk-mahoraga-ritual", name: "調伏儀式·魔虛羅", tier: "miniboss", enemies: ["jjk-mahoraga-adaptation"], rewardPoints: 15000 },
+    { id: "jjk-sukuna-shinjuku", name: "新宿決戰·宿儺", tier: "boss", enemies: ["jjk-sukuna-shinjuku"], rewardPoints: 22000 }
   ];
 
   const scenarios = [
@@ -868,7 +1035,8 @@
     { id: "pacific-rim-breach", name: "環太平洋", subtitle: "香港破碎穹頂", intro: "白光散去，香港海面被怪獸骨脊劃開。破碎穹頂警報全線亮紅，獵人機甲正從維修架上墜入暴雨，主神要求中洲隊在裂隙完全擴張前守住城市。", recruitmentPool: ["raleigh-becket", "mako-mori", "stacker-pentecost", "herc-hansen", "luo-gandao", "clone-luo-gandao", "ba-wang", "wang-xia", "chu-xuan", "zero"], normal: ["pacrim-hong-kong-docks", "pacrim-shatterdome-breach"], elite: ["pacrim-double-event"], miniboss: "pacrim-otachi-airlift", boss: "pacrim-breach-slattern", eventTitle: "神經共感駕駛艙與核爆授權", eventText: "破碎穹頂最後一套神經共感駕駛艙仍在閃爍，旁邊是只會用一次的裂隙核爆授權。上機，或把城市留給怪獸。", scenarioPowerName: "獵人機甲同步", scenarioPowerText: "本次遠征所有攻擊牌傷害 +5。", scenarioPower: { id: "jaeger-drift-sync", effect: "attackBonus", amount: 5 } },
     { id: "fury-road-war-rig", name: "瘋狂麥斯", subtitle: "狂怒公路", intro: "白光散去，戰爭車正衝進沙暴前緣。引擎、鼓點與追兵的嘶吼擠滿耳膜，芙莉歐莎把方向盤打死，主神只標出一句：護送車隊穿過要塞回頭路。", recruitmentPool: ["max-rockatansky", "imperator-furiosa", "nux-war-boy", "capable", "li-shuaixi", "li-xiaoyi", "ba-wang", "wang-xia", "zero", "zhao-yingkong"], normal: ["fury-canyon-ambush", "fury-sandstorm-run"], elite: ["fury-bullet-farm-siege"], miniboss: "fury-polecat-swarm", boss: "fury-citadel-chase", eventTitle: "戰爭車油箱與綠洲種子", eventText: "油箱漏得像傷口，種子袋被卡帕布護在懷裡。繼續逃，只會被耗死；回頭殺穿要塞，才有真正的路。", scenarioPowerName: "狂怒公路衝刺", scenarioPowerText: "本次遠征第一回合全隊額外獲得 12 護甲。", scenarioPower: { id: "war-rig-breakthrough", effect: "openingBlock", amount: 12 } },
     { id: "resident-evil-6-c-virus", name: "生化危機6", subtitle: "全球C病毒戰線", intro: "白光散去，總統演說廳的屍潮已經撞碎安檢門。Tall Oaks、東歐戰區、蘭祥四塔與海底基地的警報同時在主神視野裡亮起，C病毒正在把整個世界推進同一場超大型感染戰。", recruitmentPool: ["leon-kennedy", "helena-harper", "chris-redfield", "piers-nivans", "jake-muller", "sherry-birkin", "ada-wong", "bsaa-agent", "zhan-lan", "chu-xuan"], normal: ["re6-tall-oaks-outbreak", "re6-edonia-warzone"], elite: ["re6-lanshiang-siege"], miniboss: "re6-ustanak-hunt", boss: "re6-haos-final", eventTitle: "抗體樣本與四塔指揮密鑰", eventText: "雪莉與傑克的抗體樣本被鎖進冷藏箱，旁邊是蘭祥四塔的指揮密鑰。拿到它們，才能把全球感染線重新壓回海底基地。", scenarioPowerName: "C病毒抗體窗口", scenarioPowerText: "本次遠征所有攻擊牌傷害 +5。", scenarioPower: { id: "c-virus-antibody-window", effect: "attackBonus", amount: 5 } },
-    { id: "elden-ring-hell-run", name: "艾爾登法環", subtitle: "地獄難度 · 交界地十王", intro: "白光散去，賜福沒有照亮道路，只照出十個頭目的名字。主神把交界地壓縮成一條地獄級遠征線：每個戰鬥節點都可能抽中碎星、血王、黑劍、腐敗女神或艾爾登獸。", recruitmentPool: ["tarnished-elden-lord", "melina-kindling-maiden", "ranni-dark-moon", "blaidd-half-wolf", "millicent-valkyrie", "alexander-warrior-jar", "black-knife-tiche", "nepheli-loux", "zheng-zha", "chu-xuan"], normal: ["er-radahn-festival", "er-morgott-throne"], elite: ["er-mohg-dynasty"], miniboss: "er-maliketh-death", boss: "er-radagon-elden-throne", hellBossPool: ["er-radahn-festival", "er-morgott-throne", "er-fire-giant-forge", "er-godskin-temple", "er-mohg-dynasty", "er-placidusax-storm", "er-maliketh-death", "er-malenia-haligtree", "er-godfrey-ashen-capital", "er-radagon-elden-throne"], eventTitle: "賜福、淚滴與大盧恩裂片", eventText: "賜福旁的光點不再指向安全路線，而是指向下一個頭目。仿身淚滴骨灰、靈藥聖杯瓶與破碎大盧恩只能支撐一次地獄級衝刺。", scenarioPowerName: "大盧恩超載", scenarioPowerText: "本次遠征所有攻擊牌傷害 +7。", scenarioPower: { id: "great-rune-overload", effect: "attackBonus", amount: 7 } }
+    { id: "elden-ring-hell-run", name: "艾爾登法環", subtitle: "地獄難度 · 交界地十王", intro: "白光散去，賜福沒有照亮道路，只照出十個頭目的名字。主神把交界地壓縮成一條地獄級遠征線：每個戰鬥節點都可能抽中碎星、血王、黑劍、腐敗女神或艾爾登獸。", recruitmentPool: ["tarnished-elden-lord", "melina-kindling-maiden", "ranni-dark-moon", "blaidd-half-wolf", "millicent-valkyrie", "alexander-warrior-jar", "black-knife-tiche", "nepheli-loux", "zheng-zha", "chu-xuan"], normal: ["er-radahn-festival", "er-morgott-throne"], elite: ["er-mohg-dynasty"], miniboss: "er-maliketh-death", boss: "er-radagon-elden-throne", hellBossPool: ["er-radahn-festival", "er-morgott-throne", "er-fire-giant-forge", "er-godskin-temple", "er-mohg-dynasty", "er-placidusax-storm", "er-maliketh-death", "er-malenia-haligtree", "er-godfrey-ashen-capital", "er-radagon-elden-throne"], eventTitle: "賜福、淚滴與大盧恩裂片", eventText: "賜福旁的光點不再指向安全路線，而是指向下一個頭目。仿身淚滴骨灰、靈藥聖杯瓶與破碎大盧恩只能支撐一次地獄級衝刺。", scenarioPowerName: "大盧恩超載", scenarioPowerText: "本次遠征所有攻擊牌傷害 +7。", scenarioPower: { id: "great-rune-overload", effect: "attackBonus", amount: 7 } },
+    { id: "jujutsu-kaisen-shibuya", name: "咒術回戰", subtitle: "原作主線 · 澀谷結界到新宿決戰", intro: "白光散去，澀谷站地下五層被帳封死。主神把咒胎戴天、真人、京都交流會、懷玉玉折、澀谷事變、死滅回游與新宿決戰壓縮成一條咒力主線；獄門疆在地鐵深處倒數，五條悟的取得條件只剩一句：打破封印。", recruitmentPool: ["yuji-itadori", "megumi-fushiguro", "nobara-kugisaki", "yuta-okkotsu", "maki-zenin", "toge-inumaki", "panda-jjk", "nanami-kento", "aoi-todo", "choso", "hakari-kinji", "higuruma-hiromi"], normal: ["jjk-fearsome-womb", "jjk-vs-mahito", "jjk-culling-colony"], elite: ["jjk-goodwill-hanami", "jjk-hidden-inventory-toji", "jjk-shibuya-jogo", "jjk-shibuya-dagon"], miniboss: "jjk-mahoraga-ritual", boss: "jjk-sukuna-shinjuku", eventTitle: "獄門疆裏門", eventText: "澀谷地下層的獄門疆殘片忽然震動。主神沒有顯示獎勵點，只顯示一個隱藏人物判定：打破封印，回收六眼無下限。", scenarioPowerName: "黑閃連續校準", scenarioPowerText: "本次遠征所有攻擊牌傷害 +6。", scenarioPower: { id: "black-flash-chain-window", effect: "attackBonus", amount: 6 }, hiddenProtagonistId: "satoru-gojo", eventChoices: { stage1: [{ id: "jjk-prison-realm-sense", title: "追蹤獄門疆縫隙", text: "讓伏黑的影子、乙骨的咒力與楚軒的演算一起鎖定封印背面的裂口。" }, { id: "jjk-shibuya-civilian-route", title: "先打開民眾撤離線", text: "把普通人從帳裡拉出去，降低結界壓力，再回頭處理獄門疆。" }, { id: "jjk-kenjaku-barrier-read", title: "反讀羂索結界", text: "直接追蹤幕後操盤者留下的規則痕跡，冒險改寫事件判定。" }], stage2: { "jjk-prison-realm-sense": [{ id: "jjk-back-gate-resonance", title: "共鳴裏門", text: "用天逆鉾碎片與黑繩殘痕模擬裏門，把封印內外的時間差撬開。" }, { id: "jjk-limitless-voice", title: "聽見無下限回聲", text: "獄門疆內傳來被壓低的咒力回聲，像有人在等你們找對角度。" }], "jjk-shibuya-civilian-route": [{ id: "jjk-nanami-overtime-line", title: "接上七海加班線", text: "用十劃咒法標記安全路線，讓撤離隊伍不再被咒靈潮截斷。" }, { id: "jjk-todo-switch-route", title: "東堂換位救援", text: "拍手聲在地下站台連續響起，把被困者與突擊隊交換到不同出口。" }], "jjk-kenjaku-barrier-read": [{ id: "jjk-barrier-rule-crack", title: "破解結界規則", text: "把死滅回游的點數規則提前套入澀谷帳，從規則內部打出漏洞。" }, { id: "jjk-mahoraga-risk-line", title: "借用適應風險", text: "短暫引入魔虛羅的適應邏輯，讓封印也必須面對被解讀的可能。" }] }, stage3: { "jjk-back-gate-resonance": [{ id: "jjk-break-prison-realm", title: "打破獄門疆", text: "以天逆鉾碎片撬開術式，讓黑閃窗口與裏門共振，一口氣把五條悟拉回戰場。" }, { id: "jjk-steal-prison-shard", title: "取走獄門疆殘片", text: "不強行救人，只把裂下的封印殘片轉成開局情報與裝備。" }], "jjk-limitless-voice": [{ id: "jjk-break-prison-realm", title: "打破獄門疆", text: "跟著無下限的回聲定位內側坐標，用主神白光把封印判定打穿。" }, { id: "jjk-delay-gojo-rescue", title: "延後救援", text: "把救援坐標保存到下一次節點，換取一次較安全的遠征強化。" }], "jjk-nanami-overtime-line": [{ id: "jjk-overtime-evacuation", title: "完成加班撤離", text: "七海的七三分線切開封鎖點，隊伍換取更多支線與壓力恢復。" }, { id: "jjk-break-prison-realm", title: "打破獄門疆", text: "撤離完成後，所有人把最後窗口壓回封印點，強行救出五條悟。" }], "jjk-todo-switch-route": [{ id: "jjk-boogie-feint", title: "不義遊戲佯攻", text: "用換位節奏騙過咒靈潮，取得本次遠征的攻擊強化。" }, { id: "jjk-break-prison-realm", title: "打破獄門疆", text: "拍手換位把獄門疆帶到破術位置，下一擊直接砸向封印核心。" }], "jjk-barrier-rule-crack": [{ id: "jjk-culling-rule-hack", title: "殖民規則改寫", text: "把結界漏洞轉成主神承認的支線獎勵，但會引來額外詛咒。" }, { id: "jjk-break-prison-realm", title: "打破獄門疆", text: "用改寫後的規則把獄門疆判定成可攻擊目標，救援條件成立。" }], "jjk-mahoraga-risk-line": [{ id: "jjk-mahoraga-adaptive-guard", title: "適應防線", text: "讓隊伍本次遠征獲得更厚護甲，但精神壓力會被魔虛羅影子拖高。" }, { id: "jjk-break-prison-realm", title: "打破獄門疆", text: "趁封印開始適應你們時反向適應它，將獄門疆敲出第一道真正裂痕。" }] } }, eventOutcomes: { "jjk-break-prison-realm": { title: "獄門疆破碎", text: "裏門被撬開，封印判定崩落。五條悟以隱藏人物身份加入隊伍，無下限把整條遠征路線重新照亮。", effects: [{ type: "recruit-hidden" }, { type: "side-story", amount: 2 }, { type: "run-power", id: "prison-realm-break", effect: "attackBonus", amount: 6 }] }, "jjk-steal-prison-shard": { title: "殘片入手", text: "你們沒有救出五條悟，但獄門疆殘片被主神轉化為傳說咒具。", effects: [{ type: "legendary-equipment" }, { type: "run-power", id: "prison-realm-shard-route", effect: "openingBlock", amount: 10 }] }, "jjk-delay-gojo-rescue": { title: "救援坐標保存", text: "五條悟的聲音暫時遠去，隊伍獲得一次更穩定的黑閃窗口。", effects: [{ type: "scenario-power" }, { type: "side-story", amount: 1 }] }, "jjk-overtime-evacuation": { title: "澀谷撤離成功", text: "民眾從帳縫中撤出，隊伍壓力下降，支線判定補回一格。", effects: [{ type: "heal", amount: 0.18, stressRelief: 18 }, { type: "side-story", amount: 1 }] }, "jjk-boogie-feint": { title: "拍手佯攻成立", text: "不義遊戲讓咒靈潮連續撲空，隊伍本次遠征攻擊節奏提高。", effects: [{ type: "run-power", id: "boogie-woogie-feint", effect: "attackBonus", amount: 4 }, { type: "rare-card" }] }, "jjk-culling-rule-hack": { title: "規則漏洞到手", text: "結界規則被短暫改寫，主神承認支線獎勵，但詛咒也跟著寫進牌組。", effects: [{ type: "side-story", amount: 2 }, { type: "curse" }] }, "jjk-mahoraga-adaptive-guard": { title: "適應護牆", text: "魔虛羅的法輪影子替隊伍擋住一次結界反噬，代價是全隊精神壓力升高。", effects: [{ type: "run-power", id: "mahoraga-adaptive-guard", effect: "turnBlock", amount: 7 }, { type: "stress", amount: 24 }] } } }
   ];
 
   const scenarioOpenings = {
@@ -1318,11 +1486,66 @@
         { enemyId: "er-malenia-blade-miquella", title: "腐敗女神", text: "聖樹底層開出猩紅花海，瑪蓮妮亞抬起義手刀，水鳥亂舞已經在呼吸裡開始。" },
         { enemyId: "er-radagon-elden-beast", title: "艾爾登王座", text: "拉達岡的金錘砸碎法環，星海深處的艾爾登獸隨著律法裂口浮現。" }
       ]
+    },
+    "jujutsu-kaisen-shibuya": {
+      title: "澀谷結界開戰",
+      premise: "白光散去時，眾人已站在澀谷地下站台。帳把普通人、咒靈與輪迴者壓進同一座迷宮，主神任務把原作主線折成七個節點：咒胎戴天、真人、京都交流會、懷玉玉折、澀谷事變、死滅回游與新宿決戰。獄門疆在深處震動，隱藏人物判定尚未完成。",
+      dialogue: [
+        { speaker: "主神", line: "主線：穿過澀谷結界，阻止死滅回游擴張，於新宿決戰擊破宿儺。隱藏判定：打破獄門疆。" },
+        { speaker: "虎杖悠仁", line: "如果這條路能把老師救出來，我會打到最後。" },
+        { speaker: "伏黑惠", line: "影子能開路，也能拖住敵人。問題是每一次召喚都會把風險拉高。" },
+        { speaker: "乙骨憂太", line: "我會負責治療和壓制。只要封印露出縫隙，就把五條老師拉回來。" },
+        { speaker: "楚軒", line: "獄門疆不是單純的道具，而是劇本規則節點。要救人，必須讓規則承認它可以被破壞。" }
+      ],
+      panels: [
+        { enemyId: "jjk-finger-bearer", title: "咒胎戴天", text: "少年院的走廊被咒力扭曲，宿儺手指像心臟一樣在黑暗裡跳動。" },
+        { enemyId: "jjk-mahito-idle-transfiguration", title: "真人線", text: "改造人的影子貼著牆面爬行，靈魂輪廓被揉成不像人的形狀。" },
+        { enemyId: "jjk-hanami-cursed-root", title: "京都交流會", text: "交流會場地被咒根刺穿，原本的對抗訓練瞬間變成共同防線。" },
+        { enemyId: "jjk-toji-inventory-curse", title: "懷玉玉折", text: "無咒力的腳步聲在走廊盡頭停下，咒具武庫先於殺意露出寒光。" },
+        { enemyId: "jjk-kenjaku-barrier-master", title: "澀谷獄門疆", text: "地鐵深處的封印盒緩慢閉合，帳外的聲音像被整座城市吞掉。" },
+        { enemyId: "jjk-mahoraga-adaptation", title: "調伏儀式", text: "法輪在陰影裡轉動，每一次攻擊都像在教敵人如何活下來。" },
+        { enemyId: "jjk-sukuna-shinjuku", title: "新宿決戰", text: "高樓間的戰場被斬擊切成格線，咒王站在中心等待最後的挑戰。" }
+      ]
     }
   };
 
   scenarios.forEach((scenario) => {
     if (scenarioOpenings[scenario.id]) scenario.opening = scenarioOpenings[scenario.id];
+  });
+
+  const hiddenProtagonistsByScenario = {
+    alien: "zheng-zha",
+    juon: "chu-xuan",
+    "mummy-curse": "imhotep",
+    "jurassic-island": "zhao-yingkong",
+    "abyssal-ark": "clone-luo-gandao",
+    "evernight-castle": "clone-zheng-zha",
+    "demon-frontier": "clone-chu-xuan",
+    "main-god-trial": "shiva-gangtian",
+    "starship-troopers": "zero",
+    "avp-pyramid": "zhao-yingkong",
+    "nightmare-elm": "zhan-lan",
+    "lotr-war": "luo-yinglong",
+    "rumbling-finale": "eren-yeager",
+    "infinity-castle": "tanjiro-kamado",
+    "naruto-final-valley": "naruto-uzumaki",
+    "bleach-false-karakura": "ichigo-kurosaki",
+    "gintama-yoshiwara": "gintoki-sakata",
+    "gintama-final-war": "shinsuke-takasugi",
+    "avengers-new-york": "tony-stark",
+    "batman-v-superman": "clark-kent-superman",
+    "devil-may-cry-5": "dante-dmc5",
+    "final-destination": "xiao-honglu",
+    "jinyong-heroic-peak": "luo-yinglong",
+    "pacific-rim-breach": "raleigh-becket",
+    "fury-road-war-rig": "imperator-furiosa",
+    "resident-evil-6-c-virus": "leon-kennedy",
+    "elden-ring-hell-run": "tarnished-elden-lord",
+    "jujutsu-kaisen-shibuya": "satoru-gojo"
+  };
+
+  scenarios.forEach((scenario) => {
+    if (hiddenProtagonistsByScenario[scenario.id]) scenario.hiddenProtagonistId = hiddenProtagonistsByScenario[scenario.id];
   });
 
   const legendaryRecruitmentPool = ["tanjiro-kamado", "giyu-tomioka", "naruto-uzumaki", "luffy-nika", "son-goku", "xiao-yan", "ichigo-kurosaki", "edward-elric", "eren-yeager", "mikasa-ackerman", "armin-arlert", "levi-ackerman", "gon-freecss", "kirito-kazuto"];
@@ -1344,6 +1567,7 @@
     { id: "fury-road", name: "狂怒公路", description: "荒原求生、戰爭車防線與救贖訊號的追逐隊伍。", heroFileName: "roster-hero-fury-road.png", memberIds: ["max-rockatansky", "imperator-furiosa", "nux-war-boy", "capable"] },
     { id: "re6", name: "生化危機6", description: "C病毒全球戰線的特勤、BSAA、抗體血脈與合作掩護。", heroFileName: "roster-hero-re6.png", memberIds: ["leon-kennedy", "helena-harper", "chris-redfield", "piers-nivans", "jake-muller", "sherry-birkin", "ada-wong", "bsaa-agent"] },
     { id: "elden-ring", name: "艾爾登法環", description: "賜福、暗月、黑刀與戰灰組成的地獄頭目戰隊伍。", heroFileName: "roster-hero-elden-ring.png", memberIds: ["tarnished-elden-lord", "melina-kindling-maiden", "ranni-dark-moon", "blaidd-half-wolf", "millicent-valkyrie", "alexander-warrior-jar", "black-knife-tiche", "nepheli-loux"] },
+    { id: "jujutsu-kaisen", name: "咒術回戰", description: "咒胎、黑閃、十種影法術、咒言、死滅回游與新宿決戰線；五條悟為打破獄門疆後取得的隱藏角色。", heroFileName: "roster-hero-jujutsu-kaisen.png", memberIds: ["yuji-itadori", "megumi-fushiguro", "nobara-kugisaki", "yuta-okkotsu", "maki-zenin", "toge-inumaki", "panda-jjk", "nanami-kento", "aoi-todo", "choso", "hakari-kinji", "higuruma-hiromi", "satoru-gojo"] },
     { id: "demon-slayer", name: "鬼滅之刃", description: "日之呼吸、水之呼吸與赫刀防線。", heroFileName: "roster-hero-demon-slayer.png", memberIds: ["tanjiro-kamado", "giyu-tomioka"] },
     { id: "naruto", name: "火影忍者", description: "九尾查克拉與終末谷級別的忍者爆發。", heroFileName: "roster-hero-naruto.png", memberIds: ["naruto-uzumaki"] },
     { id: "one-piece", name: "海賊王", description: "太陽神尼卡的自由破局與不屈續戰。", heroFileName: "roster-hero-one-piece.png", memberIds: ["luffy-nika"] },
@@ -1370,7 +1594,8 @@
     { id: "pacific-rim", name: "環太平洋", description: "獵人機甲技能，重視穿甲、燃燒、護甲與神經共感節奏。" },
     { id: "fury-road", name: "瘋狂麥斯", description: "狂怒公路車隊技能，偏移動防線、燃燒、閃避與壓力控制。" },
     { id: "re6", name: "生化危機6", description: "C病毒全球戰線技能，重視槍械穿甲、群體火線、抗體支援與合作快射。" },
-    { id: "elden-ring", name: "艾爾登法環", description: "交界地戰灰、魔法與祈禱，偏穿甲、燃燒、腐敗、中毒、閃避與地獄級爆發。" }
+    { id: "elden-ring", name: "艾爾登法環", description: "交界地戰灰、魔法與祈禱，偏穿甲、燃燒、腐敗、中毒、閃避與地獄級爆發。" },
+    { id: "jujutsu-kaisen", name: "咒術回戰", description: "咒力、黑閃、式神、咒言、反轉術式與領域對抗，偏穿甲、抽牌、控場與高壓爆發。" }
   ];
 
   const equipmentSources = [
@@ -1386,7 +1611,8 @@
     { id: "pacific-rim-equipment", name: "環太平洋武裝", description: "神經共感駕駛艙、機甲電漿炮與鏈劍，強化開局與反巨獸爆發。" },
     { id: "fury-road-equipment", name: "狂怒公路武裝", description: "戰爭車、雷矛與荒原補給，讓隊伍在追逐戰裡撐住壓力。" },
     { id: "re6-equipment", name: "C病毒武裝", description: "Wing Shooter、Hydra、BSAA套件、反器材步槍與抗體血清，強化槍線與續戰。" },
-    { id: "elden-ring-equipment", name: "交界地神兵", description: "屍山血海、名刀月隱、黑劍、義手刀、仿身淚滴與靈藥，支援地獄頭目戰的爆發與續戰。" }
+    { id: "elden-ring-equipment", name: "交界地神兵", description: "屍山血海、名刀月隱、黑劍、義手刀、仿身淚滴與靈藥，支援地獄頭目戰的爆發與續戰。" },
+    { id: "jujutsu-tools", name: "咒術咒具", description: "屠坐魔、游雲、天逆鉾碎片與獄門疆殘片，支援破甲、開場情報與獄門疆奇遇。" }
   ];
 
   const shop = [
@@ -1468,6 +1694,15 @@
     { id: "shop-er-godslayer-blackflame", kind: "card", itemId: "er-godslayer-blackflame", rewardPointCost: 3500, sideStoryCost: 1, stock: 1 },
     { id: "shop-er-golden-vow", kind: "card", itemId: "er-golden-vow", rewardPointCost: 3000, sideStoryCost: 1, stock: 1 },
     { id: "shop-er-bloodhound-step", kind: "card", itemId: "er-bloodhound-step", rewardPointCost: 2800, sideStoryCost: 1, stock: 1 },
+    { id: "shop-jjk-divergent-fist", kind: "card", itemId: "jjk-divergent-fist", rewardPointCost: 1100, stock: 2 },
+    { id: "shop-jjk-black-flash-chain", kind: "card", itemId: "jjk-black-flash-chain", rewardPointCost: 2800, sideStoryCost: 1, stock: 1 },
+    { id: "shop-jjk-ten-shadows-nue", kind: "card", itemId: "jjk-ten-shadows-nue", rewardPointCost: 1900, stock: 2 },
+    { id: "shop-jjk-straw-doll-resonance", kind: "card", itemId: "jjk-straw-doll-resonance", rewardPointCost: 1600, stock: 2 },
+    { id: "shop-jjk-cursed-speech-stop", kind: "card", itemId: "jjk-cursed-speech-stop", rewardPointCost: 1700, stock: 2 },
+    { id: "shop-jjk-ratio-collapse", kind: "card", itemId: "jjk-ratio-collapse", rewardPointCost: 2100, stock: 2 },
+    { id: "shop-jjk-simple-domain-guard", kind: "card", itemId: "jjk-simple-domain-guard", rewardPointCost: 2900, sideStoryCost: 1, stock: 1 },
+    { id: "shop-jjk-reverse-cursed-technique", kind: "card", itemId: "jjk-reverse-cursed-technique", rewardPointCost: 3000, sideStoryCost: 1, stock: 1 },
+    { id: "shop-jjk-domain-clash", kind: "card", itemId: "jjk-domain-clash", rewardPointCost: 3600, sideStoryCost: 2, stock: 1 },
     { id: "shop-desert-eagle", kind: "equipment", itemId: "infinite-desert-eagle", rewardPointCost: 1200, sideStoryCost: 1, stock: 1 },
     { id: "shop-jade-amulet", kind: "equipment", itemId: "jade-amulet", rewardPointCost: 1800, sideStoryCost: 1, stock: 1 },
     { id: "shop-book-dead", kind: "equipment", itemId: "book-of-the-dead", rewardPointCost: 4200, sideStoryCost: 2, stock: 1 },
@@ -1541,7 +1776,11 @@
     { id: "shop-azur-glintstone-staff", kind: "equipment", itemId: "azur-glintstone-staff", rewardPointCost: 6500, sideStoryCost: 3, stock: 1 },
     { id: "shop-dragon-communion-seal", kind: "equipment", itemId: "dragon-communion-seal", rewardPointCost: 5600, sideStoryCost: 2, stock: 1 },
     { id: "shop-mimic-tear-ashes", kind: "equipment", itemId: "mimic-tear-ashes", rewardPointCost: 7600, sideStoryCost: 4, stock: 1 },
-    { id: "shop-flask-wondrous-physick", kind: "equipment", itemId: "flask-wondrous-physick", rewardPointCost: 5000, sideStoryCost: 2, stock: 1 }
+    { id: "shop-flask-wondrous-physick", kind: "equipment", itemId: "flask-wondrous-physick", rewardPointCost: 5000, sideStoryCost: 2, stock: 1 },
+    { id: "shop-slaughter-demon-dagger", kind: "equipment", itemId: "slaughter-demon-dagger", rewardPointCost: 4200, sideStoryCost: 1, stock: 1 },
+    { id: "shop-playful-cloud-staff", kind: "equipment", itemId: "playful-cloud-staff", rewardPointCost: 6800, sideStoryCost: 3, stock: 1 },
+    { id: "shop-inverted-spear-fragment", kind: "equipment", itemId: "inverted-spear-fragment", rewardPointCost: 7600, sideStoryCost: 4, stock: 1 },
+    { id: "shop-prison-realm-shard", kind: "equipment", itemId: "prison-realm-shard", rewardPointCost: 7200, sideStoryCost: 4, stock: 1 }
   ];
 
   const permanentUpgrades = [
@@ -1564,8 +1803,12 @@
     curseRemovalCost: 400,
     characterUpgradeCost: { rewardPointCost: 500, sideStoryCost: 1 },
     signatureUpgradeCost: { rewardPointCost: 1000, sideStoryCost: 1 },
+    customStatPointCost: 1000,
+    customTagOfferCount: 6,
+    customTagRefreshCost: 300,
+    customTagTierSideStoryCosts: { B: 0, A: 1, S: 3 },
     legendaryRecruitmentMinInfiniteTier: 3,
-    scenarioSideStoryRewards: { alien: 1, juon: 1, "mummy-curse": 1, "jurassic-island": 1, "abyssal-ark": 2, "evernight-castle": 2, "demon-frontier": 3, "main-god-trial": 3, "starship-troopers": 4, "avp-pyramid": 4, "nightmare-elm": 5, "lotr-war": 5, "rumbling-finale": 4, "infinity-castle": 5, "naruto-final-valley": 6, "bleach-false-karakura": 6, "gintama-yoshiwara": 6, "gintama-final-war": 7, "avengers-new-york": 7, "batman-v-superman": 7, "devil-may-cry-5": 6, "final-destination": 7, "jinyong-heroic-peak": 7, "pacific-rim-breach": 8, "fury-road-war-rig": 8, "resident-evil-6-c-virus": 9, "elden-ring-hell-run": 10 }
+    scenarioSideStoryRewards: { alien: 1, juon: 1, "mummy-curse": 1, "jurassic-island": 1, "abyssal-ark": 2, "evernight-castle": 2, "demon-frontier": 3, "main-god-trial": 3, "starship-troopers": 4, "avp-pyramid": 4, "nightmare-elm": 5, "lotr-war": 5, "rumbling-finale": 4, "infinity-castle": 5, "naruto-final-valley": 6, "bleach-false-karakura": 6, "gintama-yoshiwara": 6, "gintama-final-war": 7, "avengers-new-york": 7, "batman-v-superman": 7, "devil-may-cry-5": 6, "final-destination": 7, "jinyong-heroic-peak": 7, "pacific-rim-breach": 8, "fury-road-war-rig": 8, "resident-evil-6-c-virus": 9, "elden-ring-hell-run": 10, "jujutsu-kaisen-shibuya": 11 }
   };
 
   const bonds = [
@@ -1677,7 +1920,21 @@
     { id: "cross-scarlet-status-bloom", name: "猩紅狀態花", crossWorld: true, members: ["millicent-valkyrie", "naya", "tanjiro-kamado"], text: "米莉森、娜雅與炭治郎同時上陣。攻擊帶有狀態的敵人時傷害 +7；回合開始所有敵人虛弱 1 點。", effects: { statusExploitBonus: 7, turnWeakAll: 1 } },
     { id: "cross-warrior-jar-shield", name: "戰士壺盾牆", crossWorld: true, members: ["alexander-warrior-jar", "mou-gang", "steve-rogers"], text: "亞歷山大、牟剛與史蒂夫同時上陣。回合開始全隊獲得 5 護甲並恢復 2 生命。", effects: { turnBlockAll: 5, turnHealAll: 2 } },
     { id: "cross-black-knife-shadow", name: "黑刀暗殺線", crossWorld: true, members: ["black-knife-tiche", "zhao-yingkong", "natasha-romanoff"], text: "黑刀狄希、趙櫻空與娜塔莎同時上陣。每回合第二張牌追加 8 點穿甲傷害；回合開始全隊壓力 -1。", effects: { secondCardDamage: 8, turnReduceStressAll: 1 } },
-    { id: "cross-stormhawk-thunderfront", name: "風暴鷹雷線", crossWorld: true, members: ["nepheli-loux", "zheng-zha", "thor-odinson"], text: "涅斐麗、鄭吒與索爾同時上陣。開場抽 1 張牌；所有攻擊牌傷害 +4；群體傷害牌額外 +3。", effects: { openingDraw: 1, attackBonus: 4, damageAllBonus: 3 } }
+    { id: "cross-stormhawk-thunderfront", name: "風暴鷹雷線", crossWorld: true, members: ["nepheli-loux", "zheng-zha", "thor-odinson"], text: "涅斐麗、鄭吒與索爾同時上陣。開場抽 1 張牌；所有攻擊牌傷害 +4；群體傷害牌額外 +3。", effects: { openingDraw: 1, attackBonus: 4, damageAllBonus: 3 } },
+    { id: "jjk-first-years", name: "咒術高專一年級", members: ["yuji-itadori", "megumi-fushiguro", "nobara-kugisaki"], text: "虎杖、伏黑與釘崎同時上陣。開場抽 1 張牌；所有攻擊牌傷害 +3；回合開始全隊獲得 2 護甲。", effects: { openingDraw: 1, attackBonus: 3, turnBlockAll: 2 } },
+    { id: "jjk-second-years", name: "咒術高專二年級", members: ["yuta-okkotsu", "maki-zenin", "toge-inumaki", "panda-jjk"], text: "乙骨、真希、狗卷與熊貓同時上陣。開場抽 2 張牌；群體傷害牌額外 +4；回合開始全隊壓力 -2。", effects: { openingDraw: 2, damageAllBonus: 4, turnReduceStressAll: 2 } },
+    { id: "jjk-shibuya-overtime", name: "澀谷加班黑閃線", members: ["nanami-kento", "yuji-itadori", "aoi-todo"], text: "七海、虎杖與東堂同時上陣。每回合第二張牌追加 8 點穿甲傷害；所有攻擊牌傷害 +3；回合開始全隊壓力 -1。", effects: { secondCardDamage: 8, attackBonus: 3, turnReduceStressAll: 1 } },
+    { id: "jjk-culling-game-court", name: "死滅回游裁決桌", members: ["hakari-kinji", "higuruma-hiromi", "choso"], text: "秤、日車與脹相同時上陣。首回合能量 +1；回合開始全隊恢復 3 生命；攻擊帶有狀態的敵人時傷害 +6。", effects: { openingEnergy: 1, turnHealAll: 3, statusExploitBonus: 6 } },
+    { id: "jjk-prison-realm-break", name: "獄門疆破封組", members: ["satoru-gojo", "yuji-itadori", "yuta-okkotsu"], text: "五條悟、虎杖與乙骨同時上陣。開場抽 2 張牌；所有攻擊牌傷害 +8；每回合第一張攻擊牌穿透護甲；回合開始全隊壓力 +2。", effects: { openingDraw: 2, attackBonus: 8, firstAttackPierce: 1, turnStressAll: 2 } },
+    { id: "jujutsu-faction-domain", name: "咒術領域連攜", faction: "jujutsu-kaisen", count: 3, text: "三名以上咒術回戰角色同時上陣。開場抽 1 張牌；所有攻擊牌傷害 +4；每回合第一張戰術牌使所有敵人虛弱 3 點。", effects: { openingDraw: 1, attackBonus: 4, firstTacticWeakAll: 3 } },
+    { id: "cross-black-flash-frontline", name: "黑閃中洲火線", crossWorld: true, members: ["yuji-itadori", "zheng-zha", "tanjiro-kamado"], text: "虎杖、鄭吒與炭治郎同時上陣。所有攻擊牌傷害 +4；每回合第二張牌追加 6 點穿甲傷害。", effects: { attackBonus: 4, secondCardDamage: 6 } },
+    { id: "cross-shadow-court-plan", name: "影法審判推演", crossWorld: true, members: ["megumi-fushiguro", "higuruma-hiromi", "chu-xuan"], text: "伏黑、日車與楚軒同時上陣。開場抽 1 張牌；每回合第一張戰術牌費用 -1 並使所有敵人虛弱 3 點。", effects: { openingDraw: 1, firstTacticCostReduction: 1, firstTacticWeakAll: 3 } },
+    { id: "cross-nail-scarf-weaponline", name: "釘咒紅影兵器線", crossWorld: true, members: ["nobara-kugisaki", "maki-zenin", "zhao-yingkong", "mikasa-ackerman"], text: "釘崎、真希、趙櫻空與米卡莎同時上陣。每回合第一張攻擊牌穿透護甲；攻擊帶有狀態的敵人時傷害 +5。", effects: { firstAttackPierce: 1, statusExploitBonus: 5 } },
+    { id: "cross-special-grade-medic", name: "特級救援鏈", crossWorld: true, members: ["yuta-okkotsu", "toge-inumaki", "zhan-lan", "elena"], text: "乙骨、狗卷、詹嵐與艾蓮娜同時上陣。開場抽 1 張牌；回合開始全隊恢復 3 生命並降低 3 壓力。", effects: { openingDraw: 1, turnHealAll: 3, turnReduceStressAll: 3 } },
+    { id: "cross-panda-heavy-guard", name: "咒骸重盾線", crossWorld: true, members: ["panda-jjk", "ba-wang", "bruce-banner-hulk"], text: "熊貓、霸王與浩克同時上陣。回合開始全隊獲得 5 護甲；所有攻擊牌傷害 +3；回合開始全隊壓力 +1。", effects: { turnBlockAll: 5, attackBonus: 3, turnStressAll: 1 } },
+    { id: "cross-shibuya-overtime-agents", name: "澀谷加班特勤線", crossWorld: true, members: ["nanami-kento", "choso", "leon-kennedy"], text: "七海、脹相與里昂同時上陣。每回合第一張攻擊牌穿透護甲；回合開始全隊壓力 -2；攻擊帶狀態敵人時傷害 +4。", effects: { firstAttackPierce: 1, turnReduceStressAll: 2, statusExploitBonus: 4 } },
+    { id: "cross-boogie-jackpot-chaos", name: "換位大獎亂戰", crossWorld: true, members: ["aoi-todo", "hakari-kinji", "gintoki-sakata"], text: "東堂、秤與銀時同時上陣。首回合能量 +1；每回合第二張牌追加 7 點穿甲傷害；每回合第 5 張牌恢復全隊 4 生命。", effects: { openingEnergy: 1, secondCardDamage: 7, fifthCardHealAll: 4 } },
+    { id: "cross-limitless-sun-break", name: "無下限太陽破局", crossWorld: true, members: ["satoru-gojo", "son-goku", "clark-kent-superman"], text: "五條悟、悟空與超人同時上陣。開場抽 2 張牌；所有攻擊牌傷害 +7；回合開始全隊壓力 +3。", effects: { openingDraw: 2, attackBonus: 7, turnStressAll: 3 } }
   ];
 
   global.MainGodData = {
@@ -1691,6 +1948,10 @@
     shop,
     playerProfessions,
     playerPersonalities,
+    customStats,
+    playerProfessionStats,
+    customTags,
+    customMutations,
     characterSources,
     cardSources,
     equipmentSources,

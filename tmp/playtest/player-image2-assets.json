@@ -1,0 +1,307 @@
+[
+  {
+    "fileName": "character-player-avatar.png",
+    "title": "???????",
+    "prompt": "gender-ambiguous ordinary Hong Kong survivor seen from behind in front of a floating white Main God light, subway carriage darkness, cinematic survival horror, no text"
+  },
+  {
+    "fileName": "character-player-emergency-medic-male.png",
+    "title": "文員?",
+    "prompt": "Hong Kong office clerk man, tired shirt sleeves, ID lanyard, document folder used as a shield, ordinary office worker pulled into supernatural white light"
+  },
+  {
+    "fileName": "character-player-emergency-medic-female.png",
+    "title": "文員?",
+    "prompt": "Hong Kong office clerk woman, practical blouse and cardigan, ID lanyard, document folder and stapler, ordinary office worker pulled into supernatural white light"
+  },
+  {
+    "fileName": "character-player-systems-engineer-male.png",
+    "title": "黑客?",
+    "prompt": "Hong Kong hacker man, hoodie under light jacket, laptop glow, cables, code reflections, calm eyes in a dark cramped room"
+  },
+  {
+    "fileName": "character-player-systems-engineer-female.png",
+    "title": "黑客?",
+    "prompt": "Hong Kong hacker woman, hoodie under light jacket, laptop glow, cables, code reflections, calm eyes in a dark cramped room"
+  },
+  {
+    "fileName": "character-player-criminal-profiler-male.png",
+    "title": "犯罪側寫師?",
+    "prompt": "criminal profiler man, neat coat, case notes, red thread evidence board suggested by shadows, observing a monster trace without panic"
+  },
+  {
+    "fileName": "character-player-criminal-profiler-female.png",
+    "title": "犯罪側寫師?",
+    "prompt": "criminal profiler woman, neat coat, case notes, red thread evidence board suggested by shadows, observing a monster trace without panic"
+  },
+  {
+    "fileName": "character-player-archaeologist-male.png",
+    "title": "平面設計師?",
+    "prompt": "Hong Kong graphic designer man, black t-shirt, canvas tote, tablet stylus, cutter knife, neon print-shop colors twisted into horror lighting"
+  },
+  {
+    "fileName": "character-player-archaeologist-female.png",
+    "title": "平面設計師?",
+    "prompt": "Hong Kong graphic designer woman, black t-shirt, canvas tote, tablet stylus, cutter knife, neon print-shop colors twisted into horror lighting"
+  },
+  {
+    "fileName": "character-player-retired-mercenary-male.png",
+    "title": "退役傭兵?",
+    "prompt": "retired mercenary man, worn tactical jacket, old scars, compact rifle silhouette, guarded stance, cinematic survival horror lighting"
+  },
+  {
+    "fileName": "character-player-retired-mercenary-female.png",
+    "title": "退役傭兵?",
+    "prompt": "retired mercenary woman, worn tactical jacket, old scars, compact rifle silhouette, guarded stance, cinematic survival horror lighting"
+  },
+  {
+    "fileName": "character-player-fire-rescuer-male.png",
+    "title": "地盤工人?",
+    "prompt": "Hong Kong construction worker man, hard hat, reflective vest, work gloves, hammer and rebar, concrete dust, supernatural white light"
+  },
+  {
+    "fileName": "character-player-fire-rescuer-female.png",
+    "title": "地盤工人?",
+    "prompt": "Hong Kong construction worker woman, hard hat, reflective vest, work gloves, hammer and rebar, concrete dust, supernatural white light"
+  },
+  {
+    "fileName": "character-player-underground-boxer-male.png",
+    "title": "地下拳手?",
+    "prompt": "underground boxer man, taped fists, bruised knuckles, concrete basement fight ring, exhausted but ready"
+  },
+  {
+    "fileName": "character-player-underground-boxer-female.png",
+    "title": "地下拳手?",
+    "prompt": "underground boxer woman, taped fists, bruised knuckles, concrete basement fight ring, exhausted but ready"
+  },
+  {
+    "fileName": "character-player-parkour-courier-male.png",
+    "title": "外賣速遞員?",
+    "prompt": "Hong Kong food delivery rider man, rain jacket, insulated delivery bag, scooter helmet, narrow alley, neon rain and survival tension"
+  },
+  {
+    "fileName": "character-player-parkour-courier-female.png",
+    "title": "外賣速遞員?",
+    "prompt": "Hong Kong food delivery rider woman, rain jacket, insulated delivery bag, scooter helmet, narrow alley, neon rain and survival tension"
+  },
+  {
+    "fileName": "character-player-stage-magician-male.png",
+    "title": "便利店收銀員?",
+    "prompt": "Hong Kong convenience store cashier man, simple uniform vest, barcode scanner, counter light, midnight shift, strange customer shadows"
+  },
+  {
+    "fileName": "character-player-stage-magician-female.png",
+    "title": "便利店收銀員?",
+    "prompt": "Hong Kong convenience store cashier woman, simple uniform vest, barcode scanner, counter light, midnight shift, strange customer shadows"
+  },
+  {
+    "fileName": "character-player-stunt-double-male.png",
+    "title": "殺手?",
+    "prompt": "professional assassin man, plain dark coat, suppressed pistol silhouette, knife hidden at wrist, quiet corridor, controlled lethal calm"
+  },
+  {
+    "fileName": "character-player-stunt-double-female.png",
+    "title": "殺手?",
+    "prompt": "professional assassin woman, plain dark coat, suppressed pistol silhouette, knife hidden at wrist, quiet corridor, controlled lethal calm"
+  },
+  {
+    "fileName": "skill-player-medic-hemostatic-cut.png",
+    "title": "文件夾猛擊",
+    "prompt": "文件夾猛擊, 自創主角 / 文員, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-medic-adrenaline-shot.png",
+    "title": "釘書機反擊",
+    "prompt": "釘書機反擊, 自創主角 / 文員, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-medic-golden-four-minutes.png",
+    "title": "流程整理",
+    "prompt": "流程整理, 自創主角 / 智慧, urgent rescue and recovery, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-engineer-em-short.png",
+    "title": "電磁短路",
+    "prompt": "電磁短路, 自創主角 / 黑客, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-engineer-overload-script.png",
+    "title": "過載腳本",
+    "prompt": "過載腳本, 自創主角 / 黑客, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-engineer-battle-model.png",
+    "title": "後門地圖",
+    "prompt": "後門地圖, 自創主角 / 智慧, strategic supernatural insight, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-profiler-weakpoint-mark.png",
+    "title": "破綻標記",
+    "prompt": "破綻標記, 自創主角 / 犯罪側寫師, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-profiler-interrogate-rhythm.png",
+    "title": "逼供節奏",
+    "prompt": "逼供節奏, 自創主角 / 犯罪側寫師, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-profiler-behavior-read.png",
+    "title": "行為預判",
+    "prompt": "行為預判, 自創主角 / 智慧, strategic supernatural insight, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-archaeologist-stone-toss.png",
+    "title": "美工刀劃線",
+    "prompt": "美工刀劃線, 自創主角 / 平面設計師, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-archaeologist-symbol-blast.png",
+    "title": "色塊干擾",
+    "prompt": "色塊干擾, 自創主角 / 平面設計師, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-archaeologist-ruin-scan.png",
+    "title": "版面重排",
+    "prompt": "版面重排, 自創主角 / 智慧, strategic supernatural insight, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-merc-close-burst.png",
+    "title": "近距離點放",
+    "prompt": "近距離點放, 自創主角 / 退役傭兵, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-merc-breach-sweep.png",
+    "title": "破門掃射",
+    "prompt": "破門掃射, 自創主角 / 退役傭兵, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-merc-tactical-cover.png",
+    "title": "戰術掩護",
+    "prompt": "戰術掩護, 自創主角 / 力量, defensive shield moment, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-firefighter-breaching-axe.png",
+    "title": "鐵鎚破拆",
+    "prompt": "鐵鎚破拆, 自創主角 / 地盤工人, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-firefighter-water-jet.png",
+    "title": "鋼筋橫掃",
+    "prompt": "鋼筋橫掃, 自創主角 / 地盤工人, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-firefighter-rescue-line.png",
+    "title": "臨時支架",
+    "prompt": "臨時支架, 自創主角 / 力量, defensive shield moment, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-boxer-heavy-open.png",
+    "title": "重拳開路",
+    "prompt": "重拳開路, 自創主角 / 地下拳手, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-boxer-rib-break.png",
+    "title": "肋骨碎擊",
+    "prompt": "肋骨碎擊, 自創主角 / 地下拳手, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-boxer-hard-guard.png",
+    "title": "硬撐到底",
+    "prompt": "硬撐到底, 自創主角 / 力量, defensive shield moment, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-courier-wall-kick.png",
+    "title": "保溫袋撞擊",
+    "prompt": "保溫袋撞擊, 自創主角 / 外賣速遞員, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-courier-slide-throat.png",
+    "title": "後巷急轉",
+    "prompt": "後巷急轉, 自創主角 / 外賣速遞員, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-courier-extreme-route.png",
+    "title": "趕單路線",
+    "prompt": "趕單路線, 自創主角 / 技巧, strategic supernatural insight, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-magician-sleeve-knife.png",
+    "title": "掃碼器砸擊",
+    "prompt": "掃碼器砸擊, 自創主角 / 便利店收銀員, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-magician-flash-point.png",
+    "title": "貨架燈爆閃",
+    "prompt": "貨架燈爆閃, 自創主角 / 便利店收銀員, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-magician-misdirection.png",
+    "title": "收銀台死角",
+    "prompt": "收銀台死角, 自創主角 / 技巧, strategic supernatural insight, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-stunt-flip-kick.png",
+    "title": "低聲割喉",
+    "prompt": "低聲割喉, 自創主角 / 殺手, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-stunt-wire-counter.png",
+    "title": "雙點射擊",
+    "prompt": "雙點射擊, 自創主角 / 殺手, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-stunt-danger-move.png",
+    "title": "消失步",
+    "prompt": "消失步, 自創主角 / 技巧, strategic supernatural insight, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-personality-calm.png",
+    "title": "危機降噪",
+    "prompt": "危機降噪, 自創主角 / 冷靜, urgent rescue and recovery, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-personality-hotblood.png",
+    "title": "燃點衝鋒",
+    "prompt": "燃點衝鋒, 自創主角 / 熱血, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-personality-cautious.png",
+    "title": "後撤線",
+    "prompt": "後撤線, 自創主角 / 謹慎, defensive shield moment, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-personality-curious.png",
+    "title": "異常觀察",
+    "prompt": "異常觀察, 自創主角 / 好奇, strategic supernatural insight, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-personality-selfless.png",
+    "title": "替身救援",
+    "prompt": "替身救援, 自創主角 / 利他, urgent rescue and recovery, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-personality-solitary.png",
+    "title": "單人死角",
+    "prompt": "單人死角, 自創主角 / 孤僻, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-personality-obsessive.png",
+    "title": "重複推演",
+    "prompt": "重複推演, 自創主角 / 偏執, strategic supernatural insight, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-personality-humorous.png",
+    "title": "斷線吐槽",
+    "prompt": "斷線吐槽, 自創主角 / 幽默, urgent rescue and recovery, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-personality-cruel.png",
+    "title": "補刀規則",
+    "prompt": "補刀規則, 自創主角 / 殘酷, violent action impact, no readable text, dark cinematic card illustration"
+  },
+  {
+    "fileName": "skill-player-personality-conviction.png",
+    "title": "不退一步",
+    "prompt": "不退一步, 自創主角 / 信念, defensive shield moment, no readable text, dark cinematic card illustration"
+  }
+]
