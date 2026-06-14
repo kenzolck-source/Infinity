@@ -295,6 +295,8 @@ assert(data.characters.length === 118, "The roster should include the custom pro
 const signatureIds = data.characters.map((character) => character.signatureCardId);
 assert(new Set(signatureIds).size === data.characters.length, "Every character must own one unique signature card.");
 assert(signatureIds.every((cardId) => core.cardsById[cardId]?.category === "signature"), "Every character signature must resolve to a signature card.");
+assert(data.characters.every((character) => core.getCharacterQuoteLines(character.id).length >= 1), "Every character should have at least one original-story-style battle line.");
+assert(core.getCharacterQuoteLines("zheng-zha").some((line) => line.includes("基因鎖") || line.includes("活下去")), "Iconic character lines should preserve role-specific voice.");
 assert(data.characters.every((character) => existsSync(new URL(`../src/assets/generated/character-${character.id}.png`, import.meta.url))), "Every character must have portrait art.");
 assert(signatureIds.every((cardId) => existsSync(new URL(`../src/assets/generated/skill-${cardId}.png`, import.meta.url))), "Every signature card must have skill art.");
 assert(data.enemies.every((enemy) => existsSync(new URL(`../src/assets/generated/enemy-${enemy.id}.png`, import.meta.url))), "Every enemy should have direct IMAGE2 scene art.");
@@ -324,6 +326,16 @@ assert(data.legendaryRecruitmentPool.length === 14 && data.legendaryRecruitmentP
 assert(data.scenarios.every((scenario) => !scenario.recruitmentPool.some((id) => data.legendaryRecruitmentPool.includes(id))), "Legendary protagonists should not appear in normal scenario recruitment pools.");
 const formalScenarios = data.scenarios.filter((scenario) => scenario.id !== "tutorial");
 assert(formalScenarios.every((scenario) => scenario.opening?.dialogue?.length >= 3 && scenario.opening?.panels?.length >= 3), "Every formal scenario should have a story opening with dialogue and illustration beats.");
+for (const scenarioId of ["alien", "jujutsu-kaisen-shibuya", "fullmetal-alchemist-finale", "elden-ring-hell-run"]) {
+  let openingProbeState = createCompletedTutorialState();
+  fillOwnedRoster(openingProbeState);
+  openingProbeState.campaign.unlockedScenarios = [...new Set([...openingProbeState.campaign.unlockedScenarios, scenarioId])];
+  openingProbeState = core.beginScenario(openingProbeState, scenarioId);
+  if (openingProbeState.screen === "recruit") openingProbeState = core.chooseRecruit(openingProbeState, openingProbeState.pending.candidates[0]);
+  const openingText = openingProbeState.run.openingDiscussion.map((line) => line.line).join(" ");
+  assert(openingProbeState.run.openingDiscussion.length >= 8, `${scenarioId} should generate expanded random opening discussion.`);
+  assert(openingText.includes("場景") && (openingText.includes("人物") || openingText.includes("故事") || openingText.includes("支線")) && openingText.includes("敵") && openingText.includes("主神"), `${scenarioId} opening discussion should analyze scene, story/people, enemies, and include commentary.`);
+}
 const formalScenarioAssetNames = formalScenarios.map((scenario) => `scenario-${scenario.id}.png`);
 assert(formalScenarioAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Every formal scenario should have dedicated IMAGE2 hero art.");
 assertUniqueAssets(formalScenarioAssetNames, "Every formal scenario IMAGE2 hero art should be unique.");
@@ -943,11 +955,13 @@ state = core.continueScenarioIntro(state);
 assert(state.screen === "map", "Continuing the scenario opening should reveal the three-lane route map.");
 assert(core.getActiveParty(state).length === 3, "The opening recruitment bonus should create a valid three-person formation.");
 
-// The route map is deterministic, fogged, and has fixed gates.
-assert(state.run.map.layers.length === 8 && state.run.map.layers.every((layer) => layer.length === 3), "Normal scenarios need an eight-layer, three-lane map.");
-assert(state.run.map.layers[3].every((node) => node.type === "miniboss"), "Layer four must be the miniboss.");
-assert(state.run.map.layers[4].every((node) => node.type === "camp"), "Layer five must be camp.");
-assert(state.run.map.layers[7].every((node) => node.type === "boss"), "Layer eight must be the boss.");
+// The route map is deterministic, fogged, and uses a variable-length three-lane route.
+const normalMapLength = state.run.map.layers.length;
+const normalMapNodes = state.run.map.layers.flat();
+assert(normalMapLength >= 5 && normalMapLength <= 12 && state.run.map.layers.every((layer) => layer.length === 3), "Normal scenarios need a five-to-twelve-layer, three-lane map.");
+assert(normalMapNodes.some((node) => node.type === "miniboss"), "Variable maps should include a miniboss gate.");
+assert(normalMapNodes.some((node) => node.type === "camp"), "Variable maps should include a camp gate.");
+assert(state.run.map.layers[normalMapLength - 1].every((node) => node.type === "boss"), "The final map layer must be the boss.");
 const savedMap = JSON.stringify(state.run.map);
 const normalized = core.normalizeState(JSON.parse(JSON.stringify(state)));
 assert(JSON.stringify(normalized.run.map) === savedMap, "Reloading must preserve the generated map.");
@@ -1071,7 +1085,9 @@ assert(randomPool.length > 2 && randomPool.every((scenario) => scenario.id !== "
 randomScenarioState = core.beginScenario(randomScenarioState, "random-normal");
 if (randomScenarioState.screen === "recruit") randomScenarioState = core.chooseRecruit(randomScenarioState, randomScenarioState.pending.candidates[0]);
 assert(randomScenarioState.run && randomScenarioState.run.scenarioId !== "alien" && randomScenarioState.run.scenarioId !== "juon", "Random normal launch should avoid the last two scenarios when the pool is large enough.");
-assert(randomScenarioState.run.dynamicDifficulty.mode === "normal" && randomScenarioState.run.openingDiscussion.length >= 4 && randomScenarioState.run.banterFeed.length >= 3, "Random normal launch should attach dynamic difficulty and opening discussion data.");
+assert(randomScenarioState.run.dynamicDifficulty.mode === "normal" && randomScenarioState.run.openingDiscussion.length >= 8 && randomScenarioState.run.banterFeed.length >= 3, "Random normal launch should attach dynamic difficulty and expanded opening discussion data.");
+const randomOpeningText = randomScenarioState.run.openingDiscussion.map((line) => line.line).join(" ");
+assert(randomOpeningText.includes("場景") && randomOpeningText.includes("敵") && randomOpeningText.includes("主神"), "Random normal launch should include scene, enemy, and commentary opening lines.");
 
 let dynamicState = createCompletedTutorialState();
 fillOwnedRoster(dynamicState);
@@ -1092,6 +1108,26 @@ const scaledIntent = core.getEnemyIntent(scaledEnemy);
 assert(scaledEnemy.maxHp > baseEnemy.maxHp, "Dynamic difficulty should scale enemy HP on combat start.");
 assert(["attack", "cleave", "stress"].includes(baseIntent.kind) && scaledIntent.amount > baseIntent.amount, "Dynamic difficulty should scale visible enemy attack or stress intent values.");
 assert(dynamicState.run.banterFeed.some((line) => line.line.includes("接觸")), "Combat start should add a short battle comm to the run feed.");
+assert(dynamicState.run.banterFeed.length >= 2, "Combat start should add both tactical contact and character-voice banter.");
+let quoteCombatState = createCombatTestState();
+quoteCombatState.party = quoteCombatState.party.map((member) => ({ ...member, active: false }));
+addCharacter(quoteCombatState, "zheng-zha", true);
+quoteCombatState.screen = "combat";
+quoteCombatState.run = { id: "quote-run", scenarioId: "alien", sourceScenarioId: "alien", acquiredDeckIds: [], acquiredEquipmentIds: [], temporaryPowers: [], banterFeed: [] };
+quoteCombatState.activeEncounterId = "bio-lab";
+quoteCombatState.activeEnemies = [makeActiveEnemy(core.encountersById["bio-lab"].enemies[0])];
+quoteCombatState.selectedTargetId = quoteCombatState.activeEnemies[0].uid;
+quoteCombatState.hand = [{ uid: "quote-zheng", instanceId: "quote-zheng", cardId: core.charactersById["zheng-zha"].signatureCardId, ownerId: "zheng-zha", upgraded: false, acquiredRunId: null }];
+quoteCombatState.drawPile = [];
+quoteCombatState.discardPile = [];
+quoteCombatState.exhaustedPile = [];
+quoteCombatState.energy = 99;
+quoteCombatState.maxEnergy = 99;
+quoteCombatState.turn = 1;
+quoteCombatState.turnStats = { cardsPlayed: 0, customFreePlaysUsed: 0 };
+quoteCombatState.combatFlags = { lastChanceUsed: [], bondTriggers: [] };
+quoteCombatState = core.playCard(quoteCombatState, "quote-zheng", quoteCombatState.selectedTargetId);
+assert(quoteCombatState.run.banterFeed.some((line) => line.speaker === "鄭吒" && (line.line.includes("基因鎖") || line.line.includes("活下去"))), "Signature cards should trigger the owner's original-story-style line.");
 dynamicState.screen = "defeat";
 dynamicState = core.returnAfterDefeat(dynamicState);
 assert(dynamicState.campaign.dynamicDifficulty.failureRelief === 1 && dynamicState.campaign.dynamicDifficulty.successStreak === 0, "Defeat should add one relief stack and reset success streak.");
@@ -1228,7 +1264,7 @@ assert(fixedRouteChoice, "Every event should surface the fixed good route in sta
 fixedRouteEvent = core.resolveEvent(fixedRouteEvent, fixedRouteChoice.id);
 fixedRouteEvent = chooseRouteStep(fixedRouteEvent, fixedRouteChoice.routeId, "Fixed route should remain available in stage two.");
 fixedRouteEvent = chooseRouteStep(fixedRouteEvent, fixedRouteChoice.routeId, "Fixed route should remain available in stage three.");
-assert(fixedRouteEvent.screen === "event-result" && fixedRouteEvent.pending.result.rewards.some((item) => item.includes("劇本 Buff") || item.includes("加入") || item.includes("支線劇情")), "Fixed good route should produce explicit rewards.");
+assert(fixedRouteEvent.screen === "event-result" && fixedRouteEvent.pending.result.rewards.some((item) => item.includes("劇本增益") || item.includes("加入") || item.includes("支線劇情")), "Fixed route should produce explicit rewards.");
 assert(fixedRouteEvent.pending.result.storyImpact.includes("改寫") || fixedRouteEvent.pending.result.storyImpact.includes("避開"), "Fixed good route should explain the story improvement.");
 
 let prisonRealmEvent = launchEventForScenario("jujutsu-kaisen-shibuya");
@@ -1433,6 +1469,7 @@ renderedHtml = "";
 await import("../src/game-ui.js?custom-growth");
 assert(renderedHtml.includes("第 7 人支援") && renderedHtml.includes("血統與裝備槽") && renderedHtml.includes("逆種血核") && renderedHtml.includes("支援裝備 1"), "The custom growth tab should render seventh-support loadout controls.");
 assert(["變異血統", "一般血統 1", "一般血統 2", "支援裝備 1", "支援裝備 2"].every((label) => renderedHtml.includes(label)), "The seventh-support controls should preserve 1 mutation, 2 normal bloodlines, and 2 support equipment slots.");
+assert(renderedHtml.includes("growth-active-loadout") && renderedHtml.includes("support-pick-card") && renderedHtml.includes("support-slot-card") && renderedHtml.includes("ui-support-battery"), "The custom growth tab should render clickable image loadout cards.");
 assert(renderedHtml.includes("支援槽 1") && renderedHtml.includes("戰術能量電池") && renderedHtml.includes("第 7 人支援"), "The growth effect matrix should surface active support equipment and custom support effects.");
 assert(renderedHtml.includes("RPG 六維") && renderedHtml.includes("主神候選池") && renderedHtml.includes("標籤矩陣") && renderedHtml.includes("初階血族") && renderedHtml.includes("伯爵血核") && renderedHtml.includes("6600 點 / 1 支線"), "The custom growth tab should render stats, offers, tag matrix UI, and dual-resource costs.");
 uiState.hubTab = "shop";
@@ -1489,6 +1526,7 @@ renderedHtml = "";
 await import("../src/game-ui.js?combat-frame");
 assert(renderedHtml.includes("hand-zone") && renderedHtml.includes("card-frame") && renderedHtml.includes("rarity-sr"), "Combat hand cards should output the shared rarity frame class.");
 assert(renderedHtml.includes("combat-status-bar") && renderedHtml.includes("combat-intent-strip") && renderedHtml.includes("抽牌") && renderedHtml.includes("耗盡"), "Combat should render a tactical status bar with energy and pile summaries.");
+assert(renderedHtml.includes("上下雙排戰場") && renderedHtml.indexOf("enemy-line") < renderedHtml.indexOf("party-combat"), "Combat should place enemies above the two-row party grid.");
 assert(renderedHtml.includes("target-lock") && renderedHtml.includes("目標鎖定") && renderedHtml.includes("intent-chip") && renderedHtml.includes("selected"), "Combat should surface the selected enemy and intent summary.");
 assert(renderedHtml.includes("modifier-chip-row") && renderedHtml.includes("血統") && renderedHtml.includes("裝備") && renderedHtml.includes("自創支援") && renderedHtml.includes("能量不足：需要"), "Combat cards should render modifier chips and disabled reasons.");
 assert(renderedHtml.includes("command-rail") && renderedHtml.includes("指揮短欄") && renderedHtml.includes("選中敵人") && renderedHtml.includes("戰場通訊") && renderedHtml.includes("完整戰鬥資料"), "Combat should render a compact command rail with selected target and latest comms before the collapsible details.");

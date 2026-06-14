@@ -440,10 +440,10 @@
           </div>
         </div>
         <div class="combat-stage">
-          <div class="encounter-title"><span class="eyebrow">左右對抗戰場</span><h2>${core.getActiveParty(state).length} 對 ${state.activeEnemies.filter((enemy) => enemy.hp > 0).length}</h2></div>
+          <div class="encounter-title"><span class="eyebrow">上下雙排戰場</span><h2>${core.getActiveParty(state).length} 對 ${state.activeEnemies.filter((enemy) => enemy.hp > 0).length}</h2></div>
           <div class="combat-columns">
-            <div class="party-combat">${core.getActiveParty(state).map(renderCombatCharacter).join("")}</div>
             <div class="enemy-line">${state.activeEnemies.map(renderEnemy).join("")}</div>
+            <div class="party-combat">${core.getActiveParty(state).map(renderCombatCharacter).join("")}</div>
           </div>
         </div>
         ${renderCombatCommandRail()}
@@ -646,7 +646,7 @@
         </div>
         ${hidden ? `<div class="event-signal">${image(characterArt(hidden.id), `${escapeHtml(hidden.name)}插畫`, "event-signal-art")}<div><span class="eyebrow">劇本深層訊號</span><strong>${escapeHtml(hidden.name)}</strong><p>${escapeHtml(hidden.role)}的命運線正在附近偏移。</p></div></div>` : ""}
         <div class="choice-grid">
-          ${choices.map((choice, index) => `<button class="choice-card ${stage === 3 && index === 0 ? "danger" : ""}" data-action="event" data-option-id="${choice.id}"><strong>${escapeHtml(choice.title)}</strong><p>${escapeHtml(choice.text)}</p></button>`).join("")}
+          ${choices.map((choice) => `<button class="choice-card" data-action="event" data-option-id="${choice.id}"><strong>${escapeHtml(choice.title)}</strong><p>${escapeHtml(choice.text)}</p></button>`).join("")}
         </div>
       </section>
     `;
@@ -728,8 +728,11 @@
           ${renderHubTab("growth", "自創強化", "六維、標籤與變異", tab)}
           ${renderHubTab("shop", "強化商店", "永久強化與兌換", tab)}
         </nav>
-        ${renderEffectMatrix("hub")}
         <section class="hub-workspace">${tab === "roster" ? renderRosterHub() : tab === "growth" ? renderGrowthHub() : tab === "shop" ? renderShopHub() : renderDeploymentHub()}</section>
+        <details class="hub-detail-drawer">
+          <summary>作戰中樞與加成來源</summary>
+          ${renderEffectMatrix("hub")}
+        </details>
       </section>
     `;
   }
@@ -817,17 +820,120 @@
   function renderGrowthSupportPanel(purchasedTags, mutations) {
     const growth = state.playerGrowth || {};
     const activeTagIds = Array.isArray(growth.activeTagIds) ? growth.activeTagIds : [];
-    const supportEquipmentIds = Array.isArray(growth.supportEquipmentIds) ? growth.supportEquipmentIds.filter(Boolean) : [];
+    const activeTags = [0, 1].map((index) => core.customTagsById[activeTagIds[index]] || null);
+    const supportEquipmentIds = Array.isArray(growth.supportEquipmentIds) ? [0, 1].map((index) => growth.supportEquipmentIds[index] || "") : ["", ""];
+    const activeMutation = core.customMutationsById[growth.activeMutationId] || null;
     return `
       <section class="panel growth-support-panel">
         <div class="section-heading"><div><span class="eyebrow">第 7 人支援</span><h2>血統與裝備槽</h2></div><p>每場戰鬥只啟用 1 個變異、2 個一般血統與 2 件支援裝備。</p></div>
-        <div class="growth-support-grid">
-          <label class="support-select-row"><span>變異血統</span><select data-action="set-custom-mutation">${renderMutationOptions(mutations, growth.activeMutationId)}</select></label>
-          ${[0, 1].map((index) => `<label class="support-select-row"><span>一般血統 ${index + 1}</span><select data-action="set-custom-tag-slot" data-slot-index="${index}">${renderCustomTagOptions(purchasedTags, activeTagIds[index], activeTagIds)}</select></label>`).join("")}
-          ${[0, 1].map((index) => `<label class="support-select-row"><span>支援裝備 ${index + 1}</span><select data-action="set-custom-support-equipment" data-slot-index="${index}">${renderSupportEquipmentOptions(supportEquipmentIds[index], supportEquipmentIds)}</select></label>`).join("")}
+        ${renderGrowthActiveLoadout(activeMutation, activeTags, supportEquipmentIds)}
+        <div class="growth-support-grid support-picker-grid">
+          <article class="support-picker-panel">
+            <div class="support-picker-head"><strong>變異血統</strong><span>1/1</span></div>
+            ${renderMutationPicker(mutations, growth.activeMutationId)}
+          </article>
+          ${[0, 1].map((index) => `<article class="support-picker-panel">
+            <div class="support-picker-head"><strong>一般血統 ${index + 1}</strong><span>${activeTagIds[index] ? "已啟用" : "空槽"}</span></div>
+            ${renderTagSlotPicker(purchasedTags, index, activeTagIds)}
+          </article>`).join("")}
+          ${[0, 1].map((index) => `<article class="support-picker-panel">
+            <div class="support-picker-head"><strong>支援裝備 ${index + 1}</strong><span>${supportEquipmentIds[index] ? "已裝備" : "空槽"}</span></div>
+            ${renderSupportEquipmentPicker(index, supportEquipmentIds)}
+          </article>`).join("")}
         </div>
       </section>
     `;
+  }
+
+  function renderGrowthActiveLoadout(activeMutation, activeTags, supportEquipmentIds) {
+    const slots = [
+      {
+        type: "變異血統",
+        title: activeMutation?.name || "未配置",
+        text: activeMutation?.text || "尚未啟動變異血統；第 7 人維持基礎支援形態。",
+        art: activeMutation?.art || customGrowthArt()
+      },
+      ...[0, 1].map((index) => {
+        const tag = activeTags[index];
+        return {
+          type: `一般血統 ${index + 1}`,
+          title: tag?.name || "未配置",
+          text: tag?.text || "選擇已植入血統，讓隊伍得到更明確的成長方向。",
+          art: tag?.art || "./src/assets/generated/source-cover-main-god.png"
+        };
+      }),
+      ...[0, 1].map((index) => {
+        const entry = state.equipmentInventory.find((item) => item.instanceId === supportEquipmentIds[index]);
+        const item = entry ? core.equipmentById[entry.equipmentId] : null;
+        return {
+          type: `支援裝備 ${index + 1}`,
+          title: item ? `${item.name}${entry.upgraded ? "+" : ""}` : "未配置",
+          text: item ? equipmentEffectLabel(item, entry) : "支援裝備會掛在自創角色身上，提供隊伍效果但不佔前排。",
+          art: item ? equipmentArt(item.id) : "./src/assets/generated/reward-salvage-cache.png"
+        };
+      })
+    ];
+    return `<div class="growth-active-loadout">
+      ${slots.map((slot) => `<article class="support-slot-card ${slot.title === "未配置" ? "empty" : ""}">
+        ${image(slot.art, `${escapeHtml(slot.type)}插畫`, "support-slot-art")}
+        <div><span>${escapeHtml(slot.type)}</span><strong>${escapeHtml(slot.title)}</strong><p>${escapeHtml(slot.text)}</p></div>
+      </article>`).join("")}
+    </div>`;
+  }
+
+  function renderMutationPicker(mutations, activeMutationId) {
+    return `<div class="support-pick-list">
+      <button class="support-pick-card empty ${activeMutationId ? "" : "selected"}" data-action="set-custom-mutation" data-mutation-id="">
+        <span class="support-pick-art placeholder">空</span><strong>未配置變異血統</strong><p>保留目前形態。</p>
+      </button>
+      ${mutations.map((mutation) => {
+        const selected = mutation.id === activeMutationId;
+        return `<button class="support-pick-card ${selected ? "selected" : ""}" data-action="set-custom-mutation" data-mutation-id="${selected ? "" : escapeHtml(mutation.id)}">
+          ${image(mutation.art || customGrowthArt(), `${escapeHtml(mutation.name)}插畫`, "support-pick-art")}
+          <strong>${escapeHtml(mutation.name)}</strong><p>${escapeHtml(mutation.text)}</p>
+        </button>`;
+      }).join("") || `<p class="empty-state compact">湊齊標籤後會出現變異選項。</p>`}
+    </div>`;
+  }
+
+  function renderTagSlotPicker(purchasedTags, slotIndex, activeTagIds) {
+    const activeTagId = activeTagIds[slotIndex] || "";
+    return `<div class="support-pick-list">
+      <button class="support-pick-card empty ${activeTagId ? "" : "selected"}" data-action="set-custom-tag-slot" data-slot-index="${slotIndex}" data-tag-id="">
+        <span class="support-pick-art placeholder">空</span><strong>未配置一般血統</strong><p>留一個槽位等待下一輪成長。</p>
+      </button>
+      ${purchasedTags.map((tag) => {
+        const selected = tag.id === activeTagId;
+        const duplicate = activeTagIds.includes(tag.id) && !selected;
+        return `<button class="support-pick-card ${selected ? "selected" : ""}" data-action="set-custom-tag-slot" data-slot-index="${slotIndex}" data-tag-id="${selected ? "" : escapeHtml(tag.id)}" ${duplicate ? "disabled" : ""}>
+          ${image(tag.art || "./src/assets/generated/source-cover-main-god.png", `${escapeHtml(tag.name)}插畫`, "support-pick-art")}
+          <strong>${escapeHtml(tag.name)}</strong><p>${escapeHtml(tag.text)}</p>
+          <span>${duplicate ? "已在另一槽" : `${escapeHtml(tag.family)} · ${escapeHtml(tag.tier || "B")}級`}</span>
+        </button>`;
+      }).join("") || `<p class="empty-state compact">尚未植入一般血統。</p>`}
+    </div>`;
+  }
+
+  function renderSupportEquipmentPicker(slotIndex, supportEquipmentIds) {
+    const activeInstanceId = supportEquipmentIds[slotIndex] || "";
+    return `<div class="support-pick-list">
+      <button class="support-pick-card empty ${activeInstanceId ? "" : "selected"}" data-action="set-custom-support-equipment" data-slot-index="${slotIndex}" data-equipment-instance-id="">
+        <span class="support-pick-art placeholder">空</span><strong>未配置支援裝備</strong><p>不掛載額外裝備。</p>
+      </button>
+      ${state.equipmentInventory.map((entry) => {
+        const item = core.equipmentById[entry.equipmentId];
+        const selected = entry.instanceId === activeInstanceId;
+        const duplicate = supportEquipmentIds.includes(entry.instanceId) && !selected;
+        const holder = getEquipmentHolder(entry.instanceId);
+        const supportSlot = getSupportEquipmentSlot(entry.instanceId);
+        const stateText = holder ? `${holder.name}持有中` : duplicate ? `已在支援槽 ${supportSlot + 1}` : equipmentEffectLabel(item, entry);
+        return `<button class="support-pick-card ${selected ? "selected" : ""}" data-action="set-custom-support-equipment" data-slot-index="${slotIndex}" data-equipment-instance-id="${selected ? "" : escapeHtml(entry.instanceId)}" ${duplicate ? "disabled" : ""}>
+          ${image(equipmentArt(item.id), `${escapeHtml(item.name)}插畫`, "support-pick-art")}
+          <strong>${escapeHtml(item.name)}${entry.upgraded ? "+" : ""}</strong><p>${escapeHtml(item.text)}</p>
+          <span>${escapeHtml(stateText)}</span>
+        </button>`;
+      }).join("") || `<p class="empty-state compact">目前沒有可用裝備。</p>`}
+    </div>`;
   }
 
   function renderMutationOptions(mutations, activeMutationId) {
@@ -1059,8 +1165,8 @@
   function renderCharacterBrowser(members, mode) {
     if (!members.length) return `<p class="empty-state">目前沒有可顯示的角色。</p>`;
     if (mode === "roster") return renderRosterSourceBrowser(members);
-    return `<div class="management-group-list">${groupMembersByFaction(members).map((group, index) => `
-      <details class="management-group faction-${group.id}" ${index < 2 ? "open" : ""}>
+    return `<div class="management-group-list">${groupMembersByFaction(members).map((group) => `
+      <details class="management-group faction-${group.id}">
         <summary><span><strong>${group.name}</strong><small>${group.members.length} 名角色 · ${group.activeCount} 名出戰</small></span><em>${formatEnergy(group.energy)} 能量</em></summary>
         <div class="compact-character-list">${group.members.map((member) => renderManagementCharacter(member, mode)).join("")}</div>
       </details>
@@ -1069,8 +1175,8 @@
 
   function renderRosterSourceBrowser(members) {
     const groups = groupMembersByRosterSource(members);
-    return `<div class="roster-source-grid">${groups.map((group, index) => `
-      <details class="roster-source-section faction-${group.factionId || group.id}" ${index < 2 ? "open" : ""}>
+    return `<div class="roster-source-grid">${groups.map((group) => `
+      <details class="roster-source-section faction-${group.factionId || group.id}">
         <summary class="roster-source-hero">
           ${image(rosterHeroArt(group), "", "roster-source-art")}
           <span class="roster-source-shade"></span>
@@ -1220,8 +1326,8 @@
 
   function renderEquipmentBrowser(entries) {
     if (!entries.length) return `<p class="empty-state">目前還沒有裝備。</p>`;
-    return `<div class="management-group-list armory-group-list">${groupEquipmentBySource(entries).map((group, index) => `
-      <details class="management-group equipment-group" ${index < 2 ? "open" : ""}>
+    return `<div class="management-group-list armory-group-list">${groupEquipmentBySource(entries).map((group) => `
+      <details class="management-group equipment-group">
         <summary><span><strong>${group.name}</strong><small>${group.description || "可裝備道具"}</small></span><em>${group.entries.length} 件</em></summary>
         <div class="armory-list">${group.entries.map(renderArmoryItem).join("")}</div>
       </details>
@@ -1789,24 +1895,30 @@
         return;
       }
       if (action === "set-custom-mutation") {
-        element.addEventListener("change", () => {
+        const applyCustomMutation = () => {
           audio?.unlock?.();
-          dispatch(core.setCustomActiveMutation(state, element.value), { action, mutationId: element.value });
-        });
+          const mutationId = element.tagName === "SELECT" ? element.value : element.dataset.mutationId || "";
+          dispatch(core.setCustomActiveMutation(state, mutationId), { action, mutationId });
+        };
+        element.addEventListener(element.tagName === "SELECT" ? "change" : "click", applyCustomMutation);
         return;
       }
       if (action === "set-custom-tag-slot") {
-        element.addEventListener("change", () => {
+        const applyCustomTagSlot = () => {
           audio?.unlock?.();
-          dispatch(core.setCustomActiveTag(state, element.dataset.slotIndex, element.value), { action, slotIndex: element.dataset.slotIndex, tagId: element.value });
-        });
+          const tagId = element.tagName === "SELECT" ? element.value : element.dataset.tagId || "";
+          dispatch(core.setCustomActiveTag(state, element.dataset.slotIndex, tagId), { action, slotIndex: element.dataset.slotIndex, tagId });
+        };
+        element.addEventListener(element.tagName === "SELECT" ? "change" : "click", applyCustomTagSlot);
         return;
       }
       if (action === "set-custom-support-equipment") {
-        element.addEventListener("change", () => {
+        const applyCustomSupportEquipment = () => {
           audio?.unlock?.();
-          dispatch(core.setCustomSupportEquipment(state, element.dataset.slotIndex, element.value), { action, slotIndex: element.dataset.slotIndex, equipmentInstanceId: element.value });
-        });
+          const equipmentInstanceId = element.tagName === "SELECT" ? element.value : element.dataset.equipmentInstanceId || "";
+          dispatch(core.setCustomSupportEquipment(state, element.dataset.slotIndex, equipmentInstanceId), { action, slotIndex: element.dataset.slotIndex, equipmentInstanceId });
+        };
+        element.addEventListener(element.tagName === "SELECT" ? "change" : "click", applyCustomSupportEquipment);
         return;
       }
       element.addEventListener("click", () => {

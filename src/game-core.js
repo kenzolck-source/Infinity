@@ -27,6 +27,126 @@
   const scenarioEventRoutes = data.scenarioEventRoutes || {};
   const eventBranchPool = data.eventBranchPool || [];
   const eventChoiceTarget = 5;
+  const characterQuoteLines = {
+    "player-avatar": ["第 7 人支援在線。我的強化不是站到最前面，而是讓所有人都能多撐一回合。", "血統、裝備、精神鏈路都接上了。這一次我會在後方把隊伍托住。"],
+    "zheng-zha": ["想活下去就跟上我。恐懼可以有，但腳步不能停。", "基因鎖不是奇蹟，是在快死之前逼自己再往前一步。"],
+    "zhang-jie": ["別急著相信主神，也別急著相信我。先學會在恐怖片裡活著。", "新人，聽清楚規則。活下去，比逞強更難。"],
+    "zhan-lan": ["精神鏈接穩住了。你們往前走，我會把每一個人的位置看住。", "別把恐懼悶在心裡，我聽得到，也能幫你們壓下去。"],
+    "zero": ["風向、距離、心跳都在準星裡。給我一個空隙就夠。", "我不需要第二槍，前提是你們別把目標嚇跑。"],
+    "li-xiaoyi": ["我跑得快不是為了逃，是為了把情報帶回來。", "前面有路，後面也有路；活人要選第三條。"],
+    "mou-gang": ["盾線在我這裡。想碰後排，先從我身上踩過去。", "別看我慢，我站住的地方就是隊伍的邊界。"],
+    "li-shuaixi": ["我不想當英雄，我只想別死得太難看。這理由夠真實吧。", "主神的劇本太離譜了，但離譜也得活著吐槽。"],
+    "chu-xuan": ["感情會干擾判斷，但我會把干擾也算進模型。", "不要問有沒有希望，問這個方案能把死亡率降多少。"],
+    "zhao-yingkong": ["影子裡沒有掌聲，只有任務完成或失敗。", "呼吸放輕。真正的殺意不需要多餘動作。"],
+    "ba-wang": ["火力壓上去！能用子彈解決的，就別留給鬼故事。", "傭兵守則第一條：別讓隊友死在自己能開火的位置。"],
+    "xiao-honglu": ["別把我當小孩。這個局面，成年人未必算得比我快。", "危機不是突然出現的，它早就在條件裡排隊了。"],
+    "qi-tengyi": ["古物會說話，只是大多數人聽不懂它的警告。", "這東西不該在這個年代出現。主神又在亂拼劇本。"],
+    "zhang-heng": ["箭離弦前，我已經想完退路了。", "別催。弓手最怕的不是慢，是心亂。"],
+    "ming-yanwei": ["別替我瞄準，我知道該射哪裡。", "過去的箭收不回來，下一箭至少要射準。"],
+    "cheng-xiao": ["醫術救命，拳頭也救命，看病人是哪一種狀態。", "先別倒下，真倒了我也會把你拖回來。"],
+    "wang-xia": ["炸點標好了。現在請敵人配合一下站位。", "爆破不是亂炸，是讓敵人以為地面還可信。"],
+    "luo-gandao": ["機體反應還能撐。只要駕駛艙沒碎，我就還能打。", "別問為什麼要開機甲。問就是浪漫和火力都很重要。"],
+    "liu-yu": ["我會把精神波動壓低，大家別被幻覺帶走。", "恐懼會傳染，冷靜也會。先跟著我的節奏呼吸。"],
+    "lin-juntian": ["環境再爛也能適應，活著的人才有資格抱怨。", "主神想看我們失控，我偏要把節奏扳回來。"],
+    "imhotep": ["死亡不是終點，只是另一種命令。", "沙與詛咒都記得我的名字，敵人很快也會記得。"],
+    "clone-zheng-zha": ["善良是累贅。若世界只承認力量，那我就成為力量本身。", "黑炎會吞掉軟弱，也會吞掉擋路的人。"],
+    "clone-chu-xuan": ["變數可以被犧牲，結果必須被保留。", "把倫理拿開，方案會乾淨很多。"],
+    "zhao-zhuikong": ["空間裂開時，人的防備也會裂開。", "逃跑吧。你跑得越漂亮，我越有興趣。"],
+    "clone-luo-gandao": ["機甲不是盔甲，是把恐懼外掛成武器。", "別擋在推進器前面，我不保證會煞車。"],
+    "tom": ["念力已鎖定。你以為安全的距離，對我只是錯覺。", "我不碰你，也能讓你站不住。"],
+    "adam": ["補全不是仁慈，是讓棋盤回到我能控制的形狀。", "人類需要答案，而我會決定哪個答案留下。"],
+    "luo-yinglong": ["劍意已成，妖邪退避。", "修真者逆天而行，何況只是主神的一場局。"],
+    "song-tian": ["刀出之前，海面就該安靜。", "斬艦不靠怒氣，靠的是把一切多餘都切掉。"],
+    "nios": ["概率從來不公平，但可以被騙得像公平。", "你以為我在賭，其實我只是在挑最像奇蹟的數字。"],
+    "gangnir": ["冰霜會讓恐懼慢下來，慢到我能砍中。", "北方的風不講道理，我也不打算講。"],
+    "shiva-gangtian": ["業火不是憤怒，是審判落下前的呼吸。", "靠近一點，讓火焰判斷你值不值得留下。"],
+    "lamia": ["看著我的眼睛。恐懼會先替你跪下。", "蛇不需要追逐，只等獵物自己發冷。"],
+    "arot": ["亡者已經答應借力，活人最好也配合。", "別怕骨頭說話，怕的是它們說中了。"],
+    "richard": ["盾牌不是防具，是承諾。", "我站在這裡，後面的人就還有時間祈禱。"],
+    "elena": ["聖光不會替人選路，但會照亮傷口。", "先把血止住，信念之後再談。"],
+    "kevin": ["雙槍上膛。審判快一點，廢話少一點。", "我不保證公平，只保證命中。"],
+    "amon": ["冥府門縫已開，別讓我把你的名字也寫進去。", "死靈不問原因，只聽召喚。"],
+    "naya": ["蠱已入風。你現在呼吸的每一口都可能是陷阱。", "南方的毒很安靜，安靜到你以為自己還安全。"],
+    "victor": ["磁場接管完成。金屬會比你的神經更先背叛你。", "別帶武器靠近我，它們會改姓。"],
+    "sarah": ["空間摺線已標記。下一步，我們走敵人以為不存在的路。", "距離只是給普通人看的規則。"],
+    "tanjiro-kamado": ["我會斬斷惡意，但不會忘記人曾經痛苦。", "呼吸不能亂。只要還能揮刀，就還能保護誰。"],
+    "giyu-tomioka": ["水面安靜，不代表刀不會落下。", "多說無益。把鬼斬掉，讓活人回家。"],
+    "naruto-uzumaki": ["我不會放棄同伴，也不會讓孤獨決定一個人的結局。", "被看不起也沒關係，我會吵到世界承認我。"],
+    "luffy-nika": ["我想笑著打贏，然後把大家一起帶到海的盡頭。", "誰敢搶走同伴的自由，我就把他打飛。"],
+    "son-goku": ["強敵就在眼前，這不是壞事，是修行送上門。", "我會全力打，但先說好，輸了也別怪我太興奮。"],
+    "xiao-yan": ["三十年河東河西，別把少年看得太輕。", "異火已起，今日的債就今日清。"],
+    "ichigo-kurosaki": ["我不是為了稱號揮刀，我只是要保護站在我身後的人。", "如果命運擋路，那就把命運也砍開。"],
+    "edward-elric": ["等價交換不是藉口，是提醒我每一步都有代價。", "別叫我小。至少我的拳頭能打到你的臉。"],
+    "alphonse-elric": ["身體可以失去，但想守護人的心不能空掉。", "哥哥往前衝的時候，我就負責把大家護住。"],
+    "roy-mustang": ["火焰會照亮路，也會燒掉擋路的罪。", "別讓我打響指。真的，最好別。"],
+    "riza-hawkeye": ["瞄準已確認。上校前進時，我會守住他的背後。", "槍口不能遲疑，因為遲疑會讓同伴付代價。"],
+    "scar-ishvalan": ["破壞不是救贖，但有些罪必須先被拆開。", "神若沉默，我就用這隻手追問答案。"],
+    "izumi-curtis": ["主婦也能把你摔到懷疑人生。", "教訓學生前，先把敵人打到聽得懂人話。"],
+    "van-hohenheim": ["活得太久的人，最怕最後還來不及道別。", "靈魂不是燃料，每一個名字都該被記住。"],
+    "eren-yeager": ["牆外不是答案，但我一定要親眼走出去。", "自由若被鎖住，我就把鎖和門一起撞碎。"],
+    "mikasa-ackerman": ["我會守住艾連，也會守住現在還活著的人。", "刀刃不能猶豫，因為失去只需要一瞬間。"],
+    "armin-arlert": ["看似不可能的路，也許只是我們還沒想完。", "我害怕，但害怕不能阻止我做選擇。"],
+    "levi-ackerman": ["別拖泥帶水。做選擇，然後承擔結果。", "我會把戰場清乾淨，你們別浪費死者留下的時間。"],
+    "gon-freecss": ["我想知道答案，所以我會追到最後。", "朋友被傷害時，我不保證自己還能冷靜。"],
+    "kirito-kazuto": ["劍在手上，就還有回到現實的路。", "我不想再看任何人留在登出不了的黑暗裡。"],
+    "nero-dmc5": ["這隻手不是缺陷，是我揍回去的理由。", "惡魔也好怪物也好，先吃我一拳再說。"],
+    "v-dmc5": ["詩句落下時，野獸會替我回答。", "脆弱不代表無力，只代表我更知道何時召喚噩夢。"],
+    "dante-dmc5": ["惡魔獵人上工了。希望你們有準備好被收尾。", "別太嚴肅，戰鬥要有節奏，也要有一點風格。"],
+    "gintoki-sakata": ["糖分不夠也得上，誰叫麻煩總會自己敲門。", "守護重要的東西時，木刀也能比名刀硬。"],
+    "shinpachi-shimura": ["等一下，這隊伍是不是又沒人看說明書？", "吐槽也是支援技能，尤其你們全都不打算當正常人。"],
+    "kagura-yato": ["肚子餓也能打，打完記得請我吃飯。", "夜兔不是拿來嚇人的，是拿來把壞人打飛的。"],
+    "tsukuyo-hyakka": ["煙散之前，苦無已經到位。", "別把吉原的女人看輕，我們活下來靠的不是運氣。"],
+    "toshirou-hijikata": ["真選組副長在此，隊形亂掉的都給我切腹反省。", "蛋黃醬先放一邊，敵人先砍完。"],
+    "sougo-okita": ["副長如果倒下，我會很認真地替他高興一下。", "火箭筒也是禮貌，只是聲音比較大。"],
+    "kotaro-katsura": ["不是假髮，是桂。這句話比戰術還重要。", "撤退不是逃跑，是讓爆炸發生在比較有趣的位置。"],
+    "shinsuke-takasugi": ["腐朽的幕布該落下了，我只負責點火。", "世界若只剩虛假的和平，那就讓刀聲說真話。"],
+    "tony-stark": ["我把盔甲帶來了，也把計畫 B 到 Z 帶來了。", "天才、富豪、麻煩製造者，今天順便當一下救場的人。"],
+    "steve-rogers": ["我可以打一整天，但最好讓敵人先累。", "盾牌舉起來時，身後的人就不該再後退。"],
+    "thor-odinson": ["雷霆聽我號令，敵人最好學會敬畏。", "若這是試煉，那奧丁之子會笑著迎上去。"],
+    "bruce-banner-hulk": ["我努力保持冷靜，但你們真的不該惹怒他。", "如果計算失效，浩克會用更直接的方式補上。"],
+    "natasha-romanoff": ["情報、步伐、弱點。把三樣排好，敵人就會倒下。", "我不需要超能力，只需要你露出破綻。"],
+    "clint-barton": ["箭袋還有存貨，壞消息是每一支都很準。", "別管天上有多少怪物，我會先射最麻煩的那個。"],
+    "clark-kent-superman": ["力量不是用來壓倒別人，是用來接住快墜落的人。", "希望還在，只要有人願意先飛起來。"],
+    "bruce-wayne-batman": ["準備永遠不嫌多，尤其面對會復活的怪物。", "黑暗不是敵人的專利，我比他們更懂怎麼用。"],
+    "diana-prince-wonder-woman": ["真相不會因戰火變輕，劍也不會因仁慈變鈍。", "亞馬遜的戰士不為征服而戰，而為守護而戰。"],
+    "raleigh-becket": ["漂移連上了。只要還同步，我們就能把巨獸推回去。", "機甲很重，但有人在背後等我們回家。"],
+    "mako-mori": ["記憶會痛，但它也能讓我知道該往哪裡揮拳。", "我已經準備好進入漂移，別讓恐懼替我們駕駛。"],
+    "stacker-pentecost": ["今天我們取消末日。", "命令很簡單：站穩，推進，讓世界多活一天。"],
+    "herc-hansen": ["尤里卡準備突入。老兵不靠運氣，靠檢查表。", "把傷痛留到戰後，現在先把怪物打回裂縫裡。"],
+    "max-rockatansky": ["荒原教會我一件事：能走就別停。", "我不是救世主，只是不喜歡看人被碾碎。"],
+    "imperator-furiosa": ["我們往回開，不是投降，是把自由搶回來。", "方向盤在手上時，命運就還能轉向。"],
+    "nux-war-boy": ["我不需要被見證了，至少這次我要自己選路。", "引擎聲很吵，但我終於聽見自己在活著。"],
+    "capable": ["別把受傷的人丟下，荒原已經夠殘忍了。", "溫柔不是軟弱，是還沒被這世界磨成鐵皮。"],
+    "leon-kennedy": ["又是怪物，又是倒數。這工作福利真該重談。", "我活過浣熊市，所以今天也不打算死在這裡。"],
+    "helena-harper": ["我會補上自己的錯，哪怕要衝進最糟的房間。", "霰彈槍上膛，現在輪到我們問問題。"],
+    "chris-redfield": ["BSAA推進。把火線壓穩，別讓任何人落單。", "我失去過太多人，這次不再後退。"],
+    "piers-nivans": ["隊長，射線已校準。我會守住你的盲區。", "就算身體撐不住，扳機也要撐到最後。"],
+    "jake-muller": ["我不是誰的複製品，也不是誰的遺產。路我自己打。", "抗體值很值錢，但我的拳頭免費送你。"],
+    "sherry-birkin": ["我知道病毒會奪走什麼，所以更不能讓它再奪走別人。", "再生不是不會痛，只是痛完還能站起來。"],
+    "ada-wong": ["答案太早揭曉就不好玩了。先讓敵人猜錯方向。", "紅色容易被看見，真正危險的是看見後也攔不住。"],
+    "bsaa-agent": ["合作火線就位，彈匣和醫療包都別省。", "我不是主角，但掩護主角活下來也是工作。"],
+    "tarnished-elden-lord": ["褪色者仍會前行，直到王座或死亡給出回答。", "盧恩在燃燒，路也在燃燒，那就一起走過去。"],
+    "melina-kindling-maiden": ["我會陪你走到火焰前，哪怕道路不再回頭。", "指引不是束縛，你仍要自己選擇要成為什麼王。"],
+    "ranni-dark-moon": ["群星之外有更冷的自由，我會親手開路。", "命運若是金樹寫下的，我便把它帶入暗月。"],
+    "blaidd-half-wolf": ["我答應守護她，哪怕世界把忠誠說成詛咒。", "巨劍在手，半狼不會讓敵人越過誓言。"],
+    "millicent-valkyrie": ["腐敗在血裡開花，但我還想按自己的意志揮劍。", "若命運只給我腐敗，我也要把它斬成舞步。"],
+    "alexander-warrior-jar": ["戰士壺準備好了！就算碎裂，也要碎得像戰士。", "朋友啊，看好了，這就是壺的豪邁衝鋒。"],
+    "black-knife-tiche": ["黑刀無聲，死亡也無聲。", "被命運標記的人，聽不見我靠近。"],
+    "nepheli-loux": ["風暴會選擇仍願意站起來的人。", "斧頭不問血統，只問你是否還有勇氣。"],
+    "yuji-itadori": ["我會救人，哪怕救下來的是被世界放棄的人。", "黑閃不是奇蹟，是我把迷惘打出去的瞬間。"],
+    "megumi-fushiguro": ["我不想救所有人，只想救值得救的人，這就夠了。", "影子展開。別逼我把最後的牌也叫出來。"],
+    "nobara-kugisaki": ["我就是我，漂亮也好強悍也好，兩邊都不退讓。", "釘子打下去，詛咒也得聽見我的脾氣。"],
+    "yuta-okkotsu": ["里香，我們一起保護大家。這次不再只是詛咒。", "溫柔不是不敢戰鬥，是知道為誰拔刀。"],
+    "maki-zenin": ["沒有咒力又怎樣，我會把規矩一根根敲斷。", "咒具在手時，家族的眼光就不重要了。"],
+    "toge-inumaki": ["鮭魚。別亂動，下一句會更痛。", "明太子。我的喉嚨還撐得住。"],
+    "panda-jjk": ["熊貓不是熊貓，這點請先記進戰術筆記。", "三個核心輪流上班，今天敵人運氣不好。"],
+    "nanami-kento": ["現在是加班時間。既然無法準時下班，就有效率地結束。", "七三分點找到了，接下來只是工作流程。"],
+    "aoi-todo": ["先回答我，你喜歡什麼樣的人？答錯也要一起戰鬥。", "拍手聲響起時，位置和命運都會交換。"],
+    "choso": ["我是哥哥，所以我必須站在前面。", "血脈不只是束縛，也是我絕不後退的理由。"],
+    "hakari-kinji": ["運氣熱起來了。大獎轉動時，死亡也得等一等。", "賭局還沒結束，因為我還沒玩夠。"],
+    "higuruma-hiromi": ["法庭開庭。敵人的罪狀，比咒力更刺眼。", "我不相信正義萬能，但審判至少該落下。"],
+    "satoru-gojo": ["放心，我在這裡。問題通常會變得簡單很多。", "最強不是頭銜，是把不可能也排進課表。"]
+  };
   const eventApproachChoices = [
     { id: "protagonist-line", title: "追蹤真正主角", text: "放棄最安全路線，追著劇本核心人物留下的痕跡前進。" },
     { id: "artifact-line", title: "奪取劇本核心", text: "把注意力放在本劇本最危險的道具、血統、武器或封印上。" },
@@ -765,13 +885,14 @@
   function launchRun(state, scenarioId, infinite, options = {}) {
     const scenario = scenariosById[scenarioId];
     const dynamicDifficulty = buildRunDynamicDifficulty(state, scenario, infinite);
-    const openingDiscussion = buildOpeningDiscussion(state, scenario, dynamicDifficulty, options);
+    const runMap = generateMap(state, scenario);
+    const openingDiscussion = buildOpeningDiscussion(state, scenario, dynamicDifficulty, options, runMap.layers.length);
     state.run = {
       id: uid(state, "run"),
       scenarioId,
       sourceScenarioId: infinite ? "infinite" : scenarioId,
       seed: nextRandom(state),
-      map: generateMap(state, scenario),
+      map: runMap,
       currentNodeId: null,
       currentLayer: 0,
       currentLane: null,
@@ -872,7 +993,7 @@
     state.run.banterFeed = [...(state.run.banterFeed || []), ...incoming].slice(-8);
   }
 
-  function buildOpeningDiscussion(state, scenario, dynamicDifficulty, options = {}) {
+  function buildOpeningDiscussion(state, scenario, dynamicDifficulty, options = {}, runLength = 8) {
     const active = getActiveParty(state);
     const leader = active.find((member) => member.id === "zheng-zha") || active[0];
     const analyst = active.find((member) => ["chu-xuan", "xiao-honglu", "clone-chu-xuan"].includes(member.id)) || active.find((member) => member.energyContribution >= 2) || leader;
@@ -884,21 +1005,176 @@
     const lines = [
       { speaker: "主神", line: options.randomNormal ? `隨機投放確認：${scenario.name}。完成整備後進入下一場普通劇本。` : `${scenario.name}投放確認。` },
       leader ? { speaker: leader.name, line: `所有人跟緊。${scenario.subtitle || scenario.name}的第一波風險不會等我們整理隊形。` } : null,
-      analyst ? { speaker: analyst.name, line: `${scenario.intro} 先把路線當成八層壓力測試，菁英與 Boss 前保留手牌循環。` } : null,
+      analyst ? { speaker: analyst.name, line: `${scenario.intro} 先把路線當成 ${runLength} 層壓力測試，菁英與 Boss 前保留手牌循環。` } : null,
       activeMutation && support ? { speaker: support.name, line: `第 7 人支援接入：${activeMutation.name}會在後方穩住血統側效果。` } : supportGear[0] && support ? { speaker: support.name, line: `支援裝備已掛載：${supportGear.map((row) => row.name).join("、")}。` } : null,
       bonds[0] ? { speaker: "主神", line: `羈絆同步：${bonds.slice(0, 2).map((bond) => bond.name).join("、")}已進入本次遠征判定。` } : null,
       dynamicDifficulty?.mode === "normal" ? { speaker: "主神", line: `動態難度 ${formatMultiplier(dynamicDifficulty.multiplier)}x：通關進度與連勝正在提高敵方壓力，失敗補償會自動抵扣。` } : null,
       dynamicDifficulty?.mode === "super-hard" ? { speaker: "主神", line: `${scenario.name}屬於超困難劇本，普通進度壓力不套用。` } : null
     ].filter(Boolean);
-    return lines.slice(0, 6);
+    return [...lines, ...buildScenarioOpeningCommentary(state, scenario, dynamicDifficulty, runLength)].slice(0, 11);
+  }
+
+  function buildScenarioOpeningCommentary(state, scenario, dynamicDifficulty, runLength) {
+    const active = getActiveParty(state);
+    const support = state.party.find((member) => member.id === PLAYER_ID);
+    const speakers = [...active, support].filter(Boolean);
+    if (!speakers.length) return [];
+    const analyst = speakers.find((member) => ["chu-xuan", "xiao-honglu", "clone-chu-xuan"].includes(member.id)) || speakers.find((member) => member.energyContribution >= 2) || speakers[0];
+    const scout = speakers.find((member) => ["zhao-yingkong", "zero", "li-xiaoyi", "sarah", "natasha-romanoff", "ada-wong"].includes(member.id)) || randomChoice(state, speakers) || analyst;
+    const frontline = speakers.find((member) => Number(member.energyContribution || 0) <= 0 && member.id !== PLAYER_ID) || randomChoice(state, speakers) || analyst;
+    const commentator = speakers.find((member) => ["li-shuaixi", "shinpachi-shimura", "gintoki-sakata", "leon-kennedy", "dante-dmc5", "tony-stark", "nux-war-boy"].includes(member.id)) || randomChoice(state, speakers) || analyst;
+    const people = scenarioPeopleNames(state, scenario);
+    const enemies = scenarioEnemyNames(state, scenario);
+    const person = randomChoice(state, people) || scenario.hiddenProtagonistId && charactersById[scenario.hiddenProtagonistId]?.name || "本劇本核心人物";
+    const enemy = randomChoice(state, enemies) || "首領級敵人";
+    const secondEnemy = randomChoice(state, enemies.filter((name) => name !== enemy)) || enemy;
+    const scene = scenario.subtitle || scenario.name;
+    const routeText = runLength >= 10 ? "路線很長，補給與壓力會比單場戰鬥更致命" : runLength <= 6 ? "路線偏短，前幾層大概率會很快把危險推到臉上" : "路線長度中等，但主神通常會把麻煩塞在轉折點";
+    const sceneLines = [
+      `${scene}的場景不是背景板。${scenario.intro} 先把光源、退路和可疑地形都當成敵人處理。`,
+      `這個投放點的空間壓迫感很重。${scene}看似只是一個舞台，其實每一段地形都可能是主神的傷害判定。`,
+      `先別急著衝。${scenario.name}的場景資訊太密，越像原作名場面，越可能藏著反向陷阱。`
+    ];
+    const storyLines = [
+      `${person}大概率是這條故事線的關鍵人物；我們不能只看任務文字，要看他們原本會走向哪個悲劇節點。`,
+      `${scenario.eventTitle || scenario.name}這條線不像普通支線，人物選擇會改寫後面的獎勵、代價和世界狀態。`,
+      `故事已經被主神壓縮成 ${runLength} 層，人物關係會被迫撞在一起；如果只照原作節奏走，可能剛好踩進扣分點。`
+    ];
+    const enemyLines = [
+      `敵方樣本先記住：${enemy}${secondEnemy !== enemy ? `、${secondEnemy}` : ""}。名字聽起來越像 Boss，越不要等它把演出動畫播完。`,
+      `${enemy}不是單純血厚，麻煩在它通常綁著場景規則；先看意圖，再決定要爆發還是拖回合。`,
+      `如果前線遇到${enemy}，別把它當普通怪刷。這種敵人通常會逼我們用牌序和站位一起付學費。`
+    ];
+    const roastLines = [
+      `主神把${scenario.name}剪成${runLength}層壓力測試，這剪輯手法很有病，但至少比讓我們看完片尾名單再死好一點。`,
+      `${routeText}。順便吐槽一句，主神的旅遊行程永遠只有「著陸、被追殺、結算」。`,
+      `看到${scene}這種開局，我已經開始懷疑主神是不是把「生存訓練」和「粉絲向災難混剪」放在同一個資料夾。`
+    ];
+    const difficultyLine = dynamicDifficulty?.mode === "normal" && dynamicDifficulty.multiplier > 1.2
+      ? { speaker: analyst.name, line: `難度倍率已經抬高，這次不要把${enemy}的第一輪意圖當成基準值；主神會把熟悉敵人改成加壓版本。` }
+      : null;
+    return [
+      { speaker: analyst.name, line: randomChoice(state, sceneLines) },
+      { speaker: scout.name, line: randomChoice(state, storyLines) },
+      { speaker: frontline.name, line: randomChoice(state, enemyLines) },
+      { speaker: commentator.name, line: randomChoice(state, roastLines) },
+      difficultyLine
+    ].filter(Boolean);
+  }
+
+  function scenarioPeopleNames(state, scenario) {
+    const ids = [
+      scenario.hiddenProtagonistId,
+      ...(scenario.recruitmentPool || [])
+    ].filter(Boolean);
+    const names = ids.map((id) => charactersById[id]?.name).filter(Boolean);
+    const dialogueSpeakers = (scenario.opening?.dialogue || []).map((line) => line.speaker).filter(Boolean);
+    return shuffleWithState(state, [...new Set([...names, ...dialogueSpeakers])]).slice(0, 8);
+  }
+
+  function scenarioEnemyNames(state, scenario) {
+    const encounterIds = [
+      ...(scenario.normal || []),
+      ...(scenario.elite || []),
+      ...(scenario.hellBossPool || []),
+      scenario.miniboss,
+      scenario.boss
+    ].filter(Boolean);
+    const names = encounterIds.flatMap((encounterId) => {
+      const encounter = encountersById[encounterId];
+      return encounter ? [encounter.name, ...(encounter.enemies || []).map((enemyId) => enemiesById[enemyId]?.name).filter(Boolean)] : [];
+    }).filter(Boolean);
+    return shuffleWithState(state, [...new Set(names)]).slice(0, 10);
   }
 
   function buildEncounterBanter(state, encounter) {
     const active = getAliveActiveParty(state);
     const analyst = active.find((member) => ["chu-xuan", "xiao-honglu", "clone-chu-xuan"].includes(member.id)) || active[0];
+    const quoteSpeaker = randomChoice(state, active.filter((member) => member.id !== analyst?.id)) || analyst;
     const enemyCount = encounter.enemies.length;
     const tierText = encounter.tier === "boss" ? "Boss" : encounter.tier === "elite" || encounter.tier === "miniboss" ? "高威脅" : "戰鬥";
-    return analyst ? { speaker: analyst.name, line: `${tierText}接觸：${encounter.name}，敵方 ${enemyCount} 組。先讀意圖，再決定是否爆發。` } : null;
+    return [
+      analyst ? { speaker: analyst.name, line: `${tierText}接觸：${encounter.name}，敵方 ${enemyCount} 組。先讀意圖，再決定是否爆發。` } : null,
+      buildCharacterQuoteBanter(state, quoteSpeaker, { enemy: encounter.name })
+    ].filter(Boolean);
+  }
+
+  function buildCardBanter(state, instance, card, target) {
+    const active = getAliveActiveParty(state);
+    const owner = instance.ownerId ? state.party.find((member) => member.id === instance.ownerId) : null;
+    const speaker = owner || active.find((member) => ["chu-xuan", "xiao-honglu", "clone-chu-xuan"].includes(member.id)) || state.party.find((member) => member.id === PLAYER_ID) || active[0];
+    if (!speaker) return null;
+    const ally = randomChoice(state, active.filter((member) => member.id !== speaker.id)) || speaker;
+    const enemy = target?.name || getLivingEnemies(state)[0]?.name || "敵人";
+    const scene = scenariosById[state.run?.scenarioId]?.name || "本劇本";
+    const cardName = card.name;
+    const linesByType = {
+      attack: [
+        `${enemy}的破綻露出來了，${cardName}打進去，別讓它重整。`,
+        `${scene}的地形太亂，索性把火力壓成一條線。`,
+        `${ally.name}，看住側翼；這一擊我來把節奏敲回來。`,
+        `這種怪物最麻煩的地方不是硬，是不肯按劇本倒下。那就多補一刀。`,
+        `${cardName}出手。主神要扣分就扣，先活過這回合。`,
+        `${enemy}在蓄勢，現在不打斷，等一下就輪到我們吐血。`,
+        `別被特效騙了，真正能救命的是命中和收手時機。`,
+        `${scene}的空氣都在震，這張牌剛好夠把它震歪。`,
+        `攻擊窗口只有半秒，錯過就要拿血條付學費。`,
+        `${enemy}看起來很有壓迫感，但主神沒說它不能被揍。`
+      ],
+      guard: [
+        `${cardName}立起來。先把隊伍撐住，輸出才有下一句話。`,
+        `${ally.name}，往護線裡退半步，別把治療交給運氣。`,
+        `${scene}正在逼我們犯錯，防線先收窄。`,
+        `這不是慫，這叫讓主神的傷害判定撲空。`,
+        `${enemy}的意圖不乾淨，先擋住再討論反打。`,
+        `護甲不是牆，是給下一張牌爭取呼吸。`,
+        `我不喜歡這個節奏。把地板踩穩，別被它牽著走。`
+      ],
+      support: [
+        `${cardName}接入後方鏈路，全隊狀態先拉回可控線。`,
+        `${ally.name}，你的壓力值快比主神臉色還難看了，先穩住。`,
+        `支援不是站後面看戲，是把所有人的失誤成本壓低。`,
+        `${scene}的噪音太多，我把通訊和補給重新同步。`,
+        `先別逞強。能多撐一回合，就多一個翻盤窗口。`,
+        `${enemy}在逼我們散隊，支援鏈不要斷。`,
+        `這張牌不華麗，但它能讓下一個人不用倒著出牌。`
+      ],
+      tactic: [
+        `${cardName}不是魔法，是把主神規則的縫隙掰開一點。`,
+        `${enemy}的行動模型已經讀到，照這個節奏切進去。`,
+        `${scene}給了太多雜訊，先用戰術牌把選項清乾淨。`,
+        `吐槽一句：這劇本如果能正常溝通，我們也不用拿命解謎。`,
+        `${ally.name}，準備接下一段連鎖，別讓牌序白轉。`,
+        `這不是賭，是把最壞結果壓到可以承受。`,
+        `主神喜歡看混亂，我們偏要把混亂排成表。`,
+        `${cardName}落下去，下一張牌的價值才會變大。`
+      ]
+    };
+    const pool = linesByType[card.type] || linesByType.tactic;
+    return { speaker: speaker.name, line: randomChoice(state, pool) };
+  }
+
+  function getCharacterQuoteLines(characterId) {
+    const character = charactersById[characterId];
+    if (!character) return [];
+    return characterQuoteLines[characterId] || [`${character.name}穩住呼吸，把自己的原作節奏帶進主神戰場。`];
+  }
+
+  function buildCharacterQuoteBanter(state, member, context = {}) {
+    if (!member) return null;
+    const line = renderCharacterQuote(randomChoice(state, getCharacterQuoteLines(member.id)) || "", state, member, context);
+    return line ? { speaker: member.name, line } : null;
+  }
+
+  function renderCharacterQuote(line, state, member, context = {}) {
+    const scenario = scenariosById[state.run?.scenarioId];
+    const enemy = context.enemy || context.target?.name || getLivingEnemies(state)[0]?.name || "敵人";
+    const ally = context.ally || getAliveActiveParty(state).find((item) => item.id !== member.id) || member;
+    return String(line || "")
+      .replaceAll("{scene}", scenario?.name || "本劇本")
+      .replaceAll("{enemy}", enemy)
+      .replaceAll("{ally}", ally.name)
+      .replaceAll("{card}", context.card?.name || "這張牌");
   }
 
   function buildNodeBanter(state, node) {
@@ -918,7 +1194,10 @@
   function buildSignatureBanter(state, ownerId, card) {
     const owner = state.party.find((member) => member.id === ownerId);
     if (!owner) return null;
-    return { speaker: owner.name, line: `${card.name}已打出，專屬節奏接入。` };
+    return [
+      { speaker: owner.name, line: `${card.name}已打出，專屬節奏接入。` },
+      buildCharacterQuoteBanter(state, owner, { card })
+    ].filter(Boolean);
   }
 
   function buildCrisisBanter(state) {
@@ -951,15 +1230,19 @@
   function generateMap(state, scenario) {
     const randomTypes = ["battle", "battle", "elite", "event", "treasure"];
     const hellBossPool = Array.isArray(scenario.hellBossPool) && scenario.hellBossPool.length ? scenario.hellBossPool : null;
+    const layerCount = scenario.id === "tutorial" ? 8 : 5 + Math.floor(nextRandom(state) * 8);
+    const bossLayer = layerCount;
+    const minibossLayer = Math.max(2, Math.floor(layerCount * 0.5));
+    const campLayer = Math.min(bossLayer - 1, Math.max(minibossLayer + 1, Math.ceil(layerCount * 0.64)));
     const layers = [];
-    for (let layer = 1; layer <= 8; layer += 1) {
+    for (let layer = 1; layer <= layerCount; layer += 1) {
       const nodes = [];
       for (let lane = 0; lane < 3; lane += 1) {
         let type = "battle";
-        if ([2, 3, 6, 7].includes(layer)) type = randomChoice(state, randomTypes);
-        if (layer === 4) type = "miniboss";
-        if (layer === 5) type = "camp";
-        if (layer === 8) type = "boss";
+        if (layer > 1 && layer < bossLayer) type = randomChoice(state, randomTypes);
+        if (layer === minibossLayer) type = "miniboss";
+        if (layer === campLayer) type = "camp";
+        if (layer === bossLayer) type = "boss";
         let encounterId = null;
         if (hellBossPool && ["battle", "elite", "miniboss", "boss"].includes(type)) encounterId = randomChoice(state, hellBossPool);
         else if (type === "battle") encounterId = randomChoice(state, scenario.normal);
@@ -971,7 +1254,7 @@
       layers.push(nodes);
     }
     if (scenario.id !== "tutorial" && !layers.flat().some((node) => node.type === "event")) {
-      const eventCandidates = layers.flat().filter((node) => [2, 3, 6, 7].includes(node.layer));
+      const eventCandidates = layers.flat().filter((node) => node.layer > 1 && node.layer < bossLayer && !["miniboss", "camp"].includes(node.type));
       const forcedEvent = randomChoice(state, eventCandidates);
       if (forcedEvent) {
         forcedEvent.type = "event";
@@ -1117,6 +1400,7 @@
     if (usesCustomFreePlay) next.turnStats.customFreePlaysUsed += 1;
     next.energy -= cost;
     next.hand.splice(handIndex, 1);
+    appendBanter(next, buildCardBanter(next, instance, card, target));
     if (card.category === "signature" && instance.ownerId) appendBanter(next, buildSignatureBanter(next, instance.ownerId, card));
 
     let damage = Number(card.damage || 0);
@@ -1454,7 +1738,7 @@
       stage: 1,
       path: [],
       routes,
-      choices: eventChoicesFor(1, [], scenario, { routes }),
+      choices: eventChoicesFor(state, 1, [], scenario, { routes }),
       candidate,
       hiddenCandidate,
       hiddenProtagonistId: hiddenId || null,
@@ -1492,7 +1776,7 @@
         finalChoices.forEach((final, finalIndex) => {
           routes.push({
             id: `${scenario.id || "scenario"}-${stage1.id}-${stage2.id}-${final.id}`,
-            routeType: final.id.includes("break-prison-realm") || final.id.includes("rescue") ? "固定好路線" : "劇本專屬線",
+            routeType: final.id.includes("break-prison-realm") || final.id.includes("rescue") ? "主角命運線" : "劇本專屬線",
             priority: final.id.includes("break-prison-realm") || (stage1Index === 0 && stage2Index === 0 && finalIndex === 0) ? "fixed" : "scripted",
             stage1: clone(stage1),
             stage2: clone(stage2),
@@ -1579,14 +1863,14 @@
     return output.slice(0, eventChoiceTarget);
   }
 
-  function eventChoicesFor(stage, path, scenario = null, event = null) {
+  function eventChoicesFor(state, stage, path, scenario = null, event = null) {
     const routes = event?.routes?.length ? event.routes : uniqueEventRoutes([
       ...(scenarioEventRoutes[scenario?.id] || []).map(clone),
       ...scenarioTreeRoutes(scenario),
       ...eventBranchPool.map(clone),
       ...legacyEventRoutes()
     ]);
-    return routesForEventStage(routes, stage, path).map((route) => eventChoiceForRoute(route, stage));
+    return shuffleWithState(state, routesForEventStage(routes, stage, path).map((route) => eventChoiceForRoute(route, stage)));
   }
 
   function resolveEvent(state, optionId) {
@@ -1601,18 +1885,18 @@
       next.pending.path = [];
       const scenario = scenariosById[next.pending.scenarioId] || scenariosById[next.run?.scenarioId];
       next.pending.routes = next.pending.routes?.length ? next.pending.routes : buildEventRoutes(next, scenario);
-      next.pending.choices = eventChoicesFor(1, [], scenario, next.pending);
+      next.pending.choices = eventChoicesFor(next, 1, [], scenario, next.pending);
     }
     const scenario = scenariosById[next.pending.scenarioId] || scenariosById[next.run?.scenarioId];
     next.pending.routes = next.pending.routes?.length ? next.pending.routes : buildEventRoutes(next, scenario);
-    const choices = next.pending.choices || eventChoicesFor(next.pending.stage, next.pending.path || [], scenario, next.pending);
+    const choices = next.pending.choices || eventChoicesFor(next, next.pending.stage, next.pending.path || [], scenario, next.pending);
     const choice = choices.find((item) => item.id === optionId);
     if (!choice) return next;
     const path = [...(next.pending.path || []), optionId];
     if (next.pending.stage < 3) {
       next.pending.stage += 1;
       next.pending.path = path;
-      next.pending.choices = eventChoicesFor(next.pending.stage, path, scenario, next.pending);
+      next.pending.choices = eventChoicesFor(next, next.pending.stage, path, scenario, next.pending);
       return next;
     }
     applyEventOutcome(next, next.pending, path);
@@ -1717,11 +2001,11 @@
     }
     if (effect.type === "scenario-power") {
       applyScenarioPower(state, scenario);
-      return { rewards: [`劇本 Buff：${scenario?.scenarioPowerName || powerEffectText(scenario?.scenarioPower || { id: "battle-instinct", effect: "attackBonus", amount: 2 })}`] };
+      return { rewards: [`劇本增益：${scenario?.scenarioPowerName || powerEffectText(scenario?.scenarioPower || { id: "battle-instinct", effect: "attackBonus", amount: 2 })}`] };
     }
     if (effect.type === "run-power") {
       addTemporaryPower(state, effect);
-      return { rewards: [`本劇本 Buff：${powerEffectText(effect)}`] };
+      return { rewards: [`本次遠征增益：${powerEffectText(effect)}`] };
     }
     if (effect.type === "reward-points") {
       const before = state.rewardPoints;
@@ -1793,10 +2077,12 @@
 
   function powerEffectText(power) {
     if (!power) return "戰鬥直覺";
-    if (power.effect === "attackBonus") return `${power.id}（攻擊 +${power.amount}）`;
-    if (power.effect === "turnBlock") return `${power.id}（每回合護甲 +${power.amount}）`;
-    if (power.effect === "openingBlock") return `${power.id}（開場護甲 +${power.amount}）`;
-    return `${power.id}（${power.effect} +${power.amount}）`;
+    if (power.effect === "attackBonus") return `攻擊牌傷害 +${power.amount}`;
+    if (power.effect === "turnBlock") return `每回合護甲 +${power.amount}`;
+    if (power.effect === "openingBlock") return `開場護甲 +${power.amount}`;
+    if (power.effect === "openingDraw") return `開場抽牌 +${power.amount}`;
+    if (power.effect === "openingEnergy") return `首回合能量 +${power.amount}`;
+    return `${power.effect} +${power.amount}`;
   }
 
   function continueEventResult(state) {
@@ -3044,6 +3330,7 @@
     getLivingEnemies,
     getEnemyIntent,
     getActiveBonds,
+    getCharacterQuoteLines,
     isNodeAvailable,
     isAlive,
     effectiveCard,
@@ -3064,6 +3351,7 @@
     shopById,
     bloodlinesByCharacterId,
     bondsById,
+    characterQuoteLines,
     customTagsById,
     customMutationsById
   };
