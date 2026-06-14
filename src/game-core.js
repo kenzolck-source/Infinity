@@ -16,10 +16,17 @@
   const customStatIds = customStats.map((stat) => stat.id);
   const customTagsById = indexById(data.customTags || []);
   const customMutationsById = indexById(data.customMutations || []);
+  const SAVE_VERSION = 6;
+  const PLAYER_ID = "player-avatar";
+  const CUSTOM_TAG_SLOT_COUNT = 2;
+  const CUSTOM_SUPPORT_EQUIPMENT_SLOT_COUNT = 2;
   const economy = data.economy || {};
   const maxLog = 12;
   const dmc5FeaturedRecruitIds = ["nero-dmc5", "v-dmc5", "dante-dmc5"];
   const repeatableCardIds = new Set(["combat-knife", "guard-stance", "adrenaline-rush"]);
+  const scenarioEventRoutes = data.scenarioEventRoutes || {};
+  const eventBranchPool = data.eventBranchPool || [];
+  const eventChoiceTarget = 5;
   const eventApproachChoices = [
     { id: "protagonist-line", title: "追蹤真正主角", text: "放棄最安全路線，追著劇本核心人物留下的痕跡前進。" },
     { id: "artifact-line", title: "奪取劇本核心", text: "把注意力放在本劇本最危險的道具、血統、武器或封印上。" },
@@ -134,6 +141,9 @@
       purchasedTags: [],
       tagOffers: [],
       mutations: [],
+      activeMutationId: null,
+      activeTagIds: [],
+      supportEquipmentIds: [],
       rerolls: 0,
       art: null
     };
@@ -157,6 +167,13 @@
     next.purchasedTags = [...new Set(next.purchasedTags)];
     next.tagOffers = Array.isArray(next.tagOffers) ? next.tagOffers.filter((id) => customTagsById[id] && !next.purchasedTags.includes(id)) : [];
     next.mutations = Array.isArray(next.mutations) ? next.mutations.filter((id) => customMutationsById[id]) : [];
+    next.activeMutationId = customMutationsById[next.activeMutationId] ? next.activeMutationId : null;
+    next.activeTagIds = Array.isArray(next.activeTagIds)
+      ? [...new Set(next.activeTagIds.filter((id) => customTagsById[id] && next.purchasedTags.includes(id)))].slice(0, CUSTOM_TAG_SLOT_COUNT)
+      : [];
+    next.supportEquipmentIds = Array.isArray(next.supportEquipmentIds)
+      ? [...new Set(next.supportEquipmentIds.filter(Boolean))].slice(0, CUSTOM_SUPPORT_EQUIPMENT_SLOT_COUNT)
+      : [];
     next.rerolls = Math.max(0, Math.floor(Number(next.rerolls || 0)));
     next.art = typeof next.art === "string" ? next.art : null;
     return next;
@@ -164,7 +181,7 @@
 
   function createInitialState() {
     return {
-      version: 5,
+      version: SAVE_VERSION,
       nextId: 1,
       randomSeed: 173205,
       screen: "onboarding",
@@ -212,12 +229,11 @@
 
   function normalizeState(saved) {
     if (!saved || typeof saved !== "object") return createInitialState();
-    if (saved.version === 5) return normalizeModernState(saved);
-    if (saved.version === 4) return normalizeModernState({ ...clone(saved), version: 5 });
+    if (saved.version === SAVE_VERSION || saved.version === 5 || saved.version === 4) return normalizeModernState(saved);
     if (saved.version === 3) {
       return normalizeModernState({
         ...clone(saved),
-        version: 5,
+        version: SAVE_VERSION,
         teamName: sanitizeTeamName(saved.teamName || "中洲隊", "中洲隊"),
         playerProfile: saved.playerProfile || null,
         onboarding: saved.onboarding || { stage: "complete", completed: true, draft: {} }
@@ -229,7 +245,7 @@
   function normalizeModernState(saved) {
     const base = createInitialState();
     const next = { ...base, ...clone(saved) };
-    next.version = 5;
+    next.version = SAVE_VERSION;
     next.teamName = sanitizeTeamName(next.teamName || "中洲隊", "中洲隊");
     next.playerProfile = normalizePlayerProfile(next.playerProfile);
     next.playerGrowth = normalizePlayerGrowth(next.playerGrowth, next.playerProfile);
@@ -244,11 +260,14 @@
     next.party = (Array.isArray(saved.party) ? saved.party : base.party)
       .filter((member) => charactersById[member.id] && !(member.id === "zhang-jie" && next.campaign.tutorialComplete))
       .map((member) => normalizePartyMember(member, next.playerProfile, next.playerGrowth));
+    ensurePlayerSupportMember(next);
     next.deck = (Array.isArray(saved.deck) ? saved.deck : base.deck)
       .map((entry) => typeof entry === "string" ? makeDeckEntry(next, entry, null) : entry)
-      .filter((entry) => entry && cardsById[entry.cardId]);
+      .filter((entry) => entry && cardsById[entry.cardId])
+      .map(normalizeCardOwner);
     normalizeUniqueDeck(next);
     next.equipmentInventory = (saved.equipmentInventory || []).filter((entry) => equipmentById[entry.equipmentId]);
+    normalizeSupportEquipment(next);
     next.curses = next.deck.filter((entry) => cardsById[entry.cardId].category === "curse").map((entry) => entry.instanceId);
     next.activeEnemies = (saved.activeEnemies || []).filter((enemy) => enemiesById[enemy.enemyId]).map((enemy) => ({
       ...enemy,
@@ -257,10 +276,10 @@
       stun: Number(enemy.stun || 0),
       weak: Number(enemy.weak || 0)
     }));
-    next.drawPile = (saved.drawPile || []).filter((entry) => cardsById[entry.cardId]);
-    next.hand = (saved.hand || []).filter((entry) => cardsById[entry.cardId]);
-    next.discardPile = (saved.discardPile || []).filter((entry) => cardsById[entry.cardId]);
-    next.exhaustedPile = (saved.exhaustedPile || []).filter((entry) => cardsById[entry.cardId]);
+    next.drawPile = (saved.drawPile || []).filter((entry) => cardsById[entry.cardId]).map(normalizeCardOwner);
+    next.hand = (saved.hand || []).filter((entry) => cardsById[entry.cardId]).map(normalizeCardOwner);
+    next.discardPile = (saved.discardPile || []).filter((entry) => cardsById[entry.cardId]).map(normalizeCardOwner);
+    next.exhaustedPile = (saved.exhaustedPile || []).filter((entry) => cardsById[entry.cardId]).map(normalizeCardOwner);
     syncCustomMutations(next);
     refreshCustomTagOffers(next, { free: true, onlyIfEmpty: true });
     applyPlayerGrowthToParty(next);
@@ -315,7 +334,7 @@
 
   function migrateLegacyState(saved) {
     const next = createInitialState();
-    next.version = 5;
+    next.version = SAVE_VERSION;
     next.teamName = "中洲隊";
     next.playerProfile = null;
     next.onboarding = { stage: "complete", completed: true, draft: {} };
@@ -382,6 +401,43 @@
     }
   }
 
+  function normalizeCardOwner(entry) {
+    if (!entry || entry.ownerId !== PLAYER_ID) return entry;
+    return { ...entry, ownerId: null };
+  }
+
+  function ensurePlayerSupportMember(state) {
+    if (!state.playerProfile) return;
+    const existing = state.party.find((member) => member.id === PLAYER_ID);
+    if (existing) {
+      existing.active = false;
+      return;
+    }
+    state.party.unshift(makePlayerCharacter(state.playerProfile, false, state.playerGrowth));
+  }
+
+  function normalizeSupportEquipment(state) {
+    state.playerGrowth = normalizePlayerGrowth(state.playerGrowth, state.playerProfile);
+    const inventoryIds = new Set((state.equipmentInventory || []).map((entry) => entry.instanceId));
+    const supportIds = [
+      ...(state.playerGrowth.supportEquipmentIds || []),
+      state.equipped?.[PLAYER_ID]
+    ].filter((id) => id && inventoryIds.has(id));
+    const supportSet = new Set();
+    state.playerGrowth.supportEquipmentIds = supportIds.filter((id) => {
+      if (supportSet.has(id) || supportSet.size >= CUSTOM_SUPPORT_EQUIPMENT_SLOT_COUNT) return false;
+      supportSet.add(id);
+      return true;
+    });
+    const partyIds = new Set(state.party.filter((member) => member.id !== PLAYER_ID).map((member) => member.id));
+    const assigned = new Set();
+    state.equipped = Object.fromEntries(Object.entries(state.equipped || {}).filter(([characterId, instanceId]) => {
+      if (characterId === PLAYER_ID || !partyIds.has(characterId) || !inventoryIds.has(instanceId) || supportSet.has(instanceId) || assigned.has(instanceId)) return false;
+      assigned.add(instanceId);
+      return true;
+    }));
+  }
+
   function normalizeCharacter(member) {
     const base = charactersById[member.id];
     return {
@@ -398,8 +454,8 @@
 
   function normalizePartyMember(member, playerProfile, playerGrowth) {
     const normalized = normalizeCharacter(member);
-    if (member.id !== "player-avatar" || !playerProfile) return normalized;
-    const player = makePlayerCharacter(playerProfile, normalized.active, playerGrowth);
+    if (member.id !== PLAYER_ID || !playerProfile) return normalized;
+    const player = makePlayerCharacter(playerProfile, false, playerGrowth);
     return {
       ...normalized,
       name: player.name,
@@ -410,7 +466,8 @@
       energyContribution: player.energyContribution,
       passiveText: player.passiveText,
       signatureCardId: player.signatureCardId,
-      playerProfile: clone(playerProfile)
+      playerProfile: clone(playerProfile),
+      active: false
     };
   }
 
@@ -422,9 +479,8 @@
   function makePlayerCharacter(profile, active, playerGrowth = null) {
     const profession = playerProfessionsById[profile.professionId] || data.playerProfessions[0];
     const personality = playerPersonalitiesById[profile.personalityId] || data.playerPersonalities[0];
-    const base = makeCharacter("player-avatar", active);
-    const staminaBonus = customStatTier({ playerGrowth: playerGrowth || createPlayerGrowth(profile) }, "stamina") * 10 + customEffectTotal({ playerGrowth: playerGrowth || createPlayerGrowth(profile) }, "maxHp");
-    const maxHp = profession.maxHp + staminaBonus;
+    const base = makeCharacter(PLAYER_ID, false);
+    const maxHp = profession.maxHp;
     return {
       ...base,
       name: profile.name,
@@ -435,6 +491,7 @@
       energyContribution: profession.energyContribution,
       passiveText: `${profession.name} · ${personality.name}：${profession.passiveText}`,
       signatureCardId: personality.cardId,
+      active: false,
       playerProfile: clone(profile)
     };
   }
@@ -515,8 +572,8 @@
     next.onboarding = { stage: "complete", completed: true, draft: {} };
     next.screen = "story";
     next.pending = { kind: "tutorial-intro" };
-    next.party = [makePlayerCharacter(profile, true, next.playerGrowth), makeCharacter("zhang-jie", true)];
-    next.deck = profession.cardIds.map((cardId) => makeDeckEntry(next, cardId, null, false, "player-avatar"));
+    next.party = [makePlayerCharacter(profile, false, next.playerGrowth), makeCharacter("zhang-jie", true)];
+    next.deck = [...profession.cardIds, playerPersonalitiesById[profile.personalityId].cardId].map((cardId) => makeDeckEntry(next, cardId, null, false, null));
     next.equipped = {};
     next.hand = [];
     next.drawPile = [];
@@ -631,12 +688,13 @@
     if (scenarioId === "devil-may-cry-5") {
       dmc5FeaturedRecruitIds.forEach((id) => recruitCharacter(next, id));
     }
-    if (next.pending.scenarioId === "alien" && next.campaign.firstAlienRecruitBonus && next.party.length < 3) {
-      const remaining = next.pending.candidates.filter((id) => id !== characterId);
-      if (remaining.length) {
+    if (next.pending.scenarioId === "alien" && next.campaign.firstAlienRecruitBonus && getActiveParty(next).length < 3) {
+      let remaining = next.pending.candidates.filter((id) => id !== characterId);
+      while (remaining.length && getActiveParty(next).length < 3) {
         const bonusId = randomChoice(next, remaining);
         recruitCharacter(next, bonusId);
         next.log = appendLog(next.log, `${charactersById[bonusId].name}也決定加入隊伍。`);
+        remaining = remaining.filter((id) => id !== bonusId);
       }
       next.campaign.firstAlienRecruitBonus = false;
     }
@@ -848,13 +906,12 @@
       const sharedBonus = equipmentEffectTotal(next, "attackBonus") + temporaryPowerAmount(next, "attackBonus");
       applyAttackBonus(sharedBonus);
       applyAttackBonus(customStatTier(next, "strength") + customEffectTotal(next, "attackBonus"));
-      if (instance.ownerId === "player-avatar") applyAttackBonus(customEffectTotal(next, "ownerAttackBonus"));
+      applyAttackBonus(customEffectTotal(next, "ownerAttackBonus"));
       applyAttackBonus(bondEffectTotal(next, "attackBonus"));
       if (card.damageAll) damageAll += bondEffectTotal(next, "damageAllBonus");
       if (card.damageAll) damageAll += customEffectTotal(next, "damageAllBonus");
       if (instance.ownerId) applyAttackBonus(bondOwnerAttackBonus(next, instance.ownerId));
-      const player = next.party.find((member) => member.id === "player-avatar");
-      if (player?.hp > 0 && player.hp <= player.maxHp / 2) applyAttackBonus(customEffectTotal(next, "lowHpAttackBonus"));
+      if (getAliveActiveParty(next).some((member) => member.hp <= member.maxHp / 2)) applyAttackBonus(customEffectTotal(next, "lowHpAttackBonus"));
       if (hasPassive(next, "first-attack") && !next.turnStats.firstAttackUsed) {
         applyAttackBonus(5);
         next.turnStats.firstAttackUsed = true;
@@ -1044,8 +1101,13 @@
     state.party = state.party.filter((member) => member.id !== "zhang-jie");
     state.rewardPoints += Number(economy.tutorialClearReward || 1000);
     if (!state.equipmentInventory.some((item) => item.equipmentId === "infinite-desert-eagle")) {
-      state.equipmentInventory.push(makeEquipmentEntry(state, "infinite-desert-eagle", null));
+      const item = makeEquipmentEntry(state, "infinite-desert-eagle", null);
+      state.equipmentInventory.push(item);
+      if (state.playerProfile && (state.playerGrowth.supportEquipmentIds || []).length < CUSTOM_SUPPORT_EQUIPMENT_SLOT_COUNT) {
+        state.playerGrowth.supportEquipmentIds = [...(state.playerGrowth.supportEquipmentIds || []), item.instanceId];
+      }
     }
+    normalizeSupportEquipment(state);
     state.log = appendLog(state.log, "張杰完成引導後離開隊伍。異形劇本已開放，鄭吒也可能在後續集結中加入隊伍。");
     return returnToHubWithRepair(state);
   }
@@ -1065,8 +1127,11 @@
         const item = makeEquipmentEntry(next, "infinite-desert-eagle", next.run.id);
         next.equipmentInventory.push(item);
         next.run.acquiredEquipmentIds.push(item.instanceId);
-        const leaderId = getLeaderId(next);
-        if (leaderId) next.equipped[leaderId] = item.instanceId;
+        next.playerGrowth = normalizePlayerGrowth(next.playerGrowth, next.playerProfile);
+        if ((next.playerGrowth.supportEquipmentIds || []).length < CUSTOM_SUPPORT_EQUIPMENT_SLOT_COUNT) {
+          next.playerGrowth.supportEquipmentIds = [...(next.playerGrowth.supportEquipmentIds || []), item.instanceId];
+        }
+        normalizeSupportEquipment(next);
       }
       if (optionId === "rest") healActive(next, 0.25, 12);
       next.pending = null;
@@ -1145,11 +1210,13 @@
     const hiddenId = scenario?.hiddenProtagonistId;
     const hiddenCandidate = hiddenId && !state.party.some((member) => member.id === hiddenId) ? hiddenId : null;
     const candidate = unownedScenario.length ? randomChoice(state, unownedScenario).id : unownedUnlocked.length ? randomChoice(state, unownedUnlocked).id : null;
+    const routes = buildEventRoutes(state, scenario);
     return {
       kind: "event",
       stage: 1,
       path: [],
-      choices: eventChoicesFor(1, [], scenario),
+      routes,
+      choices: eventChoicesFor(1, [], scenario, { routes }),
       candidate,
       hiddenCandidate,
       hiddenProtagonistId: hiddenId || null,
@@ -1157,21 +1224,131 @@
     };
   }
 
-  function scenarioEventChoicesFor(scenario, stage, path) {
-    if (!scenario?.eventChoices) return null;
-    if (stage === 1) return (scenario.eventChoices.stage1 || []).map(clone);
-    if (stage === 2) return (scenario.eventChoices.stage2?.[path[0]] || []).map(clone);
-    if (stage === 3) return (scenario.eventChoices.stage3?.[path[1]] || []).map(clone);
-    return null;
+  function buildEventRoutes(state, scenario) {
+    const generatedRoutes = (scenarioEventRoutes[scenario?.id] || []).map(clone);
+    const scriptedRoutes = scenarioTreeRoutes(scenario);
+    const legacyRoutes = legacyEventRoutes();
+    const existingIds = new Set([...generatedRoutes, ...scriptedRoutes, ...legacyRoutes].map((route) => route.id));
+    const branchRoutes = takeRandom(
+      state,
+      eventBranchPool.filter((route) => !existingIds.has(route.id)).map(clone),
+      Math.max(12, eventChoiceTarget * 3)
+    );
+    return uniqueEventRoutes([
+      ...generatedRoutes.filter((route) => route.priority === "fixed"),
+      ...scriptedRoutes.filter((route) => route.priority === "fixed"),
+      ...generatedRoutes.filter((route) => route.priority !== "fixed"),
+      ...scriptedRoutes.filter((route) => route.priority !== "fixed"),
+      ...branchRoutes,
+      ...legacyRoutes
+    ]);
   }
 
-  function eventChoicesFor(stage, path, scenario = null) {
-    const scenarioChoices = scenarioEventChoicesFor(scenario, stage, path);
-    if (scenarioChoices?.length) return scenarioChoices;
-    if (stage === 1) return eventApproachChoices.map(clone);
-    if (stage === 2) return (eventSecondChoicesByApproach[path[0]] || eventSecondChoicesByApproach["protagonist-line"]).map(clone);
-    if (stage === 3) return (eventFinalChoicesBySecond[path[1]] || eventFinalChoicesBySecond["protagonist-rescue"]).map(clone);
-    return [];
+  function scenarioTreeRoutes(scenario) {
+    if (!scenario?.eventChoices) return [];
+    const routes = [];
+    (scenario.eventChoices.stage1 || []).forEach((stage1, stage1Index) => {
+      const secondChoices = scenario.eventChoices.stage2?.[stage1.id] || [];
+      secondChoices.forEach((stage2, stage2Index) => {
+        const finalChoices = scenario.eventChoices.stage3?.[stage2.id] || [];
+        finalChoices.forEach((final, finalIndex) => {
+          routes.push({
+            id: `${scenario.id || "scenario"}-${stage1.id}-${stage2.id}-${final.id}`,
+            routeType: final.id.includes("break-prison-realm") || final.id.includes("rescue") ? "固定好路線" : "劇本專屬線",
+            priority: final.id.includes("break-prison-realm") || (stage1Index === 0 && stage2Index === 0 && finalIndex === 0) ? "fixed" : "scripted",
+            stage1: clone(stage1),
+            stage2: clone(stage2),
+            final: clone(final),
+            outcome: scenario.eventOutcomes?.[final.id] || null
+          });
+        });
+      });
+    });
+    return routes;
+  }
+
+  function legacyEventRoutes() {
+    const routes = [];
+    eventApproachChoices.forEach((stage1) => {
+      (eventSecondChoicesByApproach[stage1.id] || []).forEach((stage2) => {
+        (eventFinalChoicesBySecond[stage2.id] || []).forEach((final) => {
+          routes.push({
+            id: `legacy-${final.id}`,
+            routeType: legacyRouteType(stage1.id),
+            stage1: clone(stage1),
+            stage2: clone(stage2),
+            final: clone(final),
+            outcome: eventOutcomeByFinalChoice[final.id] || null
+          });
+        });
+      });
+    });
+    return routes;
+  }
+
+  function legacyRouteType(stage1Id) {
+    return {
+      "protagonist-line": "主角線",
+      "artifact-line": "核心道具線",
+      "main-god-line": "主神漏洞線"
+    }[stage1Id] || "通用支線";
+  }
+
+  function uniqueEventRoutes(routes) {
+    const seen = new Set();
+    return routes.filter((route) => {
+      if (!route?.stage1?.id || !route?.stage2?.id || !route?.final?.id || seen.has(route.id)) return false;
+      seen.add(route.id);
+      return true;
+    });
+  }
+
+  function eventChoiceForRoute(route, stage) {
+    const source = stage === 1 ? route.stage1 : stage === 2 ? route.stage2 : route.final;
+    return {
+      ...clone(source),
+      routeId: route.id,
+      routeType: route.routeType || "支線",
+      fixedRoute: route.priority === "fixed"
+    };
+  }
+
+  function routeForChoice(routes, stage, choiceId) {
+    const key = stage === 1 ? "stage1" : stage === 2 ? "stage2" : "final";
+    return routes.find((route) => route[key]?.id === choiceId) || null;
+  }
+
+  function routesForEventStage(routes, stage, path) {
+    const preferred = [];
+    if (stage === 1) preferred.push(...routes.filter((route) => route.priority === "fixed"));
+    if (stage === 2) {
+      const selected = routeForChoice(routes, 1, path[0]);
+      if (selected) preferred.push(selected);
+    }
+    if (stage === 3) {
+      const selected = routeForChoice(routes, 2, path[1]);
+      if (selected) preferred.push(selected);
+    }
+    const output = [];
+    const choiceIds = new Set();
+    [...preferred, ...routes].forEach((route) => {
+      const choice = stage === 1 ? route?.stage1?.id : stage === 2 ? route?.stage2?.id : route?.final?.id;
+      if (route && choice && !choiceIds.has(choice) && !output.some((item) => item.id === route.id)) {
+        choiceIds.add(choice);
+        output.push(route);
+      }
+    });
+    return output.slice(0, eventChoiceTarget);
+  }
+
+  function eventChoicesFor(stage, path, scenario = null, event = null) {
+    const routes = event?.routes?.length ? event.routes : uniqueEventRoutes([
+      ...(scenarioEventRoutes[scenario?.id] || []).map(clone),
+      ...scenarioTreeRoutes(scenario),
+      ...eventBranchPool.map(clone),
+      ...legacyEventRoutes()
+    ]);
+    return routesForEventStage(routes, stage, path).map((route) => eventChoiceForRoute(route, stage));
   }
 
   function resolveEvent(state, optionId) {
@@ -1185,21 +1362,23 @@
       next.pending.stage = 1;
       next.pending.path = [];
       const scenario = scenariosById[next.pending.scenarioId] || scenariosById[next.run?.scenarioId];
-      next.pending.choices = eventChoicesFor(1, [], scenario);
+      next.pending.routes = next.pending.routes?.length ? next.pending.routes : buildEventRoutes(next, scenario);
+      next.pending.choices = eventChoicesFor(1, [], scenario, next.pending);
     }
     const scenario = scenariosById[next.pending.scenarioId] || scenariosById[next.run?.scenarioId];
-    const choices = next.pending.choices || eventChoicesFor(next.pending.stage, next.pending.path || [], scenario);
+    next.pending.routes = next.pending.routes?.length ? next.pending.routes : buildEventRoutes(next, scenario);
+    const choices = next.pending.choices || eventChoicesFor(next.pending.stage, next.pending.path || [], scenario, next.pending);
     const choice = choices.find((item) => item.id === optionId);
     if (!choice) return next;
     const path = [...(next.pending.path || []), optionId];
     if (next.pending.stage < 3) {
       next.pending.stage += 1;
       next.pending.path = path;
-      next.pending.choices = eventChoicesFor(next.pending.stage, path, scenario);
+      next.pending.choices = eventChoicesFor(next.pending.stage, path, scenario, next.pending);
       return next;
     }
     applyEventOutcome(next, next.pending, path);
-    return completeCurrentNode(next);
+    return next;
   }
 
   function isLegacyEventChoice(optionId) {
@@ -1223,72 +1402,129 @@
   function applyEventOutcome(state, event, path) {
     const finalChoiceId = path[2];
     const scenario = scenariosById[event.scenarioId] || scenariosById[state.run?.scenarioId];
-    const outcome = scenario?.eventOutcomes?.[finalChoiceId] || eventOutcomeByFinalChoice[finalChoiceId];
+    const route = routeForChoice(event.routes || [], 3, finalChoiceId);
+    const outcome = eventOutcomeForFinalChoice(finalChoiceId, scenario, route);
     if (!outcome) return;
-    outcome.effects.forEach((effect) => applyEventEffect(state, event, scenario, effect));
+    const applied = { rewards: [], costs: [] };
+    (outcome.effects || []).forEach((effect) => {
+      const detail = applyEventEffect(state, event, scenario, effect);
+      applied.rewards.push(...(detail?.rewards || []));
+      applied.costs.push(...(detail?.costs || []));
+    });
+    const result = buildEventResult(state, event, scenario, route, outcome, applied, path);
+    state.screen = "event-result";
+    state.pending = { kind: "event-result", scenarioId: scenario?.id || event.scenarioId, result };
     state.log = appendLog(state.log, `${scenario?.name || "輪迴"}奇遇：${outcome.title}。${outcome.text}`);
+  }
+
+  function eventOutcomeForFinalChoice(finalChoiceId, scenario, route) {
+    return route?.outcome || scenario?.eventOutcomes?.[finalChoiceId] || eventOutcomeByFinalChoice[finalChoiceId] || null;
+  }
+
+  function buildEventResult(state, event, scenario, route, outcome, applied, path) {
+    const rewards = uniqueTexts([...(applied.rewards || []), ...textList(outcome.rewards)]);
+    const costs = uniqueTexts([...(applied.costs || []), ...textList(outcome.costs)]);
+    return {
+      title: outcome.title || "奇遇收束",
+      text: outcome.text || "路線已經被隊伍推向新的結局。",
+      routeType: route?.routeType || "奇遇路線",
+      scenarioName: scenario?.name || "輪迴",
+      path: path || event.path || [],
+      rewards: rewards.length ? rewards : ["沒有直接獎勵，但路線已完成。"],
+      costs: costs.length ? costs : ["沒有額外代價。"],
+      storyImpact: outcome.storyImpact || defaultStoryImpact(scenario, route),
+      worldState: outcome.worldState || `${scenario?.name || "本劇本"}的局勢已被中洲隊改寫。`
+    };
+  }
+
+  function defaultStoryImpact(scenario, route) {
+    if (route?.priority === "fixed") return `${scenario?.name || "本劇本"}的核心人物避開了原本最糟的命運線。`;
+    if (route?.routeType) return `${route.routeType}完成後，${scenario?.name || "本劇本"}的推進條件變得更有利。`;
+    return "這次奇遇改變了後續戰鬥前的劇情壓力。";
+  }
+
+  function textList(value) {
+    if (!value) return [];
+    return Array.isArray(value) ? value.filter(Boolean).map(String) : [String(value)];
+  }
+
+  function uniqueTexts(items) {
+    return [...new Set(items.filter(Boolean).map(String))];
   }
 
   function applyEventEffect(state, event, scenario, effect) {
     if (effect.type === "recruit-hidden") {
-      grantEventCharacter(state, event.hiddenCandidate || event.candidate);
-      return;
+      return grantEventCharacter(state, event.hiddenCandidate || event.candidate, "隱藏角色");
     }
     if (effect.type === "recruit-candidate") {
-      grantEventCharacter(state, event.candidate || event.hiddenCandidate);
-      return;
+      return grantEventCharacter(state, event.candidate || event.hiddenCandidate, "劇情人物");
     }
     if (effect.type === "rare-card") {
       const card = chooseCardRewards(state, 1, "elite")[0];
-      if (card) addRunCard(state, card.id);
-      else state.rewardPoints += 500;
-      return;
+      if (card) {
+        addRunCard(state, card.id);
+        return { rewards: [`稀有卡牌：${card.name}`] };
+      }
+      state.rewardPoints += 500;
+      return { rewards: ["獎勵點 +500（卡牌池已空）"] };
     }
     if (effect.type === "legendary-equipment") {
       const equipment = chooseEquipmentRewardsByRarity(state, 1, ["legendary"])[0] || chooseEquipmentRewards(state, 1)[0];
-      if (equipment) addRunEquipment(state, equipment.id);
-      else state.rewardPoints += Number(economy.duplicateEquipmentReward || 600);
-      return;
+      if (equipment) {
+        addRunEquipment(state, equipment.id);
+        return { rewards: [`裝備：${equipment.name}`] };
+      }
+      state.rewardPoints += Number(economy.duplicateEquipmentReward || 600);
+      return { rewards: [`獎勵點 +${Number(economy.duplicateEquipmentReward || 600)}（裝備池已空）`] };
     }
     if (effect.type === "scenario-power") {
       applyScenarioPower(state, scenario);
-      return;
+      return { rewards: [`劇本 Buff：${scenario?.scenarioPowerName || powerEffectText(scenario?.scenarioPower || { id: "battle-instinct", effect: "attackBonus", amount: 2 })}`] };
     }
     if (effect.type === "run-power") {
       addTemporaryPower(state, effect);
-      return;
+      return { rewards: [`本劇本 Buff：${powerEffectText(effect)}`] };
     }
     if (effect.type === "reward-points") {
+      const before = state.rewardPoints;
       state.rewardPoints = Math.max(0, state.rewardPoints + Number(effect.amount || 0));
-      return;
+      const delta = state.rewardPoints - before;
+      if (delta >= 0) return { rewards: [`獎勵點 +${delta}`] };
+      return { costs: [`獎勵點 ${delta}`] };
     }
     if (effect.type === "side-story") {
-      state.sideStories += Number(effect.amount || 1);
-      return;
+      const amount = Number(effect.amount || 1);
+      state.sideStories += amount;
+      return { rewards: [`支線劇情 +${amount}`] };
     }
     if (effect.type === "curse") {
-      addRandomCurse(state);
-      return;
+      const curse = addRandomCurse(state);
+      return { costs: [`牌組加入詛咒：${cardsById[curse?.cardId]?.name || "未知詛咒"}`] };
     }
     if (effect.type === "stress") {
       const amount = Number(effect.amount || 0);
       affectAliveActive(state, (member) => ({ ...member, stress: clamp(member.stress + amount, 0, 100) }));
-      return;
+      return { costs: [`出戰成員壓力 +${amount}`] };
     }
     if (effect.type === "damage-fraction") {
       const amount = Number(effect.amount || 0);
       affectAliveActive(state, (member) => ({ ...member, hp: Math.max(1, Math.ceil(member.hp * (1 - amount))), stress: clamp(member.stress + Math.ceil(amount * 20), 0, 100) }));
-      return;
+      return { costs: [`出戰成員生命下降 ${Math.round(amount * 100)}%`] };
     }
-    if (effect.type === "heal") healActive(state, Number(effect.amount || 0.1), Number(effect.stressRelief || 0));
+    if (effect.type === "heal") {
+      healActive(state, Number(effect.amount || 0.1), Number(effect.stressRelief || 0));
+      return { rewards: [`出戰成員恢復 ${Math.round(Number(effect.amount || 0.1) * 100)}% 生命，壓力 -${Number(effect.stressRelief || 0)}`] };
+    }
+    return null;
   }
 
-  function grantEventCharacter(state, characterId) {
+  function grantEventCharacter(state, characterId, label = "角色") {
     if (characterId && charactersById[characterId] && !state.party.some((member) => member.id === characterId)) {
       recruitCharacter(state, characterId);
-      return;
+      return { rewards: [`${label}加入：${charactersById[characterId].name}`] };
     }
     state.rewardPoints += 700;
+    return { rewards: [`獎勵點 +700（${label}已持有或沒有候選人）`] };
   }
 
   function addRandomCurse(state) {
@@ -1296,6 +1532,7 @@
     const curse = makeDeckEntry(state, curseId, state.run?.id || null);
     state.deck.push(curse);
     state.curses.push(curse.instanceId);
+    return curse;
   }
 
   function addTemporaryPower(state, power) {
@@ -1314,6 +1551,20 @@
       return;
     }
     addTemporaryPower(state, { id: "battle-instinct", effect: "attackBonus", amount: 2 });
+  }
+
+  function powerEffectText(power) {
+    if (!power) return "戰鬥直覺";
+    if (power.effect === "attackBonus") return `${power.id}（攻擊 +${power.amount}）`;
+    if (power.effect === "turnBlock") return `${power.id}（每回合護甲 +${power.amount}）`;
+    if (power.effect === "openingBlock") return `${power.id}（開場護甲 +${power.amount}）`;
+    return `${power.id}（${power.effect} +${power.amount}）`;
+  }
+
+  function continueEventResult(state) {
+    const next = clone(state);
+    if (next.screen !== "event-result" || next.pending?.kind !== "event-result") return next;
+    return completeCurrentNode(next);
   }
 
   function campAction(state, action, targetId) {
@@ -1368,6 +1619,7 @@
       Object.keys(next.equipped).forEach((characterId) => {
         if (lostEquipment.has(next.equipped[characterId])) delete next.equipped[characterId];
       });
+      normalizeSupportEquipment(next);
     }
     next.rewardPoints = Math.floor(next.rewardPoints * 0.8);
     next.log = appendLog(next.log, "遠征失敗：本次普通卡牌、裝備與暫時強化已失去。");
@@ -1375,14 +1627,15 @@
   }
 
   function returnToHubWithRepair(state) {
-    const missingHp = state.party.reduce((sum, member) => sum + Math.max(0, member.maxHp - member.hp), 0);
-    const stress = state.party.reduce((sum, member) => sum + member.stress, 0);
-    const downed = state.party.filter((member) => member.hp <= 0).length;
+    const repairMembers = state.party.filter((member) => member.id !== PLAYER_ID);
+    const missingHp = repairMembers.reduce((sum, member) => sum + Math.max(0, member.maxHp - member.hp), 0);
+    const stress = repairMembers.reduce((sum, member) => sum + member.stress, 0);
+    const downed = repairMembers.filter((member) => member.hp <= 0).length;
     const fullCost = Math.ceil(missingHp / 3 + stress / 5 + downed * 20);
     const paid = Math.min(state.rewardPoints, fullCost);
     const ratio = fullCost > 0 ? paid / fullCost : 1;
     state.rewardPoints -= paid;
-    state.party = state.party.map((member) => ({
+    state.party = state.party.map((member) => member.id === PLAYER_ID ? { ...member, active: false, block: 0, evade: 0 } : ({
       ...member,
       hp: member.hp <= 0 ? Math.max(1, Math.round(member.maxHp * ratio)) : Math.min(member.maxHp, Math.round(member.hp + (member.maxHp - member.hp) * ratio)),
       stress: Math.max(0, Math.round(member.stress * (1 - ratio))),
@@ -1406,7 +1659,7 @@
     const next = clone(state);
     if (next.screen !== "hub") return next;
     const target = next.party.find((member) => member.id === characterId);
-    if (!target) return next;
+    if (!target || target.id === PLAYER_ID) return next;
     const count = getActiveParty(next).length;
     if (target.active && count <= 3) return next;
     if (!target.active && count >= 6) return next;
@@ -1423,12 +1676,14 @@
 
   function equipItem(state, characterId, equipmentInstanceId) {
     const next = clone(state);
-    if (!["hub", "camp"].includes(next.screen) || !next.party.some((member) => member.id === characterId)) return next;
+    if (!["hub", "camp"].includes(next.screen) || characterId === PLAYER_ID || !next.party.some((member) => member.id === characterId)) return next;
     if (!equipmentInstanceId) {
       delete next.equipped[characterId];
       return next;
     }
     if (!next.equipmentInventory.some((item) => item.instanceId === equipmentInstanceId)) return next;
+    next.playerGrowth = normalizePlayerGrowth(next.playerGrowth, next.playerProfile);
+    next.playerGrowth.supportEquipmentIds = (next.playerGrowth.supportEquipmentIds || []).filter((id) => id !== equipmentInstanceId);
     Object.keys(next.equipped).forEach((id) => {
       if (next.equipped[id] === equipmentInstanceId) delete next.equipped[id];
     });
@@ -1470,18 +1725,17 @@
     const next = clone(state);
     if (next.screen !== "hub") return next;
     const member = next.party.find((item) => item.id === characterId);
-    if (!member) return next;
+    if (!member || member.id === PLAYER_ID) return next;
     const level = Number(next.permanentUpgrades.characters[characterId] || 0);
     if (level >= 3 || !spendPermanentUpgradeCost(next, economy.characterUpgradeCost || { rewardPointCost: 500, sideStoryCost: 1 })) return next;
     next.permanentUpgrades.characters[characterId] = level + 1;
-    member.maxHp += 8;
-    member.hp += 8;
+    applyPlayerGrowthToParty(next);
     return next;
   }
 
   function upgradeSignature(state, characterId) {
     const next = clone(state);
-    if (next.screen !== "hub" || next.permanentUpgrades.signatures.includes(characterId)) return next;
+    if (next.screen !== "hub" || characterId === PLAYER_ID || next.permanentUpgrades.signatures.includes(characterId)) return next;
     if (!next.party.some((member) => member.id === characterId)) return next;
     if (!spendPermanentUpgradeCost(next, economy.signatureUpgradeCost || { rewardPointCost: 1000, sideStoryCost: 1 })) return next;
     next.permanentUpgrades.signatures.push(characterId);
@@ -1491,7 +1745,7 @@
   function upgradeBloodline(state, characterId) {
     const next = clone(state);
     const bloodline = bloodlinesByCharacterId[characterId];
-    if (next.screen !== "hub" || !bloodline || bloodline.tutorialOnly || next.permanentUpgrades.bloodlines.includes(characterId)) return next;
+    if (next.screen !== "hub" || characterId === PLAYER_ID || !bloodline || bloodline.tutorialOnly || next.permanentUpgrades.bloodlines.includes(characterId)) return next;
     if (!next.party.some((member) => member.id === characterId)) return next;
     if (!spendPermanentUpgradeCost(next, bloodline)) return next;
     next.permanentUpgrades.bloodlines.push(characterId);
@@ -1575,6 +1829,63 @@
     return next;
   }
 
+  function setCustomActiveTag(state, slotIndex, tagId) {
+    const next = clone(state);
+    if (next.screen !== "hub") return next;
+    const index = clamp(Math.floor(Number(slotIndex || 0)), 0, CUSTOM_TAG_SLOT_COUNT - 1);
+    next.playerGrowth = normalizePlayerGrowth(next.playerGrowth, next.playerProfile);
+    const slots = [...(next.playerGrowth.activeTagIds || [])].slice(0, CUSTOM_TAG_SLOT_COUNT);
+    if (!tagId) {
+      slots[index] = null;
+    } else if (customTagsById[tagId] && next.playerGrowth.purchasedTags.includes(tagId)) {
+      for (let i = 0; i < slots.length; i += 1) if (slots[i] === tagId) slots[i] = null;
+      slots[index] = tagId;
+    } else {
+      return next;
+    }
+    next.playerGrowth.activeTagIds = slots.filter(Boolean);
+    syncCustomMutations(next);
+    applyPlayerGrowthToParty(next);
+    return next;
+  }
+
+  function setCustomActiveMutation(state, mutationId) {
+    const next = clone(state);
+    if (next.screen !== "hub") return next;
+    next.playerGrowth = normalizePlayerGrowth(next.playerGrowth, next.playerProfile);
+    syncCustomMutations(next);
+    if (!mutationId) next.playerGrowth.activeMutationId = null;
+    else if (next.playerGrowth.mutations.includes(mutationId)) next.playerGrowth.activeMutationId = mutationId;
+    else return next;
+    const activeMutation = customMutationsById[next.playerGrowth.activeMutationId] || null;
+    const activeTag = [...(next.playerGrowth.activeTagIds || [])].reverse().map((id) => customTagsById[id]).find(Boolean);
+    next.playerGrowth.art = activeMutation?.art || activeTag?.art || null;
+    applyPlayerGrowthToParty(next);
+    return next;
+  }
+
+  function setCustomSupportEquipment(state, slotIndex, equipmentInstanceId) {
+    const next = clone(state);
+    if (!["hub", "camp"].includes(next.screen)) return next;
+    const index = clamp(Math.floor(Number(slotIndex || 0)), 0, CUSTOM_SUPPORT_EQUIPMENT_SLOT_COUNT - 1);
+    next.playerGrowth = normalizePlayerGrowth(next.playerGrowth, next.playerProfile);
+    const slots = [...(next.playerGrowth.supportEquipmentIds || [])].slice(0, CUSTOM_SUPPORT_EQUIPMENT_SLOT_COUNT);
+    if (!equipmentInstanceId) {
+      slots[index] = null;
+    } else if (next.equipmentInventory.some((item) => item.instanceId === equipmentInstanceId)) {
+      for (let i = 0; i < slots.length; i += 1) if (slots[i] === equipmentInstanceId) slots[i] = null;
+      Object.keys(next.equipped || {}).forEach((characterId) => {
+        if (next.equipped[characterId] === equipmentInstanceId) delete next.equipped[characterId];
+      });
+      slots[index] = equipmentInstanceId;
+    } else {
+      return next;
+    }
+    next.playerGrowth.supportEquipmentIds = slots.filter(Boolean);
+    normalizeSupportEquipment(next);
+    return next;
+  }
+
   function refreshCustomTagOffers(state, options = {}) {
     state.playerGrowth = normalizePlayerGrowth(state.playerGrowth, state.playerProfile);
     if (options.onlyIfEmpty && state.playerGrowth.tagOffers.length) return state;
@@ -1591,26 +1902,40 @@
     state.playerGrowth.mutations = (data.customMutations || [])
       .filter((mutation) => (mutation.requiredTags || []).every((tagId) => owned.has(tagId)))
       .map((mutation) => mutation.id);
-    const activeMutation = [...state.playerGrowth.mutations].reverse().map((id) => customMutationsById[id]).find(Boolean);
-    const activeTag = [...state.playerGrowth.purchasedTags].reverse().map((id) => customTagsById[id]).find(Boolean);
+    if (!state.playerGrowth.activeMutationId || !state.playerGrowth.mutations.includes(state.playerGrowth.activeMutationId)) {
+      state.playerGrowth.activeMutationId = state.playerGrowth.mutations.at(-1) || null;
+    }
+    state.playerGrowth.activeTagIds = (state.playerGrowth.activeTagIds || []).filter((id) => owned.has(id)).slice(0, CUSTOM_TAG_SLOT_COUNT);
+    [...state.playerGrowth.purchasedTags].reverse().forEach((id) => {
+      if (state.playerGrowth.activeTagIds.length < CUSTOM_TAG_SLOT_COUNT && !state.playerGrowth.activeTagIds.includes(id)) state.playerGrowth.activeTagIds.push(id);
+    });
+    const activeMutation = customMutationsById[state.playerGrowth.activeMutationId] || null;
+    const activeTag = [...state.playerGrowth.activeTagIds].reverse().map((id) => customTagsById[id]).find(Boolean);
     state.playerGrowth.art = activeMutation?.art || activeTag?.art || null;
     return state;
   }
 
   function applyPlayerGrowthToParty(state) {
-    const member = state.party.find((item) => item.id === "player-avatar");
-    if (!member || !state.playerProfile) return state;
-    const desiredMaxHp = playerMaxHpFromGrowth(state.playerProfile, state.playerGrowth);
-    const delta = desiredMaxHp - Number(member.maxHp || desiredMaxHp);
-    member.maxHp = desiredMaxHp;
-    member.hp = Math.max(1, Math.min(desiredMaxHp, Number(member.hp || desiredMaxHp) + Math.max(0, delta)));
+    if (!state.playerProfile) return state;
+    state.party.forEach((member) => {
+      const desiredMaxHp = member.id === PLAYER_ID ? playerMaxHpFromGrowth(state.playerProfile) : combatMemberMaxHpFromGrowth(state, member);
+      const previousMaxHp = Number(member.maxHp || desiredMaxHp);
+      const delta = desiredMaxHp - previousMaxHp;
+      member.maxHp = desiredMaxHp;
+      member.hp = Math.max(1, Math.min(desiredMaxHp, Number(member.hp || desiredMaxHp) + Math.max(0, delta)));
+    });
     return state;
   }
 
-  function playerMaxHpFromGrowth(profile, growth) {
+  function playerMaxHpFromGrowth(profile) {
     const profession = playerProfessionsById[profile?.professionId] || data.playerProfessions[0];
-    const growthState = { playerGrowth: growth || createPlayerGrowth(profile) };
-    return Number(profession?.maxHp || 60) + customStatTier(growthState, "stamina") * 10 + customEffectTotal(growthState, "maxHp");
+    return Number(profession?.maxHp || 60);
+  }
+
+  function combatMemberMaxHpFromGrowth(state, member) {
+    const base = charactersById[member.id]?.maxHp || member.maxHp || 1;
+    const level = Number(state.permanentUpgrades?.characters?.[member.id] || 0);
+    return Number(base) + level * 8 + customStatTier(state, "stamina") * 10 + customEffectTotal(state, "maxHp");
   }
 
   function customStatTier(state, statId) {
@@ -1623,8 +1948,8 @@
 
   function customSources(state) {
     const growth = state.playerGrowth || {};
-    const tags = (growth.purchasedTags || []).map((id) => customTagsById[id]).filter(Boolean);
-    const mutations = (growth.mutations || []).map((id) => customMutationsById[id]).filter(Boolean);
+    const tags = (growth.activeTagIds || []).map((id) => customTagsById[id]).filter(Boolean);
+    const mutations = growth.activeMutationId ? [customMutationsById[growth.activeMutationId]].filter(Boolean) : [];
     return [...tags, ...mutations];
   }
 
@@ -1793,7 +2118,7 @@
     if (customTurnStress) affectAliveActive(state, (member) => ({ ...member, stress: clamp(member.stress + customTurnStress, 0, 100) }));
     if (customTurnReduceStress) affectAliveActive(state, (member) => ({ ...member, stress: Math.max(0, member.stress - customTurnReduceStress) }));
     if (customTurnHeal) affectAliveActive(state, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + customTurnHeal) }));
-    if (customOwnerHeal) updateMember(state, "player-avatar", (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + customOwnerHeal) }));
+    if (customOwnerHeal) affectAliveActive(state, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + customOwnerHeal) }));
     if (turnHealLowest) {
       const lowest = [...getAliveActiveParty(state)].sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
       if (lowest) updateMember(state, lowest.id, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + turnHealLowest) }));
@@ -1827,6 +2152,10 @@
     if (weakAll) getLivingEnemies(state).forEach((enemy) => addEnemyStatus(state, enemy.uid, "weak", weakAll));
   }
 
+  function isPlayerOriginCard(card) {
+    return Boolean(card && (String(card.id || "").startsWith("player-") || (card.tags || []).includes("自創主角")));
+  }
+
   function applyCardEffects(state, card, ownerId, targetEnemyUid) {
     const target = state.activeEnemies.find((enemy) => enemy.uid === targetEnemyUid) || getLivingEnemies(state)[0];
     if (card.blockAll) affectAliveActive(state, (member) => ({ ...member, block: member.block + card.blockAll }));
@@ -1844,8 +2173,11 @@
     if (card.weakTarget && target) addEnemyStatus(state, target.uid, "weak", card.weakTarget);
     if (card.weakAll) getLivingEnemies(state).forEach((enemy) => addEnemyStatus(state, enemy.uid, "weak", card.weakAll));
     if (card.evadeOwner) {
-      const evadeOwnerId = ownerId || getLeaderId(state);
-      if (evadeOwnerId) updateMember(state, evadeOwnerId, (member) => ({ ...member, evade: Number(member.evade || 0) + card.evadeOwner }));
+      if (isPlayerOriginCard(card)) affectAliveActive(state, (member) => ({ ...member, evade: Number(member.evade || 0) + card.evadeOwner }));
+      else {
+        const evadeOwnerId = ownerId || getLeaderId(state);
+        if (evadeOwnerId) updateMember(state, evadeOwnerId, (member) => ({ ...member, evade: Number(member.evade || 0) + card.evadeOwner }));
+      }
     }
     if (card.evadeAll) affectAliveActive(state, (member) => ({ ...member, evade: Number(member.evade || 0) + card.evadeAll }));
     if (card.reduceStress) affectAliveActive(state, (member) => ({ ...member, stress: Math.max(0, member.stress - card.reduceStress) }));
@@ -1942,7 +2274,7 @@
       const evadeOwner = customEffectTotal(state, "thirdCardEvadeOwner");
       if (draw) drawCards(state, draw);
       if (blockAll) affectAliveActive(state, (member) => ({ ...member, block: member.block + blockAll }));
-      if (evadeOwner && ownerId) updateMember(state, ownerId, (member) => ({ ...member, evade: Number(member.evade || 0) + evadeOwner }));
+      if (evadeOwner) affectAliveActive(state, (member) => ({ ...member, evade: Number(member.evade || 0) + evadeOwner }));
     }
     if (currentCardNumber === 5) {
       const draw = customEffectTotal(state, "fifthCardDraw");
@@ -1956,7 +2288,7 @@
     }
     if (card.type === "attack") {
       const heal = customEffectTotal(state, "healOwnerOnAttack");
-      if (heal) updateMember(state, "player-avatar", (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + heal) }));
+      if (heal) affectAliveActive(state, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + heal) }));
     }
   }
 
@@ -2174,14 +2506,13 @@
   }
 
   function getActiveParty(state) {
-    return state.party.filter((member) => member.active);
+    return state.party.filter((member) => member.id !== PLAYER_ID && member.active);
   }
 
   function getLeaderId(state) {
-    return state.party.find((member) => member.id === "player-avatar")?.id
-      || state.party.find((member) => member.id === "zheng-zha")?.id
+    return state.party.find((member) => member.id === "zheng-zha" && member.active)?.id
       || getActiveParty(state)[0]?.id
-      || state.party[0]?.id
+      || state.party.find((member) => member.id !== PLAYER_ID)?.id
       || null;
   }
 
@@ -2199,11 +2530,13 @@
   }
 
   function calculateEnergy(state) {
-    return getAliveActiveParty(state).reduce((sum, member) => {
+    const aliveActive = getAliveActiveParty(state);
+    if (!aliveActive.length) return 0;
+    const rawTotal = aliveActive.reduce((sum, member) => {
       const crisisEnergy = member.passiveId === "low-health-energy" && member.hp <= member.maxHp / 2 ? 1 : 0;
-      const customEnergy = member.id === "player-avatar" ? customStatTier(state, "intelligence") : 0;
-      return sum + member.energyContribution + crisisEnergy + customEnergy;
-    }, 0);
+      return sum + member.energyContribution + crisisEnergy;
+    }, customStatTier(state, "intelligence"));
+    return Math.max(1, rawTotal);
   }
 
   function hasPassive(state, passiveId) {
@@ -2236,14 +2569,23 @@
   }
 
   function equipmentEffectTotal(state, effect) {
-    return getAliveActiveParty(state).reduce((sum, member) => {
+    const activeTotal = getAliveActiveParty(state).reduce((sum, member) => {
       const instance = state.equipmentInventory.find((item) => item.instanceId === state.equipped[member.id]);
-      const definition = instance ? equipmentById[instance.equipmentId] : null;
-      if (definition?.effect !== effect) return sum;
-      let amount = Number(instance.upgraded ? definition.upgradedAmount : definition.amount);
-      if (definition.weaponClass === "firearm") amount = Math.ceil(amount * bondEffectMax(state, "firearmMultiplier", 1));
-      return sum + amount;
+      return sum + equipmentEffectAmount(state, instance, effect);
     }, 0);
+    const supportTotal = (state.playerGrowth?.supportEquipmentIds || []).reduce((sum, instanceId) => {
+      const instance = state.equipmentInventory.find((item) => item.instanceId === instanceId);
+      return sum + equipmentEffectAmount(state, instance, effect);
+    }, 0);
+    return activeTotal + supportTotal;
+  }
+
+  function equipmentEffectAmount(state, instance, effect) {
+    const definition = instance ? equipmentById[instance.equipmentId] : null;
+    if (definition?.effect !== effect) return 0;
+    let amount = Number(instance.upgraded ? definition.upgradedAmount : definition.amount);
+    if (definition.weaponClass === "firearm") amount = Math.ceil(amount * bondEffectMax(state, "firearmMultiplier", 1));
+    return amount;
   }
 
   function temporaryPowerAmount(state, effect) {
@@ -2300,9 +2642,10 @@
   function ensureFormation(state) {
     let active = getActiveParty(state);
     if (active.length > 6) active.slice(6).forEach((member) => { member.active = false; });
-    const minimum = state.campaign?.tutorialComplete ? 3 : 2;
+    const minimum = state.campaign?.tutorialComplete ? 3 : 1;
     active = getActiveParty(state);
-    state.party.filter((member) => !member.active).slice(0, Math.max(0, minimum - active.length)).forEach((member) => { member.active = true; });
+    state.party.filter((member) => member.id !== PLAYER_ID && !member.active).slice(0, Math.max(0, minimum - active.length)).forEach((member) => { member.active = true; });
+    state.party.filter((member) => member.id === PLAYER_ID).forEach((member) => { member.active = false; });
   }
 
   function reconcileCampaignUnlocks(campaign) {
@@ -2414,7 +2757,10 @@
     claimBossReward,
     claimTreasure,
     resolveEvent,
-    eventOutcomeCount: Object.keys(eventOutcomeByFinalChoice).length,
+    continueEventResult,
+    eventOutcomeCount: Object.keys(eventOutcomeByFinalChoice).length + eventBranchPool.length + Object.values(scenarioEventRoutes).reduce((sum, routes) => sum + routes.length, 0),
+    eventBranchPoolCount: eventBranchPool.length,
+    scenarioEventRouteCount: Object.values(scenarioEventRoutes).reduce((sum, routes) => sum + routes.length, 0),
     campAction,
     returnAfterDefeat,
     toggleActive,
@@ -2428,6 +2774,9 @@
     buyCustomStat,
     buyCustomTag,
     rerollCustomTagOffers,
+    setCustomActiveTag,
+    setCustomActiveMutation,
+    setCustomSupportEquipment,
     refreshCustomTagOffers,
     syncCustomMutations,
     customStatTier,

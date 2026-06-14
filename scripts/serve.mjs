@@ -11,6 +11,8 @@ const contentTypes = {
   ".css": "text/css; charset=utf-8",
   ".svg": "image/svg+xml",
   ".png": "image/png",
+  ".mp3": "audio/mpeg",
+  ".mpeg": "audio/mpeg",
   ".wav": "audio/wav",
   ".json": "application/json; charset=utf-8"
 };

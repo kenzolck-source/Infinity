@@ -84,6 +84,7 @@
     if (state.screen === "boss-reward") return renderBossReward();
     if (state.screen === "treasure") return renderTreasure();
     if (state.screen === "event") return renderEvent();
+    if (state.screen === "event-result") return renderEventResult();
     if (state.screen === "camp") return renderCamp();
     if (state.screen === "defeat") return renderDefeat();
     return renderHub();
@@ -311,7 +312,7 @@
             return `<button class="recruit-card faction-${member.factionId || "main"}" data-action="recruit" data-character-id="${id}">
               ${image(characterArt(id), `${escapeHtml(member.name)}插畫`, "recruit-art")}
               <span class="faction-badge">${escapeHtml(memberFactionName(member))}</span>
-              <span class="energy-badge">+${member.energyContribution} 能量</span>
+              <span class="energy-badge">${formatEnergy(member.energyContribution)} 能量</span>
               <h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.role)}</p><p class="trait">${escapeHtml(member.passiveText)}</p>
             </button>`;
           }).join("")}
@@ -439,7 +440,7 @@
       <article class="combat-character faction-${member.factionId || "main"} ${core.isAlive(member) ? "" : "down"}">
         ${image(characterArt(member.id), `${escapeHtml(member.name)}插畫`, "combat-character-art")}
         <div class="combat-character-copy">
-          <div class="character-top"><div><span class="faction-inline faction-${member.factionId || "main"}">${escapeHtml(memberFactionName(member))}</span><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.role)} · +${member.energyContribution} 能量</p></div>${member.block ? `<span class="block-badge">${member.block}</span>` : ""}</div>
+          <div class="character-top"><div><span class="faction-inline faction-${member.factionId || "main"}">${escapeHtml(memberFactionName(member))}</span><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.role)} · ${formatEnergy(member.energyContribution)} 能量</p></div>${member.block ? `<span class="block-badge">${member.block}</span>` : ""}</div>
           ${renderMeter("生命", member.hp, member.maxHp, "hp")}
           ${renderMeter("壓力", member.stress, 100, "stress")}
           ${renderCharacterStatuses(member)}
@@ -564,6 +565,32 @@
     return `${prior}最後一次行動會導向完全不同的結尾：可能是傳說加入、劇本強化、技能裝備，也可能是半血、壓力爆發或詛咒。`;
   }
 
+  function renderEventResult() {
+    const result = state.pending?.result || {};
+    const rewards = result.rewards || [];
+    const costs = result.costs || [];
+    const storyImpact = result.storyImpact || "命運線已經偏移。";
+    return `
+      <section class="choice-screen event-result-screen">
+        <div class="screen-title">
+          <span class="eyebrow">奇遇結局</span>
+          <h2>${escapeHtml(result.title || "劇本偏移完成")}</h2>
+          <p>${escapeHtml(result.text || "主神記錄了這次選擇，遠征路線重新穩定。")}</p>
+        </div>
+        <div class="choice-grid">
+          <article class="choice-card"><strong>獎勵</strong>${renderResultList(rewards)}</article>
+          <article class="choice-card danger"><strong>代價</strong>${renderResultList(costs)}</article>
+          <article class="choice-card"><strong>劇情影響</strong><p>${escapeHtml(storyImpact)}</p></article>
+        </div>
+        <button class="primary-action" data-action="continue-event-result">確認後果，返回路線圖</button>
+      </section>
+    `;
+  }
+
+  function renderResultList(items) {
+    return items.length ? `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : "<p>無</p>";
+  }
+
   function renderCamp() {
     const unupgradedCards = state.deck.filter((entry) => core.cardsById[entry.cardId].category === "general" && !entry.upgraded);
     const unupgradedSignatures = state.party.filter((member) => member.active && !state.permanentUpgrades.signatures.includes(member.id));
@@ -622,7 +649,11 @@
     const purchasedTags = (growth.purchasedTags || []).map((id) => core.customTagsById[id]).filter(Boolean);
     const offers = (growth.tagOffers || []).map((id) => core.customTagsById[id]).filter(Boolean);
     const mutations = (growth.mutations || []).map((id) => core.customMutationsById[id]).filter(Boolean);
-    const branchName = mutations.at(-1)?.name || purchasedTags.at(-1)?.name || "未植入血統";
+    const activeMutation = core.customMutationsById[growth.activeMutationId] || null;
+    const activeTagIds = Array.isArray(growth.activeTagIds) ? growth.activeTagIds : [];
+    const activeTags = activeTagIds.map((id) => core.customTagsById[id]).filter(Boolean);
+    const supportEquipmentIds = Array.isArray(growth.supportEquipmentIds) ? growth.supportEquipmentIds.filter(Boolean) : [];
+    const branchName = activeMutation?.name || activeTags[0]?.name || mutations.at(-1)?.name || purchasedTags.at(-1)?.name || "未植入血統";
     return `
       <section class="growth-console">
         <aside class="growth-identity-panel">
@@ -634,11 +665,13 @@
           </div>
           <div class="growth-summary-grid">
             <div><span>已購標籤</span><strong>${purchasedTags.length}</strong></div>
-            <div><span>變異</span><strong>${mutations.length}</strong></div>
-            <div><span>候選池</span><strong>${offers.length}<small>/${data.customTags.length}</small></strong></div>
+            <div><span>生效血統</span><strong>${activeTags.length}<small>/2</small></strong></div>
+            <div><span>變異槽</span><strong>${activeMutation ? 1 : 0}<small>/1</small></strong></div>
+            <div><span>支援裝備</span><strong>${supportEquipmentIds.length}<small>/2</small></strong></div>
           </div>
         </aside>
         <section class="growth-main-stack">
+          ${renderGrowthSupportPanel(purchasedTags, mutations)}
           <section class="panel growth-stat-panel">
             <div class="section-heading"><div><span class="eyebrow">RPG 六維</span><h2>獎勵點數強化</h2></div><p>每 +1 消耗 ${data.economy?.customStatPointCost || 1000} 點；每 100 點解鎖一階被動。</p></div>
             <div class="growth-stat-grid">${data.customStats.map(renderGrowthStat).join("")}</div>
@@ -684,6 +717,55 @@
         </div>
       </article>
     `;
+  }
+
+  function renderGrowthSupportPanel(purchasedTags, mutations) {
+    const growth = state.playerGrowth || {};
+    const activeTagIds = Array.isArray(growth.activeTagIds) ? growth.activeTagIds : [];
+    const supportEquipmentIds = Array.isArray(growth.supportEquipmentIds) ? growth.supportEquipmentIds.filter(Boolean) : [];
+    return `
+      <section class="panel growth-support-panel">
+        <div class="section-heading"><div><span class="eyebrow">第 7 人支援</span><h2>血統與裝備槽</h2></div><p>每場戰鬥只啟用 1 個變異、2 個一般血統與 2 件支援裝備。</p></div>
+        <div class="growth-support-grid">
+          <label class="support-select-row"><span>變異血統</span><select data-action="set-custom-mutation">${renderMutationOptions(mutations, growth.activeMutationId)}</select></label>
+          ${[0, 1].map((index) => `<label class="support-select-row"><span>一般血統 ${index + 1}</span><select data-action="set-custom-tag-slot" data-slot-index="${index}">${renderCustomTagOptions(purchasedTags, activeTagIds[index], activeTagIds)}</select></label>`).join("")}
+          ${[0, 1].map((index) => `<label class="support-select-row"><span>支援裝備 ${index + 1}</span><select data-action="set-custom-support-equipment" data-slot-index="${index}">${renderSupportEquipmentOptions(supportEquipmentIds[index], supportEquipmentIds)}</select></label>`).join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderMutationOptions(mutations, activeMutationId) {
+    return [
+      `<option value="" ${activeMutationId ? "" : "selected"}>未配置變異血統</option>`,
+      ...mutations.map((mutation) => `<option value="${escapeHtml(mutation.id)}" ${mutation.id === activeMutationId ? "selected" : ""}>${escapeHtml(mutation.name)}</option>`)
+    ].join("");
+  }
+
+  function renderCustomTagOptions(purchasedTags, activeTagId, activeTagIds) {
+    return [
+      `<option value="" ${activeTagId ? "" : "selected"}>未配置一般血統</option>`,
+      ...purchasedTags.map((tag) => {
+        const selected = tag.id === activeTagId;
+        const duplicate = activeTagIds.includes(tag.id) && !selected;
+        return `<option value="${escapeHtml(tag.id)}" ${selected ? "selected" : ""} ${duplicate ? "disabled" : ""}>${escapeHtml(tag.name)}</option>`;
+      })
+    ].join("");
+  }
+
+  function renderSupportEquipmentOptions(activeInstanceId, supportEquipmentIds) {
+    return [
+      `<option value="" ${activeInstanceId ? "" : "selected"}>未配置支援裝備</option>`,
+      ...state.equipmentInventory.map((entry) => {
+        const item = core.equipmentById[entry.equipmentId];
+        const selected = entry.instanceId === activeInstanceId;
+        const duplicate = supportEquipmentIds.includes(entry.instanceId) && !selected;
+        const holder = getEquipmentHolder(entry.instanceId);
+        const supportSlot = getSupportEquipmentSlot(entry.instanceId);
+        const suffix = holder ? ` · ${holder.name}持有` : supportSlot >= 0 && !selected ? ` · 支援槽${supportSlot + 1}` : "";
+        return `<option value="${escapeHtml(entry.instanceId)}" ${selected ? "selected" : ""} ${duplicate ? "disabled" : ""}>${escapeHtml(item.name)}${entry.upgraded ? "+" : ""}${escapeHtml(suffix)}</option>`;
+      })
+    ].join("");
   }
 
   function renderCustomTagCard(tag, mode) {
@@ -806,7 +888,7 @@
 
   function renderDeploymentHub() {
     const active = core.getActiveParty(state);
-    const reserve = state.party.filter((member) => !member.active);
+    const reserve = combatMembers().filter((member) => !member.active);
     return `
       <section class="scenario-panel deployment-scenarios">
         <div class="section-heading"><div><span class="eyebrow">劇本出擊</span><h2>選擇下一場恐怖片</h2></div><p>先定劇本，再用下方隊伍台調整出戰與羈絆。</p></div>
@@ -834,9 +916,10 @@
 
   function renderRosterHub() {
     const upgraded = Object.keys(state.permanentUpgrades.characters).length;
+    const roster = combatMembers();
     return `
       <section class="roster-overview">
-        <div><span>已招募</span><strong>${state.party.length}</strong></div>
+        <div><span>已招募</span><strong>${roster.length}</strong></div>
         <div><span>出戰中</span><strong>${core.getActiveParty(state).length}</strong></div>
         <div><span>角色強化</span><strong>${upgraded}</strong></div>
         <div><span>專屬牌升級</span><strong>${state.permanentUpgrades.signatures.length}</strong></div>
@@ -845,7 +928,7 @@
       <section class="main-god-console roster-console">
         <section class="panel browser-column">
           <div class="section-heading"><div><span class="eyebrow">角色名冊</span><h2>按隊伍與原作來源整備</h2></div><p>展開 hero shot 分類後即可升級角色、專屬牌與血統。</p></div>
-          ${renderCharacterBrowser(state.party, "roster")}
+          ${renderCharacterBrowser(roster, "roster")}
         </section>
         <aside class="side-stack roster-side">
           ${renderBondPanel("deployment")}
@@ -861,7 +944,7 @@
     if (mode === "roster") return renderRosterSourceBrowser(members);
     return `<div class="management-group-list">${groupMembersByFaction(members).map((group, index) => `
       <details class="management-group faction-${group.id}" ${index < 2 ? "open" : ""}>
-        <summary><span><strong>${group.name}</strong><small>${group.members.length} 名角色 · ${group.activeCount} 名出戰</small></span><em>${group.energy} 能量</em></summary>
+        <summary><span><strong>${group.name}</strong><small>${group.members.length} 名角色 · ${group.activeCount} 名出戰</small></span><em>${formatEnergy(group.energy)} 能量</em></summary>
         <div class="compact-character-list">${group.members.map((member) => renderManagementCharacter(member, mode)).join("")}</div>
       </details>
     `).join("")}</div>`;
@@ -874,7 +957,7 @@
         <summary class="roster-source-hero">
           ${image(rosterHeroArt(group), "", "roster-source-art")}
           <span class="roster-source-shade"></span>
-          <span class="roster-source-copy"><span class="eyebrow">角色整備</span><strong>${group.name}</strong><small>${group.description || ""}</small><em>${group.members.length} 名 · 出戰 ${group.activeCount} · 能量 ${group.energy}</em></span>
+          <span class="roster-source-copy"><span class="eyebrow">角色整備</span><strong>${group.name}</strong><small>${group.description || ""}</small><em>${group.members.length} 名 · 出戰 ${group.activeCount} · 能量 ${formatEnergy(group.energy)}</em></span>
         </summary>
         <div class="roster-source-drawer">
           <div class="subsection-heading"><strong>${group.name}</strong><span>${group.members.length} 名角色 · ${group.activeCount} 名出戰</span></div>
@@ -901,7 +984,7 @@
         <div class="mini-character-copy">
           <div class="mini-character-head">
             <div><span class="faction-inline faction-${member.factionId || "main"}">${escapeHtml(factionLabel)}</span><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.role)}${sourceSuffix}</p></div>
-            <span class="energy-badge">+${energy}</span>
+            <span class="energy-badge">${formatEnergy(energy)}</span>
           </div>
           <div class="mini-stat-row"><span>HP ${member.hp}/${member.maxHp}</span><span>壓力 ${member.stress}</span><span>Lv.${level}</span></div>
           <div class="loadout-chip">${loadout.item ? `${loadout.item.name}${loadout.entry.upgraded ? "+" : ""}` : "未裝備"}</div>
@@ -927,7 +1010,7 @@
       <article class="squad-slot faction-${member.factionId || "main"}">
         ${image(characterArt(member.id), `${escapeHtml(member.name)}`, "squad-art")}
         <div>
-          <div class="squad-head"><strong>${escapeHtml(member.name)}</strong><span>+${member.energyContribution} 能量</span></div>
+          <div class="squad-head"><strong>${escapeHtml(member.name)}</strong><span>${formatEnergy(member.energyContribution)} 能量</span></div>
           <p>${escapeHtml(member.role)}</p>
           <div class="squad-equipment">${loadout.item ? `${loadout.item.name}${loadout.entry.upgraded ? "+" : ""}` : "未裝備"}</div>
         </div>
@@ -938,14 +1021,16 @@
 
   function renderEquipmentManagement() {
     const entries = state.equipmentInventory;
-    const equippedCount = Object.keys(state.equipped || {}).filter((id) => state.party.some((member) => member.id === id)).length;
+    const roster = combatMembers();
+    const supportCount = (state.playerGrowth?.supportEquipmentIds || []).length;
+    const equippedCount = Object.keys(state.equipped || {}).filter((id) => roster.some((member) => member.id === id)).length + supportCount;
     return `
       <section class="panel equipment-panel equipment-console">
         <div class="section-heading"><div><span class="eyebrow">裝備管理</span><h2>角色裝備與兵器庫</h2></div><p>${entries.length} 件道具 · ${equippedCount} 件已裝備</p></div>
         <div class="equipment-layout">
           <section class="loadout-column">
             <div class="subsection-heading"><strong>角色目前裝備</strong><span>先看誰缺裝，再到右側兵器庫指派。</span></div>
-            <div class="loadout-grid">${state.party.map(renderLoadoutCard).join("")}</div>
+            <div class="loadout-grid">${roster.map(renderLoadoutCard).join("")}</div>
           </section>
           <section class="armory-column">
             <div class="subsection-heading"><strong>兵器庫</strong><span>每件裝備只出現一次，直接指定持有人。</span></div>
@@ -984,24 +1069,25 @@
   function renderArmoryItem(entry) {
     const item = core.equipmentById[entry.equipmentId];
     const holder = getEquipmentHolder(entry.instanceId);
+    const supportSlot = getSupportEquipmentSlot(entry.instanceId);
     return `
       <article class="armory-item rarity-${item.rarity || "common"}">
         ${image(equipmentArt(item.id), "", "armory-art")}
         <div class="armory-copy">
-          <div class="armory-head"><strong>${item.name}${entry.upgraded ? "+" : ""}</strong><span>${rarityLabel(item.rarity)}${item.weaponClass === "firearm" ? " · 槍械" : ""}</span></div>
+          <div class="armory-head"><strong>${item.name}${entry.upgraded ? "+" : ""}</strong><span>${rarityLabel(item.rarity)}${item.weaponClass === "firearm" ? " · 槍械" : ""}${supportSlot >= 0 ? ` · 第7人支援${supportSlot + 1}` : ""}</span></div>
           <p>${item.text}</p>
-          <label class="assign-row"><span>持有人</span><select data-action="assign-equipment" data-equipment-instance-id="${entry.instanceId}">${renderEquipmentHolderOptions(holder)}</select></label>
+          <label class="assign-row"><span>持有人</span><select data-action="assign-equipment" data-equipment-instance-id="${entry.instanceId}">${renderEquipmentHolderOptions(holder, supportSlot)}</select></label>
         </div>
       </article>
     `;
   }
 
-  function renderEquipmentHolderOptions(holder) {
+  function renderEquipmentHolderOptions(holder, supportSlot = -1) {
     const active = core.getActiveParty(state);
-    const reserve = state.party.filter((member) => !member.active);
+    const reserve = combatMembers().filter((member) => !member.active);
     const optionFor = (member) => `<option value="${escapeHtml(member.id)}" ${holder?.id === member.id ? "selected" : ""}>${escapeHtml(member.name)}${member.active ? " · 出戰" : " · 候補"}</option>`;
     return `
-      <option value="" ${holder ? "" : "selected"}>未裝備</option>
+      <option value="" ${holder || supportSlot >= 0 ? "" : "selected"}>${supportSlot >= 0 ? `第7人支援槽 ${supportSlot + 1}` : "未裝備"}</option>
       <optgroup label="出戰隊伍">${active.map(optionFor).join("")}</optgroup>
       <optgroup label="候補隊員">${reserve.map(optionFor).join("")}</optgroup>
     `;
@@ -1014,7 +1100,11 @@
 
   function getEquipmentHolder(instanceId) {
     const holderId = Object.entries(state.equipped || {}).find(([, value]) => value === instanceId)?.[0];
-    return holderId ? state.party.find((member) => member.id === holderId) : null;
+    return holderId ? combatMembers().find((member) => member.id === holderId) : null;
+  }
+
+  function getSupportEquipmentSlot(instanceId) {
+    return (state.playerGrowth?.supportEquipmentIds || []).findIndex((id) => id === instanceId);
   }
 
   function groupMembersByFaction(members) {
@@ -1134,7 +1224,7 @@
   }
 
   function renderPortraitCard(member) {
-    return `<article class="portrait-card faction-${member.factionId || "main"}">${image(characterArt(member.id), `${escapeHtml(member.name)}插畫`, "portrait-art")}<span class="faction-badge">${escapeHtml(memberFactionName(member))}</span><span class="energy-badge">+${member.energyContribution} 能量</span><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.passiveText)}</p></article>`;
+    return `<article class="portrait-card faction-${member.factionId || "main"}">${image(characterArt(member.id), `${escapeHtml(member.name)}插畫`, "portrait-art")}<span class="faction-badge">${escapeHtml(memberFactionName(member))}</span><span class="energy-badge">${formatEnergy(member.energyContribution)} 能量</span><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.passiveText)}</p></article>`;
   }
 
   function renderDefeat() {
@@ -1265,6 +1355,27 @@
         });
         return;
       }
+      if (action === "set-custom-mutation") {
+        element.addEventListener("change", () => {
+          audio?.unlock?.();
+          dispatch(core.setCustomActiveMutation(state, element.value), { action, mutationId: element.value });
+        });
+        return;
+      }
+      if (action === "set-custom-tag-slot") {
+        element.addEventListener("change", () => {
+          audio?.unlock?.();
+          dispatch(core.setCustomActiveTag(state, element.dataset.slotIndex, element.value), { action, slotIndex: element.dataset.slotIndex, tagId: element.value });
+        });
+        return;
+      }
+      if (action === "set-custom-support-equipment") {
+        element.addEventListener("change", () => {
+          audio?.unlock?.();
+          dispatch(core.setCustomSupportEquipment(state, element.dataset.slotIndex, element.value), { action, slotIndex: element.dataset.slotIndex, equipmentInstanceId: element.value });
+        });
+        return;
+      }
       element.addEventListener("click", () => {
         audio?.unlock?.();
         if (action === "main-god-invite") dispatch(core.answerMainGodInvite(state, element.dataset.answer), { action, answer: element.dataset.answer });
@@ -1288,6 +1399,7 @@
         if (action === "boss-reward") dispatch(core.claimBossReward(state, element.dataset.rewardId), { action, rewardId: element.dataset.rewardId });
         if (action === "treasure") dispatch(core.claimTreasure(state, element.dataset.rewardId), { action, rewardId: element.dataset.rewardId });
         if (action === "event") dispatch(core.resolveEvent(state, element.dataset.optionId), { action, optionId: element.dataset.optionId });
+        if (action === "continue-event-result") dispatch(core.continueEventResult(state), { action });
         if (action === "camp") dispatch(core.campAction(state, element.dataset.campAction, element.dataset.targetId), { action, campAction: element.dataset.campAction, targetId: element.dataset.targetId });
         if (action === "return-after-defeat") dispatch(core.returnAfterDefeat(state), { action });
         if (action === "hub-tab") dispatch(core.setHubTab(state, element.dataset.tabId), { action, tabId: element.dataset.tabId });
@@ -1308,6 +1420,15 @@
 
   function image(src, alt, className) {
     return `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" class="${escapeHtml(className)}" onerror="this.onerror=null;this.src='./src/assets/main-god-space.svg'" />`;
+  }
+
+  function combatMembers() {
+    return state.party.filter((member) => member.id !== "player-avatar");
+  }
+
+  function formatEnergy(value) {
+    const amount = Number(value || 0);
+    return amount > 0 ? `+${amount}` : String(amount);
   }
 
   function escapeHtml(value) {

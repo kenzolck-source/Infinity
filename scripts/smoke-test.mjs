@@ -34,8 +34,14 @@ function assertAudioAsset(fileName) {
   assert(existsSync(url), `Audio asset should exist: ${fileName}`);
   const buffer = readFileSync(url);
   assert(buffer.length > 2048, `Audio asset should not be empty: ${fileName}`);
-  assert(buffer.toString("ascii", 0, 4) === "RIFF", `Audio asset should use RIFF header: ${fileName}`);
-  assert(buffer.toString("ascii", 8, 12) === "WAVE", `Audio asset should use WAVE format: ${fileName}`);
+  assert(isSupportedAudio(buffer), `Audio asset should use WAV or MP3 format: ${fileName}`);
+}
+
+function isSupportedAudio(buffer) {
+  const isWave = buffer.toString("ascii", 0, 4) === "RIFF" && buffer.toString("ascii", 8, 12) === "WAVE";
+  const isId3Mp3 = buffer.toString("ascii", 0, 3) === "ID3";
+  const isMpegFrame = buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0;
+  return isWave || isId3Mp3 || isMpegFrame;
 }
 
 function findCombatCard(state, cardId) {
@@ -80,6 +86,10 @@ function winCombat(state) {
 function addCharacter(state, id, active = true) {
   const base = structuredClone(core.charactersById[id]);
   state.party.push({ ...base, hp: base.maxHp, block: 0, active });
+}
+
+function assertCharacterEnergy(ids, expected, message) {
+  ids.forEach((id) => assert(core.charactersById[id]?.energyContribution === expected, `${message}: ${id}`));
 }
 
 function createCreatedPlayerState({
@@ -156,6 +166,7 @@ function finishScenario(state) {
         next = core.resolveEvent(next, choice.id);
       }
     }
+    else if (next.screen === "event-result") next = core.continueEventResult(next);
     else if (next.screen === "camp") next = core.campAction(next, "heal");
     else throw new Error(`Unhandled scenario screen: ${next.screen}`);
   }
@@ -184,7 +195,12 @@ const requiredAudioEvents = [
 const availableAudioEvents = { ...audioManifest.events, ...audioManifest.music };
 assert(requiredAudioEvents.every((eventName) => availableAudioEvents[eventName]?.src), "Audio manifest should define every required SFX and BGM event.");
 requiredAudioEvents.forEach((eventName) => assertAudioAsset(availableAudioEvents[eventName].src.split("/").pop()));
-assert(state.version === 5 && state.screen === "onboarding" && state.onboarding.stage === "invite", "New saves must start at the Windows 98 invitation popup.");
+Object.values(audioManifest.music).forEach((entry) => {
+  const playlist = Array.isArray(entry.playlist) ? entry.playlist : [];
+  assert(playlist.length === 6, "Every BGM event should use the six-track shared playlist.");
+  playlist.forEach((src) => assertAudioAsset(String(src).split("/").pop()));
+});
+assert(state.version === 6 && state.screen === "onboarding" && state.onboarding.stage === "invite", "New saves must start at the Windows 98 invitation popup.");
 const noInviteState = core.answerMainGodInvite(state, "no");
 assert(noInviteState.onboarding.stage === "ordinary-ending", "Choosing No should enter the ordinary person ending.");
 assert(core.restartOnboarding(noInviteState).onboarding.stage === "invite", "The ordinary ending should restart back to the invitation popup.");
@@ -192,9 +208,20 @@ const createdState = createCreatedPlayerState({ name: "林測試", gender: "fema
 assert(createdState.screen === "story" && createdState.pending.kind === "tutorial-intro", "Confirming character creation should enter the tutorial story.");
 assert(createdState.party.map((member) => member.id).join(",") === "player-avatar,zhang-jie", "Tutorial party must be the custom protagonist and Zhang Jie.");
 assert(createdState.party[0].name === "林測試" && createdState.party[0].signatureCardId === "player-personality-curious", "The custom protagonist should keep the chosen name and personality card.");
-assert(createdState.deck.map((entry) => entry.cardId).join(",") === data.playerProfessions.find((profession) => profession.id === "systems-engineer").cardIds.join(","), "Profession cards should form the custom protagonist's starting deck.");
-assert(createdState.deck.every((entry) => entry.ownerId === "player-avatar"), "Profession cards should be owned by the custom protagonist.");
-assert(core.calculateEnergy(createdState) === 4, "Zhang Jie should still contribute three tutorial energy.");
+assert(core.getActiveParty(createdState).map((member) => member.id).join(",") === "zhang-jie", "The custom protagonist should stay off the battlefield as the seventh support member.");
+assert(createdState.deck.map((entry) => entry.cardId).join(",") === [...data.playerProfessions.find((profession) => profession.id === "systems-engineer").cardIds, "player-personality-curious"].join(","), "Profession and personality cards should form the custom protagonist's team deck.");
+assert(createdState.deck.every((entry) => !entry.ownerId), "Custom protagonist cards should become team cards with no battlefield owner.");
+assert(core.calculateEnergy(createdState) === 3, "Zhang Jie should still contribute three tutorial energy while the custom protagonist stays in support.");
+assertCharacterEnergy(["player-avatar"], 0, "The custom protagonist should not contribute battlefield energy directly");
+assertCharacterEnergy(["zhang-jie", "zhan-lan", "cheng-xiao", "liu-yu", "qi-tengyi", "elena", "arot", "shinpachi-shimura", "capable", "bsaa-agent", "sherry-birkin", "melina-kindling-maiden", "yuta-okkotsu", "toge-inumaki"], 3, "Pure support characters should contribute three energy");
+assertCharacterEnergy(["chu-xuan", "xiao-honglu", "clone-chu-xuan", "adam", "nios", "sarah", "edward-elric", "armin-arlert", "v-dmc5", "kotaro-katsura", "tony-stark", "bruce-wayne-batman", "mako-mori", "stacker-pentecost", "ranni-dark-moon", "megumi-fushiguro", "higuruma-hiromi"], 2, "Strategists and planners should contribute two energy");
+assertCharacterEnergy(["zheng-zha", "zero", "ba-wang", "zhang-heng", "wang-xia", "tanjiro-kamado", "yuji-itadori", "panda-jjk"], 0, "High-combat characters should contribute zero energy");
+assertCharacterEnergy(["clone-zheng-zha", "naruto-uzumaki", "luffy-nika", "son-goku", "ichigo-kurosaki", "levi-ackerman", "dante-dmc5", "thor-odinson", "bruce-banner-hulk", "clark-kent-superman", "satoru-gojo"], -1, "Combat ceiling characters should reduce team energy");
+let negativeEnergyState = createCompletedTutorialState();
+["clone-zheng-zha", "naruto-uzumaki", "son-goku"].forEach((id) => addCharacter(negativeEnergyState, id));
+assert(core.calculateEnergy(negativeEnergyState) === 1, "A living team with negative total contribution should keep one minimum energy.");
+negativeEnergyState.party.forEach((member) => { if (member.id !== "player-avatar") member.hp = 0; });
+assert(core.calculateEnergy(negativeEnergyState) === 0, "The minimum energy floor should not apply when no deployed member is alive.");
 assert(core.cardsById["mentor-demo"].cost === 0 && core.cardsById["mentor-demo"].damage === 24, "Mentor signature must be exceptionally strong.");
 assert(data.playerProfessions.length === 10 && data.playerPersonalities.length === 10, "Character creation should define ten professions and ten personalities.");
 assert(["文員", "平面設計師", "便利店收銀員", "地盤工人", "外賣速遞員", "黑客", "殺手"].every((name) => data.playerProfessions.some((profession) => profession.name === name)), "Character creation should include grounded Hong Kong jobs plus high-risk genre jobs.");
@@ -206,20 +233,29 @@ assert(data.playerProfessions.every((profession) => ["male", "female"].every((ge
 assert(existsSync(assetUrl("character-player-avatar.png")), "The custom protagonist should have a base portrait asset.");
 assert([...professionCardIds, ...personalityCardIds].every((cardId) => existsSync(assetUrl(`skill-${cardId}.png`))), "Every custom protagonist card should have skill art.");
 assert(data.customStats.length === 6 && data.customStats.every((stat) => createdState.playerGrowth.stats[stat.id] >= 0), "The custom protagonist should carry six RPG growth stats.");
+assert(createdState.playerGrowth.activeMutationId === null && Array.isArray(createdState.playerGrowth.activeTagIds) && Array.isArray(createdState.playerGrowth.supportEquipmentIds), "Custom growth should initialize seventh-support mutation, bloodline, and equipment slots.");
 assert(data.customTags.length >= 40 && data.customMutations.length >= 20, "The roguelike custom growth pool should include a deep set of tags and mutation recipes.");
 let growthState = createCompletedTutorialState({ professionId: "systems-engineer" });
+addCharacter(growthState, "zheng-zha");
+addCharacter(growthState, "li-xiaoyi");
 growthState.rewardPoints = 90000;
 const baseEnergy = core.calculateEnergy(growthState);
 growthState = core.buyCustomStat(growthState, "intelligence", 5);
 assert(core.calculateEnergy(growthState) === baseEnergy + 1, "Crossing an intelligence 100-point breakpoint should add one combat energy.");
-const basePlayerHp = growthState.party.find((member) => member.id === "player-avatar").maxHp;
+const baseTeamHp = growthState.party.find((member) => member.id === "zheng-zha").maxHp;
 growthState = core.buyCustomStat(growthState, "stamina", 55);
-assert(growthState.party.find((member) => member.id === "player-avatar").maxHp === basePlayerHp + 10, "Crossing a stamina 100-point breakpoint should add ten max HP.");
+assert(growthState.party.find((member) => member.id === "zheng-zha").maxHp === baseTeamHp + 10, "Crossing a stamina 100-point breakpoint should add ten max HP to combat members.");
+assert(core.normalizeState(structuredClone(growthState)).party.find((member) => member.id === "zheng-zha").maxHp === baseTeamHp + 10, "Reloading should not double-apply custom max HP support buffs.");
 growthState.playerGrowth.tagOffers = ["vampire-seed", "t-virus-adaptation", "spider-sense", "inner-qi-breath", "black-flame-seed", "toxin-craft"];
 growthState = core.buyCustomTag(growthState, "vampire-seed");
 growthState = core.buyCustomTag(growthState, "t-virus-adaptation");
 assert(growthState.playerGrowth.purchasedTags.includes("vampire-seed") && growthState.playerGrowth.mutations.includes("blood-virus-core"), "Buying matching custom tags should automatically unlock their mutation.");
+assert(growthState.playerGrowth.activeMutationId === "blood-virus-core" && growthState.playerGrowth.activeTagIds.length === 2, "Unlocked custom bloodlines should auto-fill the one mutation and two normal support slots.");
 assert(core.customEffectTotal(growthState, "statusExploitBonus") >= 8, "Custom mutation effects should be visible to the combat rules.");
+growthState.playerGrowth.tagOffers = ["gamma-rage-cell"];
+growthState.sideStories = 3;
+growthState = core.buyCustomTag(growthState, "gamma-rage-cell");
+assert(growthState.playerGrowth.purchasedTags.includes("gamma-rage-cell") && !growthState.playerGrowth.activeTagIds.includes("gamma-rage-cell") && core.customEffectTotal(growthState, "attackBonus") === 0, "Purchased but unequipped custom bloodlines should not affect combat.");
 assert(core.customTagCost(core.customTagsById["vampire-count"]).sideStoryCost > core.customTagCost(core.customTagsById["vampire-seed"]).sideStoryCost, "Higher-tier custom bloodlines should require more side stories than basic bloodlines.");
 growthState.playerGrowth.tagOffers = ["vampire-count"];
 growthState.sideStories = 0;
@@ -229,6 +265,18 @@ assert(!growthState.playerGrowth.purchasedTags.includes("vampire-count") && grow
 growthState.sideStories = 3;
 growthState = core.buyCustomTag(growthState, "vampire-count");
 assert(growthState.playerGrowth.purchasedTags.includes("vampire-count") && growthState.sideStories === 2, "Buying an A-tier bloodline should spend one side story.");
+const legacySupportState = structuredClone(growthState);
+legacySupportState.version = 5;
+legacySupportState.playerGrowth.activeMutationId = null;
+legacySupportState.playerGrowth.activeTagIds = [];
+legacySupportState.playerGrowth.supportEquipmentIds = [];
+legacySupportState.equipmentInventory.push({ instanceId: "legacy-support-equip", equipmentId: "gauss-pistol", upgraded: false, acquiredRunId: null });
+legacySupportState.equipped["player-avatar"] = "legacy-support-equip";
+legacySupportState.party.find((member) => member.id === "player-avatar").active = true;
+const migratedSupportState = core.normalizeState(legacySupportState);
+assert(migratedSupportState.version === 6 && !core.getActiveParty(migratedSupportState).some((member) => member.id === "player-avatar"), "Version 5 saves should migrate to seventh-support version 6 without activating the custom protagonist.");
+assert(migratedSupportState.playerGrowth.activeMutationId === "blood-virus-core" && migratedSupportState.playerGrowth.activeTagIds.length === 2, "Migrated saves should choose the latest unlocked mutation and two normal bloodlines.");
+assert(migratedSupportState.playerGrowth.supportEquipmentIds.includes("legacy-support-equip") && !migratedSupportState.equipped["player-avatar"], "Equipment formerly held by the custom protagonist should migrate into support equipment slots.");
 state = createCreatedPlayerState();
 assert(data.characters.length === 112, "The roster should include the custom protagonist plus the existing DMC5 cast, fourteen legendary final-battle characters, the Gintama group, the movie battle casts, the Resident Evil 6 taskforce, the Elden Ring hell roster, and the Jujutsu Kaisen cast.");
 const signatureIds = data.characters.map((character) => character.signatureCardId);
@@ -658,7 +706,7 @@ passiveState.party.find((member) => member.id === "cheng-xiao").hp = 20;
 passiveState.party.find((member) => member.id === "luo-gandao").hp = 30;
 passiveState.party.find((member) => member.id === "imhotep").hp = 60;
 passiveState = core.chooseStoryOption(passiveState, "start");
-assert(passiveState.maxEnergy === 4, "Luo Gandao should contribute one extra energy below half health.");
+assert(passiveState.maxEnergy === 5, "Support energy tiers and Luo Gandao's low-health passive should both affect turn energy.");
 assert(passiveState.party.find((member) => member.id === "cheng-xiao").hp === 23, "Cheng Xiao should heal the lowest-health ally at turn start.");
 assert(passiveState.party.find((member) => member.id === "imhotep").hp === 63, "Imhotep should regenerate at turn start.");
 assert(core.getAliveActiveParty(passiveState).every((member) => member.block === 1), "Imhotep should grant one block to the active party.");
@@ -822,7 +870,7 @@ armoryTutorialState = core.chooseStoryOption(armoryTutorialState, "search");
 armoryTutorialState = winCombat(armoryTutorialState);
 armoryTutorialState = core.chooseStoryOption(armoryTutorialState, "armory");
 const tutorialEagle = armoryTutorialState.equipmentInventory.find((entry) => entry.equipmentId === "infinite-desert-eagle");
-assert(tutorialEagle && armoryTutorialState.equipped["player-avatar"] === tutorialEagle.instanceId, "The tutorial armory reward should equip the custom protagonist.");
+assert(tutorialEagle && armoryTutorialState.playerGrowth.supportEquipmentIds.includes(tutorialEagle.instanceId), "The tutorial armory reward should equip the custom protagonist support slot.");
 
 // Tutorial flow: three combats and two story choices.
 state = core.chooseStoryOption(state, "start");
@@ -839,6 +887,7 @@ state = winCombat(state);
 assert(state.screen === "hub" && state.campaign.tutorialComplete, "Tutorial boss should unlock the hub.");
 assert(!state.party.some((member) => member.id === "zhang-jie"), "Zhang Jie must leave after the tutorial.");
 assert(state.party.some((member) => member.id === "player-avatar" && member.name === "測試者"), "The custom protagonist must remain after the tutorial.");
+assert(!core.getActiveParty(state).some((member) => member.id === "player-avatar"), "The custom protagonist should remain as support after the tutorial.");
 assert(state.campaign.unlockedScenarios.includes("alien"), "Alien should unlock after the tutorial.");
 assert(core.scenariosById.alien.recruitmentPool.includes("zheng-zha"), "Zheng Zha should be available from later recruitment pools instead of starting in the party.");
 const renamedState = core.renameTeam(state, "  輪迴小隊  ");
@@ -854,7 +903,7 @@ state = core.beginScenario(state, "alien");
 assert(state.screen === "recruit" && state.pending.candidates.length === 3, "Alien should open with three recruitment candidates.");
 const selectedRecruit = state.pending.candidates[0];
 state = core.chooseRecruit(state, selectedRecruit);
-assert(state.screen === "scenario-intro" && state.party.length === 3, "First Alien recruitment should add two permanent members and show the scenario opening.");
+assert(state.screen === "scenario-intro" && state.party.length === 4, "First Alien recruitment should add three combat members plus the custom support member and show the scenario opening.");
 state = core.continueScenarioIntro(state);
 assert(state.screen === "map", "Continuing the scenario opening should reveal the three-lane route map.");
 assert(core.getActiveParty(state).length === 3, "The opening recruitment bonus should create a valid three-person formation.");
@@ -959,7 +1008,7 @@ let eligibleLegendaryState = structuredClone(campaignRun);
 eligibleLegendaryState.screen = "hub";
 eligibleLegendaryState.campaign.infiniteTier = data.economy.legendaryRecruitmentMinInfiniteTier;
 eligibleLegendaryState.party = data.characters
-  .filter((character) => !character.tutorialOnly && !legendaryRecruitIds.has(character.id))
+  .filter((character) => !character.tutorialOnly && !character.playerOnly && !legendaryRecruitIds.has(character.id))
   .map((character, index) => {
     const base = structuredClone(core.charactersById[character.id]);
     return { ...base, hp: base.maxHp, block: 0, active: index < 3 };
@@ -990,7 +1039,7 @@ for (const scenario of data.scenarios.filter((item) => item.id !== "tutorial")) 
   let mapState = structuredClone(campaignRun);
   mapState.screen = "hub";
   mapState.party = data.characters
-    .filter((character) => !character.tutorialOnly && !data.legendaryRecruitmentPool.includes(character.id))
+    .filter((character) => !character.tutorialOnly && !character.playerOnly && !data.legendaryRecruitmentPool.includes(character.id))
     .map((character, index) => {
       const base = structuredClone(core.charactersById[character.id]);
       return { ...base, hp: base.maxHp, block: 0, active: index < 3 };
@@ -1004,7 +1053,7 @@ assert(eldenRingScenario.hellBossPool.length === 10, "Elden Ring hell mode shoul
 let eldenRingMapState = structuredClone(campaignRun);
 eldenRingMapState.screen = "hub";
 eldenRingMapState.party = data.characters
-  .filter((character) => !character.tutorialOnly && !data.legendaryRecruitmentPool.includes(character.id))
+  .filter((character) => !character.tutorialOnly && !character.playerOnly && !data.legendaryRecruitmentPool.includes(character.id))
   .map((character, index) => {
     const base = structuredClone(core.charactersById[character.id]);
     return { ...base, hp: base.maxHp, block: 0, active: index < 3 };
@@ -1017,16 +1066,53 @@ let eventState = structuredClone(campaignRun);
 eventState.screen = "event";
 eventState.run.temporaryPowers = [];
 eventState.run.currentNodeId = eventState.run.map.layers[0][0].id;
-function resolveScenarioPowerEvent(baseState, scenarioId) {
-  let next = structuredClone(baseState);
-  next.screen = "event";
-  next.pending = { kind: "event", stage: 1, path: [], candidate: null, hiddenCandidate: null, scenarioId };
-  next.run.scenarioId = scenarioId;
-  next = core.resolveEvent(next, "artifact-line");
-  assert(next.screen === "event" && next.pending.stage === 2 && next.pending.choices.length === 3, "Event stage two should expose three choices.");
-  next = core.resolveEvent(next, "artifact-seal");
-  assert(next.screen === "event" && next.pending.stage === 3 && next.pending.choices.length === 3, "Event stage three should expose three choices.");
-  next = core.resolveEvent(next, "seal-crack");
+
+function createEventReadyHubState() {
+  const next = structuredClone(campaignRun);
+  next.screen = "hub";
+  next.pending = null;
+  next.campaign.tutorialComplete = true;
+  next.campaign.unlockedScenarios = data.scenarios.map((scenario) => scenario.id).filter((id) => id !== "tutorial");
+  next.party = data.characters
+    .filter((character) => !character.tutorialOnly && !character.playerOnly && !character.hidden && !data.legendaryRecruitmentPool.includes(character.id))
+    .map((character, index) => {
+      const base = structuredClone(core.charactersById[character.id]);
+      return { ...base, hp: base.maxHp, block: 0, active: index < 3 };
+    });
+  return next;
+}
+
+function launchEventForScenario(scenarioId) {
+  let next = createEventReadyHubState();
+  next = core.beginScenario(next, scenarioId);
+  if (next.screen === "recruit") next = core.chooseRecruit(next, next.pending.candidates[0]);
+  if (next.screen === "scenario-intro") next = core.continueScenarioIntro(next);
+  const eventNode = next.run.map.layers.flat().find((node) => node.type === "event");
+  assert(eventNode, `${scenarioId} should expose an event node.`);
+  next.run.currentLayer = eventNode.layer - 1;
+  next.run.currentLane = eventNode.lane;
+  next = core.chooseMapNode(next, eventNode.id);
+  assert(next.screen === "event" && next.pending.choices.length >= 4 && next.pending.choices.length <= 5, `${scenarioId} event stage one should expose four to five choices.`);
+  return next;
+}
+
+function chooseRouteStep(state, routeId, message) {
+  const choice = state.pending.choices.find((item) => item.routeId === routeId) || state.pending.choices[0];
+  assert(choice, message);
+  return core.resolveEvent(state, choice.id);
+}
+
+function resolveScenarioThemeEvent(scenarioId) {
+  let next = launchEventForScenario(scenarioId);
+  const stage1 = next.pending.choices.find((choice) => choice.id === `${scenarioId}-theme-entry`);
+  assert(stage1, `${scenarioId} should expose its scenario-specific event route.`);
+  next = core.resolveEvent(next, stage1.id);
+  assert(next.screen === "event" && next.pending.stage === 2 && next.pending.choices.length >= 4 && next.pending.choices.length <= 5, "Event stage two should expose four to five choices.");
+  next = chooseRouteStep(next, stage1.routeId, `${scenarioId} should keep the scenario route available at stage two.`);
+  assert(next.screen === "event" && next.pending.stage === 3 && next.pending.choices.length >= 4 && next.pending.choices.length <= 5, "Event stage three should expose four to five choices.");
+  next = chooseRouteStep(next, stage1.routeId, `${scenarioId} should keep the scenario route available at stage three.`);
+  assert(next.screen === "event-result" && next.pending.result, `${scenarioId} event should pause on a visible result screen.`);
+  assert(next.pending.result.rewards.length && next.pending.result.costs.length && next.pending.result.storyImpact, `${scenarioId} result should explain rewards, costs, and story impact.`);
   return next;
 }
 
@@ -1049,22 +1135,36 @@ const scenarioPowerExpectations = [
   ["elden-ring-hell-run", "great-rune-overload"]
 ];
 for (const [scenarioId, powerId] of scenarioPowerExpectations) {
-  const resolved = resolveScenarioPowerEvent(eventState, scenarioId);
+  const resolved = resolveScenarioThemeEvent(scenarioId);
   assert(resolved.run.temporaryPowers.some((power) => power.id === powerId), `${scenarioId} event should grant its scenario power through a three-layer path.`);
+  const afterResult = core.continueEventResult(resolved);
+  assert(afterResult.screen === "map", `${scenarioId} event result should return to the map after confirmation.`);
 }
-let prisonRealmEvent = structuredClone(eventState);
-prisonRealmEvent.screen = "event";
-prisonRealmEvent.run.scenarioId = "jujutsu-kaisen-shibuya";
-prisonRealmEvent.run.temporaryPowers = [];
-prisonRealmEvent.pending = { kind: "event", stage: 1, path: [], candidate: null, hiddenCandidate: "satoru-gojo", scenarioId: "jujutsu-kaisen-shibuya" };
+assert(data.eventBranchPool.length >= 12, "Scenario events should expose a large branch pool.");
+assert(core.eventBranchPoolCount >= 12, "Core should publish the expanded branch pool count.");
+assert(data.eventBranchPool.every((route) => route.outcome?.rewards?.length && route.outcome?.costs?.length && route.outcome?.storyImpact), "Every branch-pool outcome should declare rewards, costs, and story impact.");
+assert(data.scenarios.filter((scenario) => scenario.id !== "tutorial").every((scenario) => data.scenarioEventRoutes[scenario.id]?.some((route) => route.priority === "fixed")), "Every formal scenario should define a fixed good event route.");
+
+let fixedRouteEvent = launchEventForScenario("mummy-curse");
+const fixedRouteChoice = fixedRouteEvent.pending.choices.find((choice) => choice.fixedRoute);
+assert(fixedRouteChoice, "Every event should surface the fixed good route in stage one.");
+fixedRouteEvent = core.resolveEvent(fixedRouteEvent, fixedRouteChoice.id);
+fixedRouteEvent = chooseRouteStep(fixedRouteEvent, fixedRouteChoice.routeId, "Fixed route should remain available in stage two.");
+fixedRouteEvent = chooseRouteStep(fixedRouteEvent, fixedRouteChoice.routeId, "Fixed route should remain available in stage three.");
+assert(fixedRouteEvent.screen === "event-result" && fixedRouteEvent.pending.result.rewards.some((item) => item.includes("劇本 Buff") || item.includes("加入") || item.includes("支線劇情")), "Fixed good route should produce explicit rewards.");
+assert(fixedRouteEvent.pending.result.storyImpact.includes("改寫") || fixedRouteEvent.pending.result.storyImpact.includes("避開"), "Fixed good route should explain the story improvement.");
+
+let prisonRealmEvent = launchEventForScenario("jujutsu-kaisen-shibuya");
 prisonRealmEvent = core.resolveEvent(prisonRealmEvent, "jjk-prison-realm-sense");
-assert(prisonRealmEvent.screen === "event" && prisonRealmEvent.pending.stage === 2 && prisonRealmEvent.pending.choices.some((choice) => choice.id === "jjk-back-gate-resonance"), "The Jujutsu event should expose Prison Realm-specific stage two choices.");
+assert(prisonRealmEvent.screen === "event" && prisonRealmEvent.pending.stage === 2 && prisonRealmEvent.pending.choices.length >= 4 && prisonRealmEvent.pending.choices.some((choice) => choice.id === "jjk-back-gate-resonance"), "The Jujutsu event should expose Prison Realm-specific stage two choices.");
 prisonRealmEvent = core.resolveEvent(prisonRealmEvent, "jjk-back-gate-resonance");
-assert(prisonRealmEvent.screen === "event" && prisonRealmEvent.pending.stage === 3 && prisonRealmEvent.pending.choices.some((choice) => choice.id === "jjk-break-prison-realm"), "The Jujutsu event should expose the break-Prison-Realm final choice.");
+assert(prisonRealmEvent.screen === "event" && prisonRealmEvent.pending.stage === 3 && prisonRealmEvent.pending.choices.length >= 4 && prisonRealmEvent.pending.choices.some((choice) => choice.id === "jjk-break-prison-realm"), "The Jujutsu event should expose the break-Prison-Realm final choice.");
 prisonRealmEvent = core.resolveEvent(prisonRealmEvent, "jjk-break-prison-realm");
+assert(prisonRealmEvent.screen === "event-result", "Breaking the Prison Realm should show a result screen before returning to the map.");
 assert(prisonRealmEvent.party.some((member) => member.id === "satoru-gojo"), "Breaking the Prison Realm should recruit hidden Gojo.");
 assert(prisonRealmEvent.run.temporaryPowers.some((power) => power.id === "prison-realm-break"), "Breaking the Prison Realm should grant a dedicated temporary power.");
-assert(core.eventOutcomeCount === 27, "Scenario events should define exactly twenty-seven endings.");
+assert(prisonRealmEvent.pending.result.rewards.length && prisonRealmEvent.pending.result.costs.length && prisonRealmEvent.pending.result.storyImpact, "The Prison Realm result should clearly show rewards, costs, and story impact.");
+assert(core.eventOutcomeCount >= 27, "Scenario events should preserve at least the original twenty-seven generic endings.");
 assert(data.scenarios.filter((scenario) => scenario.id !== "tutorial").every((scenario) => scenario.hiddenProtagonistId), "Every formal scenario should declare one hidden protagonist.");
 
 // Multi-enemy combat, target selection, and upgraded card instances.
@@ -1083,7 +1183,7 @@ assert(state.activeEnemies[0].hp === firstEnemyHp && state.activeEnemies[1].hp <
 const downed = core.getActiveParty(state)[1];
 downed.hp = 0;
 state = core.endPlayerTurn(state);
-assert(state.maxEnergy === core.getAliveActiveParty(state).reduce((sum, member) => sum + member.energyContribution, 0), "Downed members must stop contributing energy.");
+assert(state.maxEnergy === core.calculateEnergy(state) && !core.getAliveActiveParty(state).some((member) => member.id === downed.id), "Downed members must stop contributing energy.");
 assert(![...state.hand, ...state.drawPile, ...state.discardPile].some((entry) => entry.ownerId === downed.id), "Downed signatures must be removed.");
 
 // Camp can upgrade one permanent card instance.
@@ -1097,10 +1197,25 @@ assert(state.deck.find((entry) => entry.instanceId === upgradeTarget.instanceId)
 state.screen = "hub";
 state.run = null;
 state.equipmentInventory.push({ instanceId: "test-equip", equipmentId: "gauss-pistol", upgraded: false, acquiredRunId: null });
-const equipmentHolderId = state.party[0].id;
+const equipmentHolderId = core.getActiveParty(state)[0]?.id || state.party.find((member) => member.id !== "player-avatar").id;
 state = core.equipItem(state, equipmentHolderId, "test-equip");
 assert(state.equipped[equipmentHolderId] === "test-equip", "Equipment should bind to a character.");
 assert(!state.deck.some((entry) => entry.cardId === "gauss-pistol"), "Equipment must not enter the draw deck.");
+state.equipmentInventory.push({ instanceId: "support-battery", equipmentId: "tactical-battery", upgraded: false, acquiredRunId: null });
+state.equipmentInventory.push({ instanceId: "support-gauss", equipmentId: "gauss-pistol", upgraded: false, acquiredRunId: null });
+state = core.setCustomSupportEquipment(state, 0, "support-battery");
+state = core.setCustomSupportEquipment(state, 1, "support-gauss");
+assert(state.playerGrowth.supportEquipmentIds.join(",") === "support-battery,support-gauss", "The custom protagonist should support exactly two equipment slots.");
+const supportEnergyBefore = core.calculateEnergy(state);
+state.screen = "story";
+state.pending = { kind: "tutorial-choice-1" };
+state.run = { id: "support-run", scenarioId: "tutorial", sourceScenarioId: "tutorial", acquiredDeckIds: [], acquiredEquipmentIds: [], temporaryPowers: [] };
+state = core.chooseStoryOption(state, "rush");
+assert(state.maxEnergy === supportEnergyBefore + 1, "Support equipment should contribute opening combat energy.");
+state.screen = "hub";
+state.run = null;
+state = core.equipItem(state, equipmentHolderId, "support-battery");
+assert(state.equipped[equipmentHolderId] === "support-battery" && !state.playerGrowth.supportEquipmentIds.includes("support-battery"), "Assigning support equipment to a combat member should remove it from seventh-support slots.");
 
 // Main God deck trimming removes normal cards with reward points but leaves curses to curse removal.
 while (state.deck.filter((entry) => core.cardsById[entry.cardId].category !== "curse").length <= data.economy.minimumDeckSize) {
@@ -1204,14 +1319,23 @@ assert(["惡魔隊", "天神隊", "北冰洲隊", "印洲隊", "西海隊", "森
 assert(renderedHtml.includes("roster-source-grid") && renderedHtml.includes("roster-source-section") && renderedHtml.includes("roster-source-hero") && renderedHtml.includes("roster-character-grid"), "Roster preparation should render source hero sections and a three-column character grid.");
 assert(renderedHtml.includes("roster-hero-main.png") && renderedHtml.includes("roster-hero-demon-slayer.png") && renderedHtml.includes("roster-hero-attack-on-titan.png") && renderedHtml.includes("roster-hero-re6.png") && renderedHtml.includes("roster-hero-elden-ring.png"), "Roster preparation should use IMAGE2 hero shots for team and source categories.");
 assert(["火影忍者", "海賊王", "龍珠", "鬥破蒼穹", "死神", "鋼之鍊金術師", "獵人", "刀劍神域"].every((label) => renderedHtml.includes(label)), "Legendary protagonists should render under split original-source categories.");
+assert(renderedHtml.includes('class="energy-badge">+3') && renderedHtml.includes('class="energy-badge">0') && renderedHtml.includes('class="energy-badge">-1') && !renderedHtml.includes("+-1"), "Roster UI should format positive, zero, and negative energy correctly.");
 assert(["生命 +8", "專屬牌+", "血統解放"].every((label) => renderedHtml.includes(label)), "Roster source sections should keep character upgrade actions.");
 assert(core.setHubTab(uiState, "shop").hubTab === "shop", "Hub tabs should persist through core state.");
 assert(core.setHubTab(uiState, "growth").hubTab === "growth", "The custom growth tab should persist through core state.");
 uiState.hubTab = "growth";
 uiState.rewardPoints = 20000;
 uiState.playerGrowth.tagOffers = ["vampire-seed", "vampire-count", "t-virus-adaptation", "spider-sense", "inner-qi-breath", "black-flame-seed"];
+uiState.playerGrowth.purchasedTags = ["vampire-seed", "t-virus-adaptation"];
+uiState.playerGrowth.mutations = ["blood-virus-core"];
+uiState.playerGrowth.activeTagIds = ["vampire-seed", "t-virus-adaptation"];
+uiState.playerGrowth.activeMutationId = "blood-virus-core";
+uiState.playerGrowth.art = core.customMutationsById["blood-virus-core"].art;
+uiState.equipmentInventory.push({ instanceId: "ui-support-battery", equipmentId: "tactical-battery", upgraded: false, acquiredRunId: null });
+uiState.playerGrowth.supportEquipmentIds = ["ui-support-battery"];
 renderedHtml = "";
 await import("../src/game-ui.js?custom-growth");
+assert(renderedHtml.includes("第 7 人支援") && renderedHtml.includes("血統與裝備槽") && renderedHtml.includes("逆種血核") && renderedHtml.includes("支援裝備 1"), "The custom growth tab should render seventh-support loadout controls.");
 assert(renderedHtml.includes("RPG 六維") && renderedHtml.includes("主神候選池") && renderedHtml.includes("標籤矩陣") && renderedHtml.includes("初階血族") && renderedHtml.includes("伯爵血核") && renderedHtml.includes("6600 點 / 1 支線"), "The custom growth tab should render stats, offers, tag matrix UI, and dual-resource costs.");
 uiState.hubTab = "shop";
 uiState.rewardPoints = 10000;
@@ -1258,7 +1382,7 @@ introUiState.pending = null;
 introUiState.campaign.tutorialComplete = true;
 introUiState.campaign.unlockedScenarios = ["alien", "juon", "mummy-curse"];
 introUiState.party = data.characters
-  .filter((character) => !character.tutorialOnly && !data.legendaryRecruitmentPool.includes(character.id))
+  .filter((character) => !character.tutorialOnly && !character.playerOnly && !data.legendaryRecruitmentPool.includes(character.id))
   .map((character, index) => {
     const base = structuredClone(core.charactersById[character.id]);
     return { ...base, hp: base.maxHp, block: 0, active: index < 3 };
@@ -1270,5 +1394,10 @@ renderedHtml = "";
 await import("../src/game-ui.js?scenario-intro");
 assert(renderedHtml.includes("白光散去後") && renderedHtml.includes("主神題要") && renderedHtml.includes("確認投放，選擇路線"), "The scenario opening should render dialogue, premise, and the route entry action.");
 assert(renderedHtml.includes("聖甲蟲潮") && (renderedHtml.includes("哈姆納塔入口") || renderedHtml.includes("亡者地下墓道")), "The scenario opening should render themed story beats and first-route encounter previews.");
+
+globalThis.localStorage = { getItem: () => JSON.stringify(prisonRealmEvent), setItem: () => undefined };
+renderedHtml = "";
+await import("../src/game-ui.js?event-result");
+assert(renderedHtml.includes("奇遇結局") && renderedHtml.includes("獎勵") && renderedHtml.includes("代價") && renderedHtml.includes("劇情影響") && renderedHtml.includes("確認後果，返回路線圖"), "The event result screen should render rewards, costs, story impact, and a return action.");
 
 console.log("Campaign, factions, rival mechanics, bloodlines, combat statuses, equipment, hub tabs, migration, and direct-HTML smoke tests passed.");

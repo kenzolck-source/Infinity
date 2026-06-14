@@ -7,18 +7,28 @@
   let pendingMusicName = null;
   let currentMusicName = null;
   let currentMusic = null;
+  let currentMusicSource = null;
+  let lastMusicSrc = null;
 
   const sfx = Object.fromEntries(Object.entries(manifest.events).map(([name, entry]) => [name, makeAudio(entry.src)]));
-  const music = Object.fromEntries(Object.entries(manifest.music).map(([name, entry]) => {
-    const audio = makeAudio(entry.src);
-    audio.loop = true;
-    return [name, audio];
-  }));
+  const music = Object.fromEntries(Object.entries(manifest.music).map(([name, entry]) => [name, makeMusicDeck(entry)]));
 
   function makeAudio(src) {
     const audio = new Audio(src);
     audio.preload = "auto";
     return audio;
+  }
+
+  function makeMusicDeck(entry) {
+    return {
+      entry,
+      sources: musicSources(entry)
+    };
+  }
+
+  function musicSources(entry) {
+    const sources = Array.isArray(entry?.playlist) && entry.playlist.length ? entry.playlist : [entry?.src];
+    return sources.filter(Boolean).map((source) => typeof source === "string" ? { src: source } : source);
   }
 
   function loadSettings() {
@@ -74,18 +84,25 @@
     return "music.hub";
   }
 
-  function startMusic(name) {
-    if (!name || !music[name]) return;
-    if (currentMusicName === name) {
+  function startMusic(name, options = {}) {
+    const deck = music[name];
+    if (!name || !deck || !deck.sources.length) return;
+    if (currentMusicName === name && !options.forceNew) {
       setMusicVolume(currentMusic, targetMusicVolume(name));
       if (currentMusic.paused && !settings.muted) currentMusic.play().catch(() => {});
       return;
     }
-    const previous = currentMusic;
+    const previous = options.previousEnded ? null : currentMusic;
+    if (options.previousEnded && currentMusic) {
+      currentMusic.pause();
+      currentMusic.currentTime = 0;
+    }
+    currentMusicSource = pickMusicSource(deck.sources);
     currentMusicName = name;
-    currentMusic = music[name];
-    currentMusic.currentTime = currentMusic.currentTime || 0;
+    currentMusic = makeAudio(currentMusicSource.src);
+    currentMusic.loop = false;
     currentMusic.volume = 0;
+    currentMusic.addEventListener("ended", () => advanceMusic(name, currentMusic));
     currentMusic.play().catch(() => {});
     fadeTo(currentMusic, targetMusicVolume(name), 450);
     if (previous) {
@@ -96,8 +113,22 @@
     }
   }
 
+  function advanceMusic(name, audio) {
+    if (audio !== currentMusic || name !== currentMusicName || settings.muted) return;
+    startMusic(name, { forceNew: true, previousEnded: true });
+  }
+
+  function pickMusicSource(sources) {
+    const candidates = sources.length > 1 ? sources.filter((source) => source.src !== lastMusicSrc) : sources;
+    const source = candidates[Math.floor(Math.random() * candidates.length)] || sources[0];
+    lastMusicSrc = source.src;
+    return source;
+  }
+
   function targetMusicVolume(name) {
-    return settings.muted ? 0 : clamp(settings.volume * Number(manifest.music[name]?.volume || 0.35), 0, 1);
+    const musicVolume = Number(manifest.music[name]?.volume || 0.35);
+    const sourceVolume = Number(currentMusicSource?.volume || 1);
+    return settings.muted ? 0 : clamp(settings.volume * musicVolume * sourceVolume, 0, 1);
   }
 
   function setMusicVolume(audio, volume) {
@@ -125,7 +156,8 @@
     settings.muted = Boolean(value);
     saveSettings();
     if (settings.muted) {
-      Object.values(music).forEach((audio) => fadeTo(audio, 0, 180, () => audio.pause()));
+      const audio = currentMusic;
+      if (audio) fadeTo(audio, 0, 180, () => audio.pause());
       return;
     }
     unlock();

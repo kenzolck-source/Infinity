@@ -1,4 +1,13 @@
 (function (global) {
+  const mainGodMusicPool = [
+    "./src/assets/audio/bgm-main-god-plaza-a.mp3",
+    "./src/assets/audio/bgm-main-god-plaza-b.mp3",
+    "./src/assets/audio/bgm-black-door-patrol-a.mp3",
+    "./src/assets/audio/bgm-black-door-patrol-b.mp3",
+    "./src/assets/audio/bgm-ashen-card-loop-a.mp3",
+    "./src/assets/audio/bgm-ashen-card-loop-b.mp3"
+  ];
+
   global.MainGodAudioManifest = {
     events: {
       "card.draw": { src: "./src/assets/audio/card-draw.wav", volume: 0.58, rateJitter: 0.04 },
@@ -15,9 +24,9 @@
       "combat.defeat": { src: "./src/assets/audio/combat-defeat.wav", volume: 0.62, rateJitter: 0 }
     },
     music: {
-      "music.hub": { src: "./src/assets/audio/music-hub.wav", volume: 0.34 },
-      "music.map": { src: "./src/assets/audio/music-map.wav", volume: 0.32 },
-      "music.combat": { src: "./src/assets/audio/music-combat.wav", volume: 0.38 }
+      "music.hub": { src: mainGodMusicPool[0], playlist: mainGodMusicPool, volume: 0.26 },
+      "music.map": { src: mainGodMusicPool[0], playlist: mainGodMusicPool, volume: 0.26 },
+      "music.combat": { src: mainGodMusicPool[0], playlist: mainGodMusicPool, volume: 0.3 }
     }
   };
 })(globalThis);
