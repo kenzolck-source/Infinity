@@ -4,6 +4,7 @@
   const audio = global.MainGodAudio;
   const app = document.querySelector("#app");
   let state = loadState();
+  let lastRenderedScreen = null;
 
   render();
 
@@ -29,10 +30,16 @@
   }
 
   function render() {
+    const screenChanged = lastRenderedScreen !== state.screen;
     const header = state.screen === "onboarding" ? "" : renderHeader();
     app.innerHTML = `<main class="shell screen-${state.screen}">${header}${renderScreen()}</main>`;
     bindActions();
     audio?.syncMusic(state.screen);
+    if (screenChanged && typeof global.scrollTo === "function") {
+      const defer = typeof global.requestAnimationFrame === "function" ? global.requestAnimationFrame : (callback) => setTimeout(callback, 0);
+      defer(() => global.scrollTo(0, 0));
+    }
+    lastRenderedScreen = state.screen;
   }
 
   function renderHeader() {
@@ -347,12 +354,14 @@
             <h3>隊內通訊</h3>
             <div class="dialogue-stack">
               ${(opening.dialogue || []).map((line) => `<article><strong>${line.speaker}</strong><p>${line.line}</p></article>`).join("")}
+              ${(state.run.openingDiscussion || []).map((line) => `<article class="generated-discussion"><strong>${escapeHtml(line.speaker)}</strong><p>${escapeHtml(line.line)}</p></article>`).join("")}
             </div>
           </section>
           <section class="opening-brief">
             <span class="eyebrow">主神題要</span>
             <h3>生存目標</h3>
             <p>${scenario.intro}</p>
+            ${renderDynamicDifficultyPanel()}
             <div class="route-preview">
               ${firstLayer.map((node, index) => {
                 const encounter = core.encountersById[node.encounterId];
@@ -382,6 +391,7 @@
           <div><span class="eyebrow">${state.run.sourceScenarioId === "infinite" ? `無限輪迴 · 階級 ${state.campaign.infiniteTier}` : "劇本遠征"}</span><h2>${scenario.name}</h2><p>${scenario.intro}</p></div>
           <div class="run-power-strip">${(state.run.temporaryPowers || []).map((power) => `<span>${powerName(power)}</span>`).join("") || "<span>尚無暫時強化</span>"}</div>
         </div>
+        ${renderBanterPanel("map")}
         <div class="fog-map">${state.run.map.layers.map(renderMapLayer).join("")}</div>
         ${renderRunParty()}
         ${renderLog()}
@@ -413,29 +423,102 @@
     const encounter = core.encountersById[state.activeEncounterId];
     return `
       <section class="combat-layout">
+        <div class="combat-status-bar">
+          <div class="combat-status-title">
+            <span class="eyebrow">戰術座艙</span>
+            <h2>${escapeHtml(encounter.name)}</h2>
+            <p>第 ${state.turn} 回合 · ${state.selectedTargetId ? "目標已鎖定" : "等待目標"}</p>
+          </div>
+          <div class="combat-status-metrics" aria-label="戰鬥資源摘要">
+            <div><span>能量</span><strong>${state.energy}<small>/ ${state.maxEnergy}</small></strong></div>
+            <div><span>抽牌</span><strong>${state.drawPile.length}</strong></div>
+            <div><span>棄牌</span><strong>${state.discardPile.length}</strong></div>
+            <div><span>耗盡</span><strong>${state.exhaustedPile.length}</strong></div>
+          </div>
+          <div class="combat-intent-strip" aria-label="敵人意圖摘要">
+            ${state.activeEnemies.map(renderEnemyIntentChip).join("")}
+          </div>
+        </div>
         <div class="combat-stage">
-          <div class="encounter-title"><span class="eyebrow">${encounter.name}</span><h2>第 ${state.turn} 回合</h2></div>
+          <div class="encounter-title"><span class="eyebrow">左右對抗戰場</span><h2>${core.getActiveParty(state).length} 對 ${state.activeEnemies.filter((enemy) => enemy.hp > 0).length}</h2></div>
           <div class="combat-columns">
             <div class="party-combat">${core.getActiveParty(state).map(renderCombatCharacter).join("")}</div>
             <div class="enemy-line">${state.activeEnemies.map(renderEnemy).join("")}</div>
           </div>
         </div>
-        <aside class="combat-side">
-          <div class="turn-panel">
-            <span class="eyebrow">本回合能量</span>
-            <div class="energy-row"><strong>${state.energy}</strong><span>/ ${state.maxEnergy}</span></div>
-            <div class="pile-row"><span>抽牌 ${state.drawPile.length}</span><span>棄牌 ${state.discardPile.length}</span><span>耗盡 ${state.exhaustedPile.length}</span></div>
-            <button class="secondary-action" data-action="end-turn">結束回合</button>
+        ${renderCombatCommandRail()}
+        <section class="hand-zone">
+          <div class="hand-zone-head">
+            <div><span class="eyebrow">戰術卡軌</span><h2>手牌 ${state.hand.length}</h2></div>
+            <p>費用、持有人與加成來源會直接標在卡上。</p>
           </div>
-          ${renderBondPanel("combat")}
-          ${renderLog()}
-        </aside>
-        <section class="hand-zone">${state.hand.map(renderHandCard).join("")}</section>
+          <div class="hand-card-grid">${state.hand.map(renderHandCard).join("")}</div>
+        </section>
       </section>
     `;
   }
 
+  function renderCombatCommandRail() {
+    const selected = state.activeEnemies.find((enemy) => enemy.uid === state.selectedTargetId && enemy.hp > 0) || state.activeEnemies.find((enemy) => enemy.hp > 0);
+    const intent = selected ? core.getEnemyIntent(selected) : null;
+    return `
+      <aside class="combat-side command-rail">
+        <section class="turn-panel command-card">
+          <span class="eyebrow">指揮短欄</span>
+          <div class="energy-row"><strong>${state.energy}</strong><span>/ ${state.maxEnergy} 能量</span></div>
+          <div class="pile-row"><span>抽牌 ${state.drawPile.length}</span><span>棄牌 ${state.discardPile.length}</span><span>耗盡 ${state.exhaustedPile.length}</span></div>
+          ${renderDynamicDifficultyPanel("compact")}
+          <button class="secondary-action" data-action="end-turn">結束回合</button>
+        </section>
+        <section class="command-card target-summary">
+          <span class="eyebrow">選中敵人</span>
+          ${selected ? `
+            <strong>${escapeHtml(selected.name)}</strong>
+            <div class="target-stats"><span>生命 ${selected.hp}/${selected.maxHp}</span>${selected.block ? `<span>護甲 ${selected.block}</span>` : ""}</div>
+            ${renderEnemyStatuses(selected)}
+            <div class="intent ${intent.kind}"><strong>${escapeHtml(intent.label)}</strong><span>${escapeHtml(intentText(intent))}</span></div>
+          ` : `<p class="empty-state compact">沒有可選目標。</p>`}
+        </section>
+        ${renderBanterPanel("combat")}
+        <details class="combat-detail-drawer">
+          <summary>完整戰鬥資料</summary>
+          ${renderEffectMatrix("combat")}
+          ${renderBondPanel("combat")}
+          ${renderLog()}
+        </details>
+      </aside>
+    `;
+  }
+
+  function renderBanterPanel(mode = "map") {
+    const lines = (state.run?.banterFeed || state.run?.openingDiscussion || []).slice(mode === "combat" ? -3 : -4);
+    if (!lines.length) return "";
+    return `
+      <section class="panel banter-panel ${mode === "combat" ? "compact" : ""}">
+        <div class="section-heading"><div><span class="eyebrow">${mode === "combat" ? "戰場通訊" : "隊內討論"}</span><h2>${mode === "combat" ? "最新反應" : "目前判斷"}</h2></div></div>
+        <div class="banter-stack">
+          ${lines.map((line) => `<article><strong>${escapeHtml(line.speaker)}</strong><p>${escapeHtml(line.line)}</p></article>`).join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderDynamicDifficultyPanel(mode = "full") {
+    const value = state.run?.dynamicDifficulty;
+    if (!value) return "";
+    const label = value.mode === "infinite" ? value.label : value.mode === "super-hard" ? value.label : `動態難度 ${formatMultiplier(value.multiplier)}x`;
+    const parts = [];
+    if (value.progressPressure) parts.push(`進度 +${formatPercent(value.progressPressure)}`);
+    if (value.streakPressure) parts.push(`連勝 +${formatPercent(value.streakPressure)}`);
+    if (value.relief) parts.push(`失敗補償 -${formatPercent(value.relief)}`);
+    if (!parts.length && value.mode === "normal") parts.push("基準難度");
+    if (mode === "compact") return `<div class="difficulty-chip"><strong>${escapeHtml(label)}</strong><span>${parts.join(" · ") || "倍率穩定"}</span></div>`;
+    return `<div class="difficulty-panel"><span>難度</span><strong>${escapeHtml(label)}</strong><p>${parts.join(" · ") || "沒有額外修正。"}</p></div>`;
+  }
+
   function renderCombatCharacter(member) {
+    const signature = core.cardsById[member.signatureCardId];
+    const loadout = getMemberLoadout(member);
     return `
       <article class="combat-character faction-${member.factionId || "main"} ${core.isAlive(member) ? "" : "down"}">
         ${image(characterArt(member.id), `${escapeHtml(member.name)}插畫`, "combat-character-art")}
@@ -443,10 +526,19 @@
           <div class="character-top"><div><span class="faction-inline faction-${member.factionId || "main"}">${escapeHtml(memberFactionName(member))}</span><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.role)} · ${formatEnergy(member.energyContribution)} 能量</p></div>${member.block ? `<span class="block-badge">${member.block}</span>` : ""}</div>
           ${renderMeter("生命", member.hp, member.maxHp, "hp")}
           ${renderMeter("壓力", member.stress, 100, "stress")}
+          ${renderModifierChips("character", { member, loadout, signature })}
           ${renderCharacterStatuses(member)}
         </div>
       </article>
     `;
+  }
+
+  function renderEnemyIntentChip(enemy) {
+    const intent = core.getEnemyIntent(enemy);
+    const selected = state.selectedTargetId === enemy.uid;
+    return `<button class="intent-chip ${intent.kind} ${selected ? "selected" : ""}" data-action="select-target" data-enemy-id="${enemy.uid}" ${enemy.hp <= 0 ? "disabled" : ""}>
+      <span>${selected ? "目標鎖定" : "敵方意圖"}</span><strong>${escapeHtml(enemy.name)}</strong><em>${escapeHtml(intent.label)}</em>
+    </button>`;
   }
 
   function renderEnemy(enemy) {
@@ -455,7 +547,7 @@
     return `
       <button class="enemy-unit ${selected ? "selected" : ""} ${enemy.hp <= 0 ? "down" : ""}" data-action="select-target" data-enemy-id="${enemy.uid}" ${enemy.hp <= 0 ? "disabled" : ""}>
         ${image(enemyArt(enemy.enemyId), `${enemy.name}插畫`, "enemy-art")}
-        <div class="enemy-copy"><h3>${enemy.name}</h3>${renderMeter("生命", enemy.hp, enemy.maxHp, "hp")}${enemy.block ? `<span class="stat-pill">護甲 ${enemy.block}</span>` : ""}${renderEnemyStatuses(enemy)}<div class="intent ${intent.kind}"><strong>${intent.label}</strong><span>${intentText(intent)}</span></div></div>
+        <div class="enemy-copy"><div class="enemy-headline"><h3>${escapeHtml(enemy.name)}</h3>${selected ? `<span class="target-lock">目標鎖定</span>` : ""}</div>${renderMeter("生命", enemy.hp, enemy.maxHp, "hp")}${enemy.block ? `<span class="stat-pill">護甲 ${enemy.block}</span>` : ""}${renderEnemyStatuses(enemy)}<div class="intent ${intent.kind}"><strong>${escapeHtml(intent.label)}</strong><span>${escapeHtml(intentText(intent))}</span></div></div>
       </button>
     `;
   }
@@ -463,7 +555,8 @@
   function renderHandCard(instance) {
     const card = core.effectiveCard(instance);
     const cost = core.getCardCost(state, instance);
-    const disabled = card.unplayable || cost > state.energy || (instance.ownerId && !state.party.some((member) => member.id === instance.ownerId && member.active && core.isAlive(member)));
+    const disabledReason = getCardDisabledReason(instance, card, cost);
+    const disabled = Boolean(disabledReason);
     const owner = instance.ownerId ? core.charactersById[instance.ownerId] : null;
     const bloodline = owner ? core.bloodlinesByCharacterId[owner.id] : null;
     const bloodlineUnlocked = Boolean(bloodline && (bloodline.tutorialOnly || state.permanentUpgrades.bloodlines.includes(owner.id)));
@@ -472,7 +565,8 @@
         ${renderCardArtFrame(card)}
         <span class="cost">${card.unplayable ? "!" : cost}</span><strong>${card.name}</strong>
         <span class="card-type">${cardRarityLabel(card)} · ${cardTypeLabel(card)}${owner ? ` · ${owner.name}專屬` : ""}</span>
-        <p>${card.text}</p>${bloodlineUnlocked ? `<p class="card-bloodline">血統附加：${bloodline.text}</p>` : ""}<span class="tags">${card.tags.join(" / ")}</span>
+        ${renderModifierChips("card", { instance, card, cost, owner, bloodline, bloodlineUnlocked })}
+        <p>${card.text}</p>${bloodlineUnlocked ? `<p class="card-bloodline">血統附加：${bloodline.text}</p>` : ""}${disabledReason ? `<span class="disabled-reason">${escapeHtml(disabledReason)}</span>` : ""}<span class="tags">${card.tags.join(" / ")}</span>
       </button>
     `;
   }
@@ -634,6 +728,7 @@
           ${renderHubTab("growth", "自創強化", "六維、標籤與變異", tab)}
           ${renderHubTab("shop", "強化商店", "永久強化與兌換", tab)}
         </nav>
+        ${renderEffectMatrix("hub")}
         <section class="hub-workspace">${tab === "roster" ? renderRosterHub() : tab === "growth" ? renderGrowthHub() : tab === "shop" ? renderShopHub() : renderDeploymentHub()}</section>
       </section>
     `;
@@ -883,17 +978,39 @@
     const complete = state.campaign.completedScenarios.includes(id);
     const bossEnemyId = scenario.boss ? core.encountersById[scenario.boss]?.enemies?.[0] : null;
     const artSrc = scenarioArt(id) || (bossEnemyId ? enemyArt(bossEnemyId) : "");
-    return `<button class="scenario-card" data-action="begin-scenario" data-scenario-id="${id}">${artSrc ? image(artSrc, "", "scenario-art") : ""}<span class="eyebrow">${complete ? "已通關 · 可重玩" : "主線劇本"}</span><strong>${scenario.name}</strong><p>${scenario.subtitle}</p></button>`;
+    const superHard = core.isSuperHardScenario?.(scenario);
+    return `<button class="scenario-card ${superHard ? "super-hard" : ""}" data-action="begin-scenario" data-scenario-id="${id}">${artSrc ? image(artSrc, "", "scenario-art") : ""}<span class="eyebrow">${superHard ? "超困難劇本" : complete ? "已通關 · 可重玩" : "主線劇本"}</span><strong>${scenario.name}</strong><p>${scenario.subtitle}</p></button>`;
+  }
+
+  function renderRandomScenarioButton() {
+    const pool = core.randomNormalScenarioPool(state);
+    const preview = core.dynamicDifficultyPreview(state);
+    const recentNames = (preview.recent || []).map((id) => core.scenariosById[id]?.name).filter(Boolean);
+    const sample = pool.slice(0, 4).map((scenario) => scenario.name).join(" / ");
+    return `
+      <button class="scenario-card random-normal" data-action="begin-scenario" data-scenario-id="random-normal" ${pool.length ? "" : "disabled"}>
+        ${image("./src/assets/generated/ui-main-god-nexus.png", "", "scenario-art")}
+        <span class="eyebrow">普通劇本 · 隨機抽取</span>
+        <strong>下一場隨機劇本</strong>
+        <p>${pool.length ? `抽選池 ${pool.length} 場${sample ? ` · ${sample}` : ""}` : "尚未開放普通劇本"}</p>
+        <div class="scenario-meta-grid">
+          <span>預估 ${formatMultiplier(preview.multiplier)}x</span>
+          <span>${recentNames.length ? `避開 ${recentNames.join("、")}` : "無最近排除"}</span>
+        </div>
+      </button>
+    `;
   }
 
   function renderDeploymentHub() {
     const active = core.getActiveParty(state);
     const reserve = combatMembers().filter((member) => !member.active);
+    const superHardScenarios = state.campaign.unlockedScenarios.filter((id) => core.isSuperHardScenario?.(core.scenariosById[id]));
     return `
       <section class="scenario-panel deployment-scenarios">
-        <div class="section-heading"><div><span class="eyebrow">劇本出擊</span><h2>選擇下一場恐怖片</h2></div><p>先定劇本，再用下方隊伍台調整出戰與羈絆。</p></div>
+        <div class="section-heading"><div><span class="eyebrow">劇本出擊</span><h2>整備後隨機投放</h2></div><p>普通劇本由主神抽取；超困難與無限遠征保留手動入口。</p></div>
         <div class="scenario-grid">
-          ${state.campaign.unlockedScenarios.map((id) => renderScenarioButton(id)).join("")}
+          ${renderRandomScenarioButton()}
+          ${superHardScenarios.map((id) => renderScenarioButton(id)).join("")}
           ${state.campaign.infiniteUnlocked ? `<button class="scenario-card infinite" data-action="begin-scenario" data-scenario-id="infinite"><span class="eyebrow">無限模式 · 第 ${state.campaign.infiniteTier} 層</span><strong>無限恐怖</strong><p>連續推進隨機劇本，獎勵與壓力同步提高。</p></button>` : ""}
         </div>
       </section>
@@ -988,10 +1105,11 @@
           </div>
           <div class="mini-stat-row"><span>HP ${member.hp}/${member.maxHp}</span><span>壓力 ${member.stress}</span><span>Lv.${level}</span></div>
           <div class="loadout-chip">${loadout.item ? `${loadout.item.name}${loadout.entry.upgraded ? "+" : ""}` : "未裝備"}</div>
+          ${renderModifierChips("character", { member, loadout, signature, bloodline, bloodlineUnlocked })}
+          ${renderSignaturePreview(member, signatureUpgraded, bloodline, bloodlineUnlocked)}
           <details class="mini-details">
             <summary>能力詳情</summary>
             <p>${escapeHtml(member.passiveText)}</p>
-            <p>專屬牌：${escapeHtml(signature.name)}${signatureUpgraded ? "+" : ""}</p>
             ${bloodline ? `<p class="${bloodlineUnlocked ? "unlocked" : ""}">血統：${bloodline.name} · ${bloodline.text}</p>` : ""}
           </details>
           ${mode === "roster" ? `<div class="inline-actions roster-actions">
@@ -1002,6 +1120,47 @@
         </div>
       </article>
     `;
+  }
+
+  function renderSignaturePreview(member, signatureUpgraded, bloodline, bloodlineUnlocked) {
+    const base = core.cardsById[member.signatureCardId];
+    const current = core.effectiveCard({ cardId: member.signatureCardId, upgraded: signatureUpgraded });
+    const upgraded = base?.upgrade ? core.effectiveCard({ cardId: member.signatureCardId, upgraded: true }) : null;
+    if (!base || !current) return "";
+    const upgradeText = !signatureUpgraded && upgraded ? cardUpgradePreview(base, upgraded) : "";
+    return `
+      <article class="signature-preview">
+        <div class="signature-preview-head">
+          <span class="cost">${current.unplayable ? "!" : current.cost}</span>
+          <div><strong>${escapeHtml(current.name)}</strong><small>${cardRarityLabel(base)} · ${cardTypeLabel(current)} · 專屬卡片</small></div>
+        </div>
+        <p>${escapeHtml(current.text || base.text || "")}</p>
+        ${upgradeText ? `<p class="signature-upgrade-preview">升級預覽：${escapeHtml(upgradeText)}</p>` : ""}
+        ${signatureUpgraded ? `<span class="signature-state">已升級</span>` : ""}
+        ${bloodlineUnlocked && bloodline ? `<span class="signature-state support">血統附加：${escapeHtml(bloodline.name)}</span>` : ""}
+        <div class="signature-tags">${(base.tags || []).slice(0, 4).map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>
+      </article>
+    `;
+  }
+
+  function cardUpgradePreview(base, upgraded) {
+    const fields = [
+      ["damage", "傷害"],
+      ["damageAll", "全體傷害"],
+      ["block", "護甲"],
+      ["blockAll", "全隊護甲"],
+      ["draw", "抽牌"],
+      ["healLowest", "治療"],
+      ["reduceStress", "壓力降低"],
+      ["weakTarget", "虛弱"],
+      ["weakAll", "全體虛弱"],
+      ["stunTarget", "封鎖"],
+      ["gainEnergy", "能量"]
+    ];
+    const changes = fields
+      .filter(([field]) => Number(upgraded[field] || 0) !== Number(base[field] || 0))
+      .map(([field, label]) => `${label} ${Number(base[field] || 0)}→${Number(upgraded[field] || 0)}`);
+    return changes.slice(0, 3).join("，") || "數值與效果提升";
   }
 
   function renderSquadSlot(member) {
@@ -1043,6 +1202,7 @@
 
   function renderLoadoutCard(member) {
     const loadout = getMemberLoadout(member);
+    const effectText = loadout.item ? equipmentEffectLabel(loadout.item, loadout.entry) : "尚未建立裝備互動";
     return `
       <article class="loadout-card faction-${member.factionId || "main"} ${member.active ? "active-member" : "reserve-member"}">
         ${image(characterArt(member.id), `${escapeHtml(member.name)}`, "loadout-character-art")}
@@ -1051,6 +1211,8 @@
           <strong>${escapeHtml(member.name)}</strong>
           <p>${member.active ? "出戰中" : "候補"} · ${escapeHtml(member.role)}</p>
           <div class="equipped-preview">${loadout.item ? `${image(equipmentArt(loadout.item.id), "", "loadout-equipment-art")}<span>${escapeHtml(loadout.item.name)}${loadout.entry.upgraded ? "+" : ""}</span>` : "<span>未裝備</span>"}</div>
+          <small class="loadout-effect-summary">${escapeHtml(effectText)}</small>
+          ${renderModifierChips("loadout", { member, loadout })}
         </div>
       </article>
     `;
@@ -1070,12 +1232,15 @@
     const item = core.equipmentById[entry.equipmentId];
     const holder = getEquipmentHolder(entry.instanceId);
     const supportSlot = getSupportEquipmentSlot(entry.instanceId);
+    const holderText = holder ? holder.name : supportSlot >= 0 ? `第7人支援槽 ${supportSlot + 1}` : "未裝備";
     return `
       <article class="armory-item rarity-${item.rarity || "common"}">
         ${image(equipmentArt(item.id), "", "armory-art")}
         <div class="armory-copy">
           <div class="armory-head"><strong>${item.name}${entry.upgraded ? "+" : ""}</strong><span>${rarityLabel(item.rarity)}${item.weaponClass === "firearm" ? " · 槍械" : ""}${supportSlot >= 0 ? ` · 第7人支援${supportSlot + 1}` : ""}</span></div>
           <p>${item.text}</p>
+          <div class="equipment-meta-line"><span>持有人</span><strong>${escapeHtml(holderText)}</strong><em>${escapeHtml(equipmentEffectLabel(item, entry))}</em></div>
+          ${renderModifierChips("equipment", { item, entry, holder, supportSlot })}
           <label class="assign-row"><span>持有人</span><select data-action="assign-equipment" data-equipment-instance-id="${entry.instanceId}">${renderEquipmentHolderOptions(holder, supportSlot)}</select></label>
         </div>
       </article>
@@ -1105,6 +1270,274 @@
 
   function getSupportEquipmentSlot(instanceId) {
     return (state.playerGrowth?.supportEquipmentIds || []).findIndex((id) => id === instanceId);
+  }
+
+  function renderEffectMatrix(mode = "hub") {
+    const bonds = core.getActiveBonds(state);
+    const loadoutRows = getLoadoutEffectRows();
+    const supportRows = getSupportEffectRows();
+    const activeParty = core.getActiveParty(state);
+    const currentTab = hubTabLabel(state.hubTab || "deployment");
+    const title = mode === "combat" ? "戰鬥加成來源" : "作戰中樞";
+    const subtitle = mode === "combat" ? "主要決策資訊前移到卡牌、敵人與狀態列。" : "羈絆、角色裝備與第 7 人支援集中顯示。";
+    return `
+      <section class="panel effect-matrix ${mode === "combat" ? "combat-effect-matrix compact" : ""}">
+        <div class="section-heading"><div><span class="eyebrow">效果矩陣</span><h2>${title}</h2></div><p>${subtitle}</p></div>
+        <div class="effect-matrix-grid">
+          <article class="effect-cell">
+            <span>${mode === "combat" ? "戰鬥狀態" : "目前分頁"}</span>
+            <strong>${mode === "combat" ? `回合 ${state.turn}` : currentTab}</strong>
+            <p>${mode === "combat" ? `出戰 ${activeParty.length} 人 · 能量 ${state.energy}/${state.maxEnergy}` : `獎勵點 ${state.rewardPoints} · 支線 ${state.sideStories}`}</p>
+          </article>
+          <article class="effect-cell">
+            <span>羈絆 chips</span>
+            <strong>${bonds.length ? `已啟用 ${bonds.length} 條` : "未啟用"}</strong>
+            ${renderEffectRows(bonds.map((bond) => ({ label: "羈絆", name: bond.name, text: bond.text, tone: "bond" })).slice(0, mode === "combat" ? 2 : 4), "調整出戰角色可啟用羈絆。")}
+          </article>
+          <article class="effect-cell">
+            <span>裝備持有人</span>
+            <strong>${loadoutRows.length ? `${loadoutRows.length} 件可見` : "未裝備"}</strong>
+            ${renderEffectRows(loadoutRows.slice(0, mode === "combat" ? 3 : 6), "角色與支援槽尚未配置裝備。")}
+          </article>
+          <article class="effect-cell">
+            <span>第 7 人支援</span>
+            <strong>${supportRows.length ? `${supportRows.length} 項啟用` : "空槽"}</strong>
+            ${renderEffectRows(supportRows.slice(0, 5), "維持 1 變異血統 / 2 一般血統 / 2 支援裝備上限。")}
+          </article>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderEffectRows(rows, emptyText) {
+    if (!rows.length) return `<p class="empty-state compact">${escapeHtml(emptyText)}</p>`;
+    return `<div class="effect-row-list">${rows.map((row) => `
+      <div class="loadout-effect-row tone-${escapeHtml(row.tone || "neutral")}">
+        <span>${escapeHtml(row.label)}</span>
+        <strong>${escapeHtml(row.name)}</strong>
+        <small>${escapeHtml(row.text)}</small>
+      </div>
+    `).join("")}</div>`;
+  }
+
+  function renderModifierChips(kind, context = {}) {
+    const chips = buildModifierChips(kind, context).filter((chip) => chip && chip.value !== "");
+    if (!chips.length) return "";
+    return `<div class="modifier-chip-row ${kind}-chips">${chips.map((chip) => `
+      <span class="modifier-chip tone-${escapeHtml(chip.tone || "neutral")}"><b>${escapeHtml(chip.label)}</b><em>${escapeHtml(chip.value)}</em></span>
+    `).join("")}</div>`;
+  }
+
+  function buildModifierChips(kind, context) {
+    if (kind === "card") return buildCardModifierChips(context);
+    if (kind === "character") return buildCharacterModifierChips(context);
+    if (kind === "loadout") return buildLoadoutModifierChips(context);
+    if (kind === "equipment") return buildEquipmentModifierChips(context);
+    if (kind === "bond") return summarizeEffectChips(context.bond?.effects, "羈絆");
+    return [];
+  }
+
+  function buildCardModifierChips({ card, cost, owner, bloodline, bloodlineUnlocked }) {
+    const bonds = core.getActiveBonds(state);
+    const equipmentRows = getCardRelevantEffectRows(card);
+    const supportRows = getSupportEffectRows();
+    const chips = [
+      { label: "費用", value: card.unplayable ? "不可打出" : String(cost), tone: cost > state.energy ? "danger" : "signal" },
+      { label: "類型", value: cardTypeLabel(card), tone: card.type },
+      owner ? { label: "擁有者", value: owner.name, tone: "owner" } : null,
+      bloodlineUnlocked && bloodline ? { label: "血統", value: bloodline.name, tone: "support" } : null,
+      bonds.length ? { label: "羈絆", value: `${bonds.length} 條`, tone: "bond" } : null,
+      equipmentRows.length ? { label: "裝備", value: equipmentRows.slice(0, 2).map((row) => row.name).join(" / "), tone: "equipment" } : null,
+      supportRows.length ? { label: "自創支援", value: `${supportRows.length} 項`, tone: "support" } : null
+    ];
+    return chips;
+  }
+
+  function buildCharacterModifierChips({ member, loadout, signature, bloodline, bloodlineUnlocked }) {
+    const memberBonds = getCharacterBondRows(member);
+    return [
+      { label: "職能", value: member.role, tone: member.active ? "signal" : "neutral" },
+      { label: "能量", value: formatEnergy(member.energyContribution), tone: "signal" },
+      signature ? { label: "專屬牌", value: signature.name, tone: "owner" } : null,
+      loadout?.item ? { label: "裝備", value: `${loadout.item.name}${loadout.entry?.upgraded ? "+" : ""}`, tone: "equipment" } : { label: "裝備", value: "未裝備", tone: "neutral" },
+      bloodlineUnlocked && bloodline ? { label: "血統", value: bloodline.name, tone: "support" } : null,
+      memberBonds.length ? { label: "羈絆", value: `${memberBonds.length} 條`, tone: "bond" } : null
+    ];
+  }
+
+  function buildLoadoutModifierChips({ member, loadout }) {
+    const chips = [
+      { label: "狀態", value: member.active ? "出戰中" : "候補", tone: member.active ? "signal" : "neutral" },
+      loadout?.item ? { label: "效果", value: equipmentEffectLabel(loadout.item, loadout.entry), tone: "equipment" } : null
+    ];
+    return chips;
+  }
+
+  function buildEquipmentModifierChips({ item, entry, holder, supportSlot }) {
+    const firearmBoost = getFirearmMultiplier();
+    return [
+      { label: "效果類型", value: equipmentEffectTypeLabel(item.effect), tone: "equipment" },
+      { label: "持有人", value: holder ? holder.name : supportSlot >= 0 ? `第7人支援槽 ${supportSlot + 1}` : "未裝備", tone: holder || supportSlot >= 0 ? "signal" : "neutral" },
+      entry?.upgraded ? { label: "強化", value: "已升級", tone: "signal" } : null,
+      item.weaponClass === "firearm" ? { label: "羈絆放大", value: firearmBoost > 1 ? `x${formatMultiplier(firearmBoost)}` : "未啟用", tone: firearmBoost > 1 ? "bond" : "neutral" } : null
+    ];
+  }
+
+  function getCardDisabledReason(instance, card, cost) {
+    if (card.unplayable) return "詛咒不可打出";
+    if (cost > state.energy) return `能量不足：需要 ${cost}`;
+    if (instance.ownerId && !state.party.some((member) => member.id === instance.ownerId && member.active && core.isAlive(member))) return "專屬角色未出戰或倒下";
+    return "";
+  }
+
+  function getLoadoutEffectRows() {
+    const characterRows = combatMembers().map((member) => {
+      const loadout = getMemberLoadout(member);
+      if (!loadout.item) return null;
+      return {
+        label: member.active ? "出戰裝備" : "候補裝備",
+        name: `${member.name} · ${loadout.item.name}${loadout.entry.upgraded ? "+" : ""}`,
+        text: equipmentEffectLabel(loadout.item, loadout.entry),
+        tone: "equipment",
+        effect: loadout.item.effect,
+        item: loadout.item,
+        entry: loadout.entry,
+        member
+      };
+    }).filter(Boolean);
+    const supportRows = getSupportEquipmentRows();
+    return [...characterRows, ...supportRows];
+  }
+
+  function getSupportEffectRows() {
+    const growth = state.playerGrowth || {};
+    const activeMutation = core.customMutationsById[growth.activeMutationId] || null;
+    const activeTags = (growth.activeTagIds || []).map((id) => core.customTagsById[id]).filter(Boolean);
+    const mutationRows = activeMutation ? [{ label: "變異血統", name: activeMutation.name, text: activeMutation.text, tone: "support", effects: activeMutation.effects }] : [];
+    const tagRows = activeTags.map((tag, index) => ({ label: `一般血統 ${index + 1}`, name: tag.name, text: tag.text, tone: "support", effects: tag.effects }));
+    return [...mutationRows, ...tagRows, ...getSupportEquipmentRows()];
+  }
+
+  function getSupportEquipmentRows() {
+    const ids = (state.playerGrowth?.supportEquipmentIds || []).filter(Boolean);
+    return ids.map((instanceId, index) => {
+      const entry = state.equipmentInventory.find((item) => item.instanceId === instanceId);
+      const item = entry ? core.equipmentById[entry.equipmentId] : null;
+      if (!item) return null;
+      return {
+        label: `支援槽 ${index + 1}`,
+        name: `${item.name}${entry.upgraded ? "+" : ""}`,
+        text: equipmentEffectLabel(item, entry),
+        tone: "support",
+        effect: item.effect,
+        item,
+        entry,
+        scope: "support"
+      };
+    }).filter(Boolean);
+  }
+
+  function getCardRelevantEffectRows(card) {
+    const rows = getLoadoutEffectRows();
+    if (!card) return rows.slice(0, 3);
+    const effectsByType = {
+      attack: ["attackBonus", "firstAttackBonus", "firstAttackBurn", "firstAttackPierce"],
+      guard: ["turnBlock", "openingEvade"],
+      support: ["turnHealLowest", "turnStressRelief", "turnBlock"],
+      tactic: ["openingDraw", "openingEnergy"]
+    };
+    const matching = rows.filter((row) => (effectsByType[card.type] || []).includes(row.effect));
+    return matching.length ? matching : rows.slice(0, 2);
+  }
+
+  function getCharacterBondRows(member) {
+    if (!member) return [];
+    return core.getActiveBonds(state).filter((bond) => {
+      if (Array.isArray(bond.members) && bond.members.includes(member.id)) return true;
+      if (bond.faction && (bond.faction === member.factionId || bond.faction === member.faction)) return true;
+      return false;
+    });
+  }
+
+  function equipmentEffectLabel(item, entry) {
+    if (!item) return "未裝備";
+    const amount = Number(entry?.upgraded ? item.upgradedAmount ?? item.amount : item.amount);
+    const base = {
+      attackBonus: `攻擊牌傷害 +${amount}`,
+      firstAttackBonus: `首張攻擊 +${amount}`,
+      openingDraw: `開場抽牌 +${amount}`,
+      turnBlock: `回合護甲 +${amount}`,
+      turnStressRelief: `回合壓力 -${amount}`,
+      firstAttackBurn: `首攻燃燒 +${amount}`,
+      turnHealLowest: `最低生命治療 +${amount}`,
+      openingEvade: `開場閃避 +${amount}`,
+      firstAttackPierce: `首攻穿甲 +${amount}`,
+      openingEnergy: `首回合能量 +${amount}`
+    }[item.effect] || `${equipmentEffectTypeLabel(item.effect)} +${amount}`;
+    const firearmBoost = item.weaponClass === "firearm" ? getFirearmMultiplier() : 1;
+    return firearmBoost > 1 ? `${base} · 槍械羈絆 x${formatMultiplier(firearmBoost)}` : base;
+  }
+
+  function equipmentEffectTypeLabel(effect) {
+    return {
+      attackBonus: "攻擊加成",
+      firstAttackBonus: "首攻加成",
+      openingDraw: "開場抽牌",
+      turnBlock: "回合護甲",
+      turnStressRelief: "壓力修正",
+      firstAttackBurn: "首攻燃燒",
+      turnHealLowest: "生命支援",
+      openingEvade: "開場閃避",
+      firstAttackPierce: "首攻穿甲",
+      openingEnergy: "開場能量"
+    }[effect] || effect || "效果";
+  }
+
+  function summarizeEffectChips(effects, label) {
+    return Object.entries(effects || {}).slice(0, 4).map(([effect, value]) => ({ label, value: `${effectLabel(effect)} ${formatEffectValue(value)}`, tone: "bond" }));
+  }
+
+  function effectLabel(effect) {
+    return {
+      attackBonus: "攻擊",
+      statusExploitBonus: "狀態追擊",
+      openingEnergy: "首回合能量",
+      openingDraw: "開場抽牌",
+      turnBlockAll: "全隊護甲",
+      turnReduceStressAll: "壓力降低",
+      turnStressAll: "壓力代價",
+      turnHealAll: "全隊恢復",
+      firearmMultiplier: "槍械放大",
+      firstAttackPierce: "首攻穿甲",
+      firstTacticDraw: "戰術抽牌",
+      firstTacticCostReduction: "戰術降費",
+      secondCardDamage: "二連追加"
+    }[effect] || effect;
+  }
+
+  function formatEffectValue(value) {
+    return typeof value === "number" && value > 0 ? `+${value}` : String(value);
+  }
+
+  function getFirearmMultiplier() {
+    return core.getActiveBonds(state).reduce((max, bond) => Math.max(max, Number(bond.effects?.firearmMultiplier || 1)), 1);
+  }
+
+  function formatMultiplier(value) {
+    return Number(value).toFixed(2).replace(/\.?0+$/, "");
+  }
+
+  function formatPercent(value) {
+    return `${Math.round(Number(value || 0) * 100)}%`;
+  }
+
+  function hubTabLabel(tab) {
+    return {
+      deployment: "出戰部署",
+      roster: "角色整備",
+      growth: "自創強化",
+      shop: "強化商店"
+    }[tab] || "出戰部署";
   }
 
   function groupMembersByFaction(members) {
@@ -1161,7 +1594,7 @@
     return `
       <section class="panel bond-panel ${mode === "combat" ? "compact" : ""}">
         <div class="section-heading"><div><span class="eyebrow">上陣羈絆</span><h2>${bonds.length ? `已啟用 ${bonds.length} 條` : "尚未啟用"}</h2></div></div>
-        <div class="bond-grid">${bonds.map((bond) => `<article class="bond-card"><strong>${bond.name}</strong><p>${bond.text}</p></article>`).join("") || "<p class=\"empty-state\">調整出戰角色可啟用羈絆效果。</p>"}</div>
+        <div class="bond-grid">${bonds.map((bond) => `<article class="bond-card"><strong>${bond.name}</strong><p>${bond.text}</p>${renderModifierChips("bond", { bond })}</article>`).join("") || "<p class=\"empty-state\">調整出戰角色可啟用羈絆效果。</p>"}</div>
       </section>
     `;
   }
@@ -1481,7 +1914,8 @@
       "fury-road-war-rig": "./src/assets/generated/scenario-fury-road-war-rig.png",
       "resident-evil-6-c-virus": "./src/assets/generated/scenario-resident-evil-6-c-virus.png",
       "elden-ring-hell-run": "./src/assets/generated/scenario-elden-ring-hell-run.png",
-      "jujutsu-kaisen-shibuya": "./src/assets/generated/scenario-jujutsu-kaisen-shibuya.png"
+      "jujutsu-kaisen-shibuya": "./src/assets/generated/scenario-jujutsu-kaisen-shibuya.png",
+      "fullmetal-alchemist-finale": "./src/assets/generated/scenario-fullmetal-alchemist-finale.png"
     };
     return art[id] || "";
   }

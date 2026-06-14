@@ -127,6 +127,18 @@ function createCompletedTutorialState(options = {}) {
   return next;
 }
 
+function fillOwnedRoster(state, activeIds = ["zheng-zha", "zhan-lan", "zero"]) {
+  const activeSet = new Set(activeIds);
+  data.characters
+    .filter((character) => !character.tutorialOnly && !character.playerOnly)
+    .forEach((character) => {
+      if (state.party.some((member) => member.id === character.id)) return;
+      const base = structuredClone(core.charactersById[character.id]);
+      state.party.push({ ...base, hp: base.maxHp, block: 0, active: activeSet.has(character.id) });
+    });
+  state.party = state.party.map((member) => member.id === "player-avatar" ? member : { ...member, active: activeSet.has(member.id) });
+}
+
 function makeActiveEnemy(enemyId, overrides = {}) {
   const base = structuredClone(core.enemiesById[enemyId]);
   return {
@@ -200,7 +212,8 @@ Object.values(audioManifest.music).forEach((entry) => {
   assert(playlist.length === 6, "Every BGM event should use the six-track shared playlist.");
   playlist.forEach((src) => assertAudioAsset(String(src).split("/").pop()));
 });
-assert(state.version === 6 && state.screen === "onboarding" && state.onboarding.stage === "invite", "New saves must start at the Windows 98 invitation popup.");
+assert(state.version === 7 && state.screen === "onboarding" && state.onboarding.stage === "invite", "New saves must start at the Windows 98 invitation popup.");
+assert(state.campaign.dynamicDifficulty.failureRelief === 0 && Array.isArray(state.campaign.dynamicDifficulty.randomHistory), "New saves should initialize transparent dynamic difficulty state.");
 const noInviteState = core.answerMainGodInvite(state, "no");
 assert(noInviteState.onboarding.stage === "ordinary-ending", "Choosing No should enter the ordinary person ending.");
 assert(core.restartOnboarding(noInviteState).onboarding.stage === "invite", "The ordinary ending should restart back to the invitation popup.");
@@ -274,18 +287,18 @@ legacySupportState.equipmentInventory.push({ instanceId: "legacy-support-equip",
 legacySupportState.equipped["player-avatar"] = "legacy-support-equip";
 legacySupportState.party.find((member) => member.id === "player-avatar").active = true;
 const migratedSupportState = core.normalizeState(legacySupportState);
-assert(migratedSupportState.version === 6 && !core.getActiveParty(migratedSupportState).some((member) => member.id === "player-avatar"), "Version 5 saves should migrate to seventh-support version 6 without activating the custom protagonist.");
+assert(migratedSupportState.version === 7 && !core.getActiveParty(migratedSupportState).some((member) => member.id === "player-avatar"), "Version 5 saves should migrate to seventh-support version 7 without activating the custom protagonist.");
 assert(migratedSupportState.playerGrowth.activeMutationId === "blood-virus-core" && migratedSupportState.playerGrowth.activeTagIds.length === 2, "Migrated saves should choose the latest unlocked mutation and two normal bloodlines.");
 assert(migratedSupportState.playerGrowth.supportEquipmentIds.includes("legacy-support-equip") && !migratedSupportState.equipped["player-avatar"], "Equipment formerly held by the custom protagonist should migrate into support equipment slots.");
 state = createCreatedPlayerState();
-assert(data.characters.length === 112, "The roster should include the custom protagonist plus the existing DMC5 cast, fourteen legendary final-battle characters, the Gintama group, the movie battle casts, the Resident Evil 6 taskforce, the Elden Ring hell roster, and the Jujutsu Kaisen cast.");
+assert(data.characters.length === 118, "The roster should include the custom protagonist plus the existing DMC5 cast, fourteen legendary final-battle characters, the Gintama group, the movie battle casts, the Resident Evil 6 taskforce, the Elden Ring hell roster, the Jujutsu Kaisen cast, and the Fullmetal Alchemist final-battle team.");
 const signatureIds = data.characters.map((character) => character.signatureCardId);
 assert(new Set(signatureIds).size === data.characters.length, "Every character must own one unique signature card.");
 assert(signatureIds.every((cardId) => core.cardsById[cardId]?.category === "signature"), "Every character signature must resolve to a signature card.");
 assert(data.characters.every((character) => existsSync(new URL(`../src/assets/generated/character-${character.id}.png`, import.meta.url))), "Every character must have portrait art.");
 assert(signatureIds.every((cardId) => existsSync(new URL(`../src/assets/generated/skill-${cardId}.png`, import.meta.url))), "Every signature card must have skill art.");
 assert(data.enemies.every((enemy) => existsSync(new URL(`../src/assets/generated/enemy-${enemy.id}.png`, import.meta.url))), "Every enemy should have direct IMAGE2 scene art.");
-assert(data.characters.filter((character) => character.factionId && character.factionId !== "main").length === 91, "Ninety-one characters should carry rival or crossover faction identities.");
+assert(data.characters.filter((character) => character.factionId && character.factionId !== "main").length === 97, "Ninety-seven characters should carry rival or crossover faction identities.");
 assert(["shiva-gangtian", "lamia", "arot", "richard", "elena", "kevin", "amon", "naya", "victor", "sarah"].every((id) => data.characters.some((character) => character.id === id)), "The ten new rival and other-team characters should be registered.");
 assert(["tanjiro-kamado", "naruto-uzumaki", "luffy-nika", "son-goku", "xiao-yan"].every((id) => data.characters.some((character) => character.id === id)), "The five legendary anime and novel protagonists should be registered.");
 assert(["ichigo-kurosaki", "edward-elric", "eren-yeager", "gon-freecss", "kirito-kazuto"].every((id) => data.characters.some((character) => character.id === id)), "The second wave of five legendary anime protagonists should be registered.");
@@ -299,10 +312,14 @@ assert(["leon-kennedy", "helena-harper", "chris-redfield", "piers-nivans", "jake
 assert(["tarnished-elden-lord", "melina-kindling-maiden", "ranni-dark-moon", "blaidd-half-wolf", "millicent-valkyrie", "alexander-warrior-jar", "black-knife-tiche", "nepheli-loux"].every((id) => data.characters.some((character) => character.id === id)), "The Elden Ring hell character group should be registered.");
 const jujutsuKaisenCharacterIds = ["yuji-itadori", "megumi-fushiguro", "nobara-kugisaki", "yuta-okkotsu", "maki-zenin", "toge-inumaki", "panda-jjk", "nanami-kento", "aoi-todo", "choso", "hakari-kinji", "higuruma-hiromi", "satoru-gojo"];
 assert(jujutsuKaisenCharacterIds.every((id) => data.characters.some((character) => character.id === id)), "The Jujutsu Kaisen character group should be registered.");
+const fullmetalAlchemistCharacterIds = ["alphonse-elric", "roy-mustang", "riza-hawkeye", "scar-ishvalan", "izumi-curtis", "van-hohenheim"];
+assert(fullmetalAlchemistCharacterIds.every((id) => data.characters.some((character) => character.id === id)), "The Fullmetal Alchemist final-battle character group should be registered.");
 const gojo = core.charactersById["satoru-gojo"];
 const jujutsuScenario = core.scenariosById["jujutsu-kaisen-shibuya"];
+const fullmetalAlchemistScenario = core.scenariosById["fullmetal-alchemist-finale"];
 assert(gojo.hidden && gojo.unlock === "hidden-prison-realm", "Satoru Gojo should be flagged as a hidden Prison Realm unlock.");
 assert(jujutsuScenario.hiddenProtagonistId === "satoru-gojo" && !jujutsuScenario.recruitmentPool.includes("satoru-gojo"), "Gojo should only be obtainable through the Prison Realm hidden event, not the normal recruitment pool.");
+assert(fullmetalAlchemistScenario.hiddenProtagonistId === "edward-elric" && !fullmetalAlchemistScenario.recruitmentPool.includes("edward-elric"), "Edward should only be obtainable through the Fullmetal Alchemist equivalent-exchange event, not the normal recruitment pool.");
 assert(data.legendaryRecruitmentPool.length === 14 && data.legendaryRecruitmentPool.every((id) => data.characters.some((character) => character.id === id)), "Legendary protagonists should be listed in a dedicated hard-to-obtain pool.");
 assert(data.scenarios.every((scenario) => !scenario.recruitmentPool.some((id) => data.legendaryRecruitmentPool.includes(id))), "Legendary protagonists should not appear in normal scenario recruitment pools.");
 const formalScenarios = data.scenarios.filter((scenario) => scenario.id !== "tutorial");
@@ -312,7 +329,7 @@ assert(formalScenarioAssetNames.every((fileName) => existsSync(assetUrl(fileName
 assertUniqueAssets(formalScenarioAssetNames, "Every formal scenario IMAGE2 hero art should be unique.");
 const openingPanelAssetNames = [...new Set(formalScenarios.flatMap((scenario) => scenario.opening.panels.map((panel) => `enemy-${panel.enemyId}.png`)))];
 assert(openingPanelAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Every formal scenario opening illustration beat should have direct enemy scene art instead of a borrowed alias.");
-const animeFinalScenarioIds = ["rumbling-finale", "infinity-castle", "naruto-final-valley", "bleach-false-karakura", "gintama-yoshiwara", "gintama-final-war"];
+const animeFinalScenarioIds = ["rumbling-finale", "infinity-castle", "naruto-final-valley", "bleach-false-karakura", "gintama-yoshiwara", "gintama-final-war", "fullmetal-alchemist-finale"];
 assert(animeFinalScenarioIds.every((id) => data.scenarios.some((scenario) => scenario.id === id)), "The expanded anime final and climax scenarios should be registered.");
 const movieScenarioIds = ["avengers-new-york", "batman-v-superman", "pacific-rim-breach", "fury-road-war-rig"];
 assert(movieScenarioIds.every((id) => data.scenarios.some((scenario) => scenario.id === id)), "The movie crossover scenarios should be registered.");
@@ -334,6 +351,7 @@ assert(core.enemiesById["re6-haos-final-core"].regen > 0 && core.enemiesById["re
 assert(core.enemiesById["er-malenia-blade-miquella"].regen > 0 && core.enemiesById["er-malenia-blade-miquella"].phaseTwo?.maxHp > 0, "Malenia should regenerate and carry a second phase.");
 assert(core.enemiesById["er-radagon-elden-beast"].regen > 0 && core.enemiesById["er-radagon-elden-beast"].phaseTwo?.maxHp > 0, "Radagon and the Elden Beast should regenerate and carry a second phase.");
 assert(core.enemiesById["jjk-sukuna-shinjuku"].regen > 0 && core.enemiesById["jjk-sukuna-shinjuku"].phaseTwo?.maxHp > 0, "Shinjuku Sukuna should regenerate and carry a second phase.");
+assert(core.enemiesById["fma-father-eclipse"].regen > 0 && core.enemiesById["fma-father-eclipse"].phaseTwo?.maxHp > 0, "Father should regenerate and carry a second phase.");
 const animeFinalScenarioAssetNames = animeFinalScenarioIds.map((id) => `scenario-${id}.png`);
 assert(animeFinalScenarioAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Anime climax scenarios should have dedicated hero art.");
 assertUniqueAssets(animeFinalScenarioAssetNames, "Anime climax hero art should be unique.");
@@ -415,6 +433,16 @@ const jujutsuKaisenAssetNames = [
 ];
 assert(jujutsuKaisenAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Jujutsu Kaisen should have dedicated IMAGE2 scenario and enemy art assets.");
 assertUniqueAssets(jujutsuKaisenAssetNames, "Jujutsu Kaisen IMAGE2 scenario and enemy art should be unique.");
+const fullmetalAlchemistAssetNames = [
+  "scenario-fullmetal-alchemist-finale.png",
+  "enemy-fma-mannequin-soldier.png",
+  "enemy-fma-gold-toothed-doctor.png",
+  "enemy-fma-pride-shadow.png",
+  "enemy-fma-king-bradley.png",
+  "enemy-fma-father-eclipse.png"
+];
+assert(fullmetalAlchemistAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Fullmetal Alchemist should have dedicated IMAGE2 scenario and enemy art assets.");
+assertUniqueAssets(fullmetalAlchemistAssetNames, "Fullmetal Alchemist IMAGE2 scenario and enemy art should be unique.");
 const finalBattleEnemyAssetNames = [
   "rumbling-titan-line", "colossal-titan", "war-hammer-titan", "founding-eren",
   "infinity-castle-demon", "biwa-castle-demon", "upper-moon-demon", "kokushibo-moon-breath", "muzan-kibutsuji",
@@ -441,6 +469,7 @@ const furyRoadOpeningText = JSON.stringify(data.scenarios.find((scenario) => sce
 const residentEvil6OpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "resident-evil-6-c-virus").opening);
 const eldenRingOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "elden-ring-hell-run").opening);
 const jujutsuKaisenOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "jujutsu-kaisen-shibuya").opening);
+const fullmetalAlchemistOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "fullmetal-alchemist-finale").opening);
 assert(["米卡莎", "阿爾敏", "兵長", "艾連"].every((name) => rumblingOpeningText.includes(name)), "The Rumbling finale opening should use original final-battle cast beats.");
 assert(["炭治郎", "富岡義勇", "黑死牟", "鬼舞辻無慘"].every((name) => infinityOpeningText.includes(name)), "The Infinity Castle opening should use original final-battle cast beats.");
 assert(["鳴人", "佐助", "卡卡西", "終末之谷"].every((name) => narutoOpeningText.includes(name)), "The Final Valley opening should use original final-battle cast beats.");
@@ -456,16 +485,17 @@ assert(["芙莉歐莎", "麥斯", "納克斯", "戰爭車"].every((name) => fury
 assert(["里昂·S·甘迺迪", "克里斯·雷德菲爾", "傑克·穆勒", "C病毒", "Haos"].every((name) => residentEvil6OpeningText.includes(name)), "The Resident Evil 6 opening should use C-virus, BSAA, antibody, and Haos battle beats.");
 assert(["褪色者", "梅琳娜", "菈妮", "瑪蓮妮亞", "艾爾登獸"].every((name) => eldenRingOpeningText.includes(name)), "The Elden Ring hell opening should use Tarnished, guidance, moon, rot goddess, and Elden Beast beats.");
 assert(["虎杖悠仁", "伏黑惠", "乙骨憂太", "獄門疆", "宿儺"].every((name) => jujutsuKaisenOpeningText.includes(name)), "The Jujutsu Kaisen opening should use Shibuya, Prison Realm, and Shinjuku battle beats.");
+assert(["愛德華", "阿爾馮斯", "馬斯坦古", "瓶中小人", "國土鍊成陣"].every((name) => fullmetalAlchemistOpeningText.includes(name)), "The Fullmetal Alchemist opening should use Edward, Alphonse, Mustang, Father, and nationwide transmutation beats.");
 assert(data.economy.legendaryRecruitmentMinInfiniteTier === 3, "Legendary protagonists should require deep infinite-mode progress before appearing.");
 assert(core.cardsById["kamehameha-limit"].damage === 48 && core.cardsById["buddha-lotus-flame"].damageAll === 32 && core.cardsById["jajanken-covenant"].damage === 46, "Legendary protagonist signatures should be especially strong.");
-assert(data.equipment.length === 80, "The equipment pool should include the existing DMC5 gear, final-battle weapon expansion, Gintama tools, Avengers equipment, Justice Dawn equipment, the two new movie weapon sets, Resident Evil 6 weapons, Elden Ring relics, and Jujutsu cursed tools.");
+assert(data.equipment.length === 84, "The equipment pool should include the existing DMC5 gear, final-battle weapon expansion, Gintama tools, Avengers equipment, Justice Dawn equipment, the two new movie weapon sets, Resident Evil 6 weapons, Elden Ring relics, Jujutsu cursed tools, and Fullmetal Alchemist gear.");
 const allCardAssetNames = data.cards.map((card) => `skill-${card.id}.png`);
 const allEquipmentAssetNames = data.equipment.map((item) => `equipment-${item.id}.png`);
 const sourceCoverAssetNames = data.cardSources.map((source) => `source-cover-${source.id}.png`);
 const rosterHeroAssetNames = data.characterSources.map((source) => source.heroFileName);
 assert(allCardAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Every card should have dedicated skill art.");
 assert(allEquipmentAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Every equipment item should have dedicated equipment art.");
-assert(sourceCoverAssetNames.length === 15, "The card shop should define fifteen source cover categories.");
+assert(sourceCoverAssetNames.length === 16, "The card shop should define sixteen source cover categories.");
 assert(sourceCoverAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Every card source should have a dedicated IMAGE2 cover.");
 assert(data.characterSources.length === 27, "Roster preparation should define twenty-seven team/source hero categories.");
 assert(rosterHeroAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Every roster source should have a dedicated IMAGE2 hero shot.");
@@ -487,17 +517,17 @@ const rosterCharacterIds = data.characters.filter((character) => !character.tuto
 assert(rosterCharacterIds.every((id) => rosterSourceMembership.has(id)), "Roster sources should cover every non-tutorial character.");
 assert(data.legendaryRecruitmentPool.every((id) => rosterSourceMembership.get(id) !== "protagonist"), "Legendary protagonists should be split into their own anime/game/movie roster sources.");
 assert(["demon-slayer", "naruto", "one-piece", "dragon-ball", "battle-through-heavens", "bleach", "fullmetal-alchemist", "attack-on-titan", "hunter", "sword-art-online"].every((id) => data.characterSources.some((source) => source.id === id)), "Roster sources should split legendary protagonists by original source.");
-assert(data.bonds.length === 123, "The roster should include one hundred and twenty-three deployable bond combinations.");
+assert(data.bonds.length === 130, "The roster should include one hundred and thirty deployable bond combinations.");
 const characterIds = new Set(data.characters.map((character) => character.id));
 assert(data.bonds.every((bond) => (bond.members || []).every((id) => characterIds.has(id)) && (bond.anyMembers || []).every((id) => characterIds.has(id))), "Every bond must reference valid characters.");
-assert(["zhongzhou-frontline", "field-medic-link", "demon-assault-cell", "legendary-sun-flame", "scout-final-flight", "water-hashira-line", "yorozuya-three", "joy4-last-stand", "avengers-assemble-core", "trinity-dawn", "jaeger-drift-team", "war-rig-convoy", "bsaa-c-virus-taskforce", "elden-ring-tarnished-oath", "jjk-prison-realm-break"].every((id) => data.bonds.some((bond) => bond.id === id)), "The expanded bond set should include Zhongzhou, support, demon, legendary, scout, Water Hashira, Gintama, Avengers, Justice Dawn, Pacific Rim, Fury Road, Resident Evil 6, Elden Ring, and Jujutsu combinations.");
+assert(["zhongzhou-frontline", "field-medic-link", "demon-assault-cell", "legendary-sun-flame", "scout-final-flight", "water-hashira-line", "yorozuya-three", "joy4-last-stand", "avengers-assemble-core", "trinity-dawn", "jaeger-drift-team", "war-rig-convoy", "bsaa-c-virus-taskforce", "elden-ring-tarnished-oath", "jjk-prison-realm-break", "fma-elric-brothers", "fma-eastern-command", "fma-truth-countercircle"].every((id) => data.bonds.some((bond) => bond.id === id)), "The expanded bond set should include Zhongzhou, support, demon, legendary, scout, Water Hashira, Gintama, Avengers, Justice Dawn, Pacific Rim, Fury Road, Resident Evil 6, Elden Ring, Jujutsu, and Fullmetal Alchemist combinations.");
 const crossWorldBonds = data.bonds.filter((bond) => bond.crossWorld);
 const crossWorldCoveredCharacters = new Set(crossWorldBonds.flatMap((bond) => bond.members || []));
 const deployableCharacterIds = data.characters.filter((character) => !character.tutorialOnly && !character.playerOnly).map((character) => character.id);
-assert(crossWorldBonds.length === 65, "The expanded bond set should include sixty-five explicit crossover bonds.");
+assert(crossWorldBonds.length === 69, "The expanded bond set should include sixty-nine explicit crossover bonds.");
 assert(deployableCharacterIds.every((id) => crossWorldCoveredCharacters.has(id)), "Every deployable character should appear in at least one explicit crossover bond.");
 assert(crossWorldBonds.every((bond) => new Set((bond.members || []).map((id) => core.charactersById[id].factionId || "main")).size >= 2), "Every explicit crossover bond should span multiple factions or worlds.");
-assert(["cross-blood-sun-frontline", "cross-genius-forge", "cross-dark-mirror-sun", "cross-freedom-breakers", "cross-jaeger-mecha-line", "cross-war-rig-shield-wall", "cross-redemption-signal", "cross-kennedy-protocol", "cross-antibody-rescue", "cross-great-rune-calculation", "cross-black-knife-shadow", "cross-limitless-sun-break"].every((id) => data.bonds.some((bond) => bond.id === id)), "Crossover bonds should include Zhongzhou, legendary, movie, game, anime, Jaeger, wasteland, C-virus, Elden Ring, and Jujutsu mixes.");
+assert(["cross-blood-sun-frontline", "cross-genius-forge", "cross-dark-mirror-sun", "cross-freedom-breakers", "cross-jaeger-mecha-line", "cross-war-rig-shield-wall", "cross-redemption-signal", "cross-kennedy-protocol", "cross-antibody-rescue", "cross-great-rune-calculation", "cross-black-knife-shadow", "cross-limitless-sun-break", "cross-equivalent-forge", "cross-flame-sniper-grid", "cross-reconstruction-martial-law", "cross-philosopher-sage-circle"].every((id) => data.bonds.some((bond) => bond.id === id)), "Crossover bonds should include Zhongzhou, legendary, movie, game, anime, Jaeger, wasteland, C-virus, Elden Ring, Jujutsu, and Fullmetal Alchemist mixes.");
 assert(data.economy.skipCardReward === 150 && data.economy.deckCardRemovalCost === 300 && data.economy.curseRemovalCost === 400 && data.economy.minimumDeckSize === 6, "Economy constants should use the scaled original-novel-inspired point values.");
 assert(core.encountersById["alien-queen"].rewardPoints === 2500, "Boss rewards should pay thousands of reward points.");
 assert(core.shopById["shop-desert-eagle"].rewardPointCost === 1200 && core.shopById["shop-desert-eagle"].sideStoryCost === 1, "Infinite-ammo firearm purchases should require both points and side stories.");
@@ -514,9 +544,10 @@ const crossoverAttackIds = [
   "pacrim-rocket-elbow", "pacrim-plasma-caster", "pacrim-chain-sword",
   "fury-war-rig-ram", "fury-thunderpoon-salvo", "fury-polecat-boarding",
   "re6-wing-shooter-burst", "re6-hydra-shotgun-sweep", "re6-bsaa-assault-fireline", "re6-anti-materiel-shot", "re6-elephant-killer", "re6-remote-bomb-breach",
-  "er-transient-moonlight", "er-corpse-piler-bloodflame", "er-blasphemous-flame", "er-lion-claw-crush", "er-black-knife-wave", "er-ancient-dragon-lightning", "er-scarlet-aeonia", "er-starscourge-arrow-rain", "er-flame-redmanes", "er-godslayer-blackflame"
+  "er-transient-moonlight", "er-corpse-piler-bloodflame", "er-blasphemous-flame", "er-lion-claw-crush", "er-black-knife-wave", "er-ancient-dragon-lightning", "er-scarlet-aeonia", "er-starscourge-arrow-rain", "er-flame-redmanes", "er-godslayer-blackflame",
+  "fma-ground-spike", "fma-flame-burst", "fma-deconstruction-touch"
 ];
-assert(crossoverAttackIds.length === 61, "The crossover common pool should add sixty-one attack cards.");
+assert(crossoverAttackIds.length === 64, "The crossover common pool should add sixty-four attack cards.");
 assert(crossoverAttackIds.every((id) => core.cardsById[id]?.category === "general" && core.cardsById[id].type === "attack"), "Every crossover card should be a purchasable general attack card.");
 assert(crossoverAttackIds.every((id) => data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Every crossover attack card should have a shop entry.");
 assert(crossoverAttackIds.every((id) => existsSync(new URL(`../src/assets/generated/skill-${id}.png`, import.meta.url))), "Every crossover attack card should have shop art.");
@@ -528,7 +559,8 @@ assert(["pacrim-drift-protocol", "fury-green-place-oath"].every((id) => core.car
 assert(["re6-antiviral-serum", "re6-coop-quick-shot"].every((id) => core.cardsById[id]?.category === "general" && data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Resident Evil 6 support and tactic cards should be purchasable.");
 assert(["er-golden-vow", "er-bloodhound-step"].every((id) => core.cardsById[id]?.category === "general" && data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Elden Ring support and tactic cards should be purchasable.");
 assert(["jjk-simple-domain-guard", "jjk-reverse-cursed-technique", "jjk-domain-clash"].every((id) => core.cardsById[id]?.category === "general" && data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Jujutsu Kaisen guard, support, and domain cards should be purchasable.");
-assert(["demon-slayer", "attack-on-titan", "ff7", "yanyun", "jinyong", "gintama", "avengers", "dc-movie", "pacific-rim", "fury-road", "re6", "elden-ring", "jujutsu-kaisen"].every((sourceId) => data.cardSources.some((source) => source.id === sourceId)), "Card shop sources should include the requested anime, game, wuxia, movie, Elden Ring, and Jujutsu Kaisen categories.");
+assert(["fma-transmutation-wall", "fma-alkahestry-rebuild"].every((id) => core.cardsById[id]?.category === "general" && data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Fullmetal Alchemist guard and support cards should be purchasable.");
+assert(["demon-slayer", "attack-on-titan", "ff7", "yanyun", "jinyong", "gintama", "avengers", "dc-movie", "pacific-rim", "fury-road", "re6", "elden-ring", "jujutsu-kaisen", "fullmetal-alchemist"].every((sourceId) => data.cardSources.some((source) => source.id === sourceId)), "Card shop sources should include the requested anime, game, wuxia, movie, Elden Ring, Jujutsu Kaisen, and Fullmetal Alchemist categories.");
 const artifactEquipmentIds = [
   "avalon-sheath", "ea-sword-rupture", "gates-of-babylon-key", "zangetsu-blade", "enma-blade",
   "odm-gear", "thunder-spear-pack", "survey-blades", "mikasa-red-scarf", "armin-seashell", "tanjiro-nichirin-blade", "water-hashira-nichirin",
@@ -563,7 +595,10 @@ assert(eldenRingEquipmentIds.every((id) => data.shop.some((entry) => entry.kind 
 const jujutsuToolIds = ["slaughter-demon-dagger", "playful-cloud-staff", "inverted-spear-fragment", "prison-realm-shard"];
 assert(jujutsuToolIds.every((id) => core.equipmentById[id]?.sourceId === "jujutsu-tools"), "Every Jujutsu Kaisen cursed tool should have the cursed-tool equipment source.");
 assert(jujutsuToolIds.every((id) => data.shop.some((entry) => entry.kind === "equipment" && entry.itemId === id)), "Every Jujutsu Kaisen cursed tool should have a shop entry.");
-assert(["anime-artifacts", "final-battle-weapons", "novel-artifacts", "wuxia-artifacts", "gintama-equipment", "avengers-equipment", "dc-equipment", "pacific-rim-equipment", "fury-road-equipment", "re6-equipment", "elden-ring-equipment", "jujutsu-tools"].every((sourceId) => data.equipmentSources.some((source) => source.id === sourceId)), "Equipment shop sources should include anime, final-battle, novel, wuxia, Gintama, Avengers, Justice Dawn, Pacific Rim, Fury Road, Resident Evil 6, Elden Ring, and Jujutsu cursed-tool categories.");
+const fullmetalAlchemistEquipmentIds = ["automail-right-arm", "flame-alchemy-gloves", "philosopher-stone-shard", "scar-brother-notes"];
+assert(fullmetalAlchemistEquipmentIds.every((id) => core.equipmentById[id]?.sourceId === "fma-equipment"), "Every Fullmetal Alchemist equipment item should have the alchemy equipment source.");
+assert(fullmetalAlchemistEquipmentIds.every((id) => data.shop.some((entry) => entry.kind === "equipment" && entry.itemId === id)), "Every Fullmetal Alchemist equipment item should have a shop entry.");
+assert(["anime-artifacts", "final-battle-weapons", "novel-artifacts", "wuxia-artifacts", "gintama-equipment", "avengers-equipment", "dc-equipment", "pacific-rim-equipment", "fury-road-equipment", "re6-equipment", "elden-ring-equipment", "jujutsu-tools", "fma-equipment"].every((sourceId) => data.equipmentSources.some((source) => source.id === sourceId)), "Equipment shop sources should include anime, final-battle, novel, wuxia, Gintama, Avengers, Justice Dawn, Pacific Rim, Fury Road, Resident Evil 6, Elden Ring, Jujutsu cursed-tool, and Fullmetal Alchemist gear categories.");
 
 // Bloodline upgrades are purchased per character and only enhance that owner's signature.
 let bloodlineState = createCombatTestState();
@@ -998,6 +1033,9 @@ campaignRun = finishScenario(campaignRun);
 assert(campaignRun.campaign.unlockedScenarios.includes("jujutsu-kaisen-shibuya"), "Elden Ring hell completion should unlock the Jujutsu Kaisen Shibuya scenario.");
 campaignRun = core.beginScenario(campaignRun, "jujutsu-kaisen-shibuya");
 campaignRun = finishScenario(campaignRun);
+assert(campaignRun.campaign.unlockedScenarios.includes("fullmetal-alchemist-finale"), "Jujutsu Kaisen completion should unlock the Fullmetal Alchemist final battle scenario.");
+campaignRun = core.beginScenario(campaignRun, "fullmetal-alchemist-finale");
+campaignRun = finishScenario(campaignRun);
 const legendaryRecruitIds = new Set(data.legendaryRecruitmentPool);
 let lockedLegendaryState = structuredClone(campaignRun);
 lockedLegendaryState.screen = "hub";
@@ -1021,14 +1059,51 @@ if (campaignRun.screen === "scenario-intro") campaignRun = core.continueScenario
 assert(campaignRun.screen === "map" && campaignRun.run.sourceScenarioId === "infinite", "Infinite mode should launch a random completed scenario.");
 assert([
   "alien", "juon", "mummy-curse", "jurassic-island", "abyssal-ark", "evernight-castle", "demon-frontier", "main-god-trial",
-  "starship-troopers", "avp-pyramid", "nightmare-elm", "lotr-war", "rumbling-finale", "infinity-castle", "naruto-final-valley", "bleach-false-karakura", "gintama-yoshiwara", "gintama-final-war", "avengers-new-york", "batman-v-superman", "devil-may-cry-5", "final-destination", "jinyong-heroic-peak", "pacific-rim-breach", "fury-road-war-rig", "resident-evil-6-c-virus", "elden-ring-hell-run", "jujutsu-kaisen-shibuya"
+  "starship-troopers", "avp-pyramid", "nightmare-elm", "lotr-war", "rumbling-finale", "infinity-castle", "naruto-final-valley", "bleach-false-karakura", "gintama-yoshiwara", "gintama-final-war", "avengers-new-york", "batman-v-superman", "devil-may-cry-5", "final-destination", "jinyong-heroic-peak", "pacific-rim-breach", "fury-road-war-rig", "resident-evil-6-c-virus", "elden-ring-hell-run", "jujutsu-kaisen-shibuya", "fullmetal-alchemist-finale"
 ].includes(campaignRun.run.scenarioId), "Infinite mode should rotate through all completed scenarios.");
+
+let randomScenarioState = createCompletedTutorialState();
+fillOwnedRoster(randomScenarioState);
+randomScenarioState.campaign.unlockedScenarios = data.scenarios.map((scenario) => scenario.id).filter((id) => id !== "tutorial");
+randomScenarioState.campaign.dynamicDifficulty.randomHistory = ["alien", "juon"];
+const randomPool = core.randomNormalScenarioPool(randomScenarioState);
+assert(randomPool.length > 2 && randomPool.every((scenario) => scenario.id !== "elden-ring-hell-run" && scenario.id !== "tutorial" && !core.isSuperHardScenario(scenario)), "Random normal pool should exclude tutorial, infinite, and super-hard scenarios.");
+randomScenarioState = core.beginScenario(randomScenarioState, "random-normal");
+if (randomScenarioState.screen === "recruit") randomScenarioState = core.chooseRecruit(randomScenarioState, randomScenarioState.pending.candidates[0]);
+assert(randomScenarioState.run && randomScenarioState.run.scenarioId !== "alien" && randomScenarioState.run.scenarioId !== "juon", "Random normal launch should avoid the last two scenarios when the pool is large enough.");
+assert(randomScenarioState.run.dynamicDifficulty.mode === "normal" && randomScenarioState.run.openingDiscussion.length >= 4 && randomScenarioState.run.banterFeed.length >= 3, "Random normal launch should attach dynamic difficulty and opening discussion data.");
+
+let dynamicState = createCompletedTutorialState();
+fillOwnedRoster(dynamicState);
+dynamicState.campaign.unlockedScenarios = ["alien", "juon", "mummy-curse"];
+dynamicState.campaign.completedScenarios = ["alien", "juon", "mummy-curse", "jurassic-island", "abyssal-ark", "evernight-castle", "demon-frontier", "main-god-trial"];
+dynamicState.campaign.dynamicDifficulty.successStreak = 2;
+dynamicState = core.beginScenario(dynamicState, "alien");
+const raisedMultiplier = dynamicState.run.dynamicDifficulty.multiplier;
+assert(raisedMultiplier > 1, "Dynamic difficulty should rise with normal clears and success streaks.");
+dynamicState = core.continueScenarioIntro(dynamicState);
+const firstDynamicNode = dynamicState.run.map.layers[0][0];
+const dynamicEncounterId = firstDynamicNode.encounterId;
+dynamicState = core.chooseMapNode(dynamicState, firstDynamicNode.id);
+const scaledEnemy = dynamicState.activeEnemies[0];
+const baseEnemy = core.enemiesById[scaledEnemy.enemyId];
+const baseIntent = baseEnemy.intents[0];
+const scaledIntent = core.getEnemyIntent(scaledEnemy);
+assert(scaledEnemy.maxHp > baseEnemy.maxHp, "Dynamic difficulty should scale enemy HP on combat start.");
+assert(["attack", "cleave", "stress"].includes(baseIntent.kind) && scaledIntent.amount > baseIntent.amount, "Dynamic difficulty should scale visible enemy attack or stress intent values.");
+assert(dynamicState.run.banterFeed.some((line) => line.line.includes("接觸")), "Combat start should add a short battle comm to the run feed.");
+dynamicState.screen = "defeat";
+dynamicState = core.returnAfterDefeat(dynamicState);
+assert(dynamicState.campaign.dynamicDifficulty.failureRelief === 1 && dynamicState.campaign.dynamicDifficulty.successStreak === 0, "Defeat should add one relief stack and reset success streak.");
+dynamicState = core.beginScenario(dynamicState, "alien");
+assert(dynamicState.run.dynamicDifficulty.multiplier < raisedMultiplier, "Failure relief should slightly lower the next normal scenario multiplier.");
+assert(dynamicEncounterId, "Dynamic test should start from a concrete encounter.");
 
 // New scenarios have complete encounter sets and unique scenario-event powers.
 for (const scenarioId of [
   "mummy-curse", "jurassic-island", "abyssal-ark", "evernight-castle", "demon-frontier", "main-god-trial",
   "starship-troopers", "avp-pyramid", "nightmare-elm", "lotr-war", "rumbling-finale", "infinity-castle",
-  "naruto-final-valley", "bleach-false-karakura", "gintama-yoshiwara", "gintama-final-war", "avengers-new-york", "batman-v-superman", "devil-may-cry-5", "final-destination", "jinyong-heroic-peak", "pacific-rim-breach", "fury-road-war-rig", "resident-evil-6-c-virus", "elden-ring-hell-run", "jujutsu-kaisen-shibuya"
+  "naruto-final-valley", "bleach-false-karakura", "gintama-yoshiwara", "gintama-final-war", "avengers-new-york", "batman-v-superman", "devil-may-cry-5", "final-destination", "jinyong-heroic-peak", "pacific-rim-breach", "fury-road-war-rig", "resident-evil-6-c-virus", "elden-ring-hell-run", "jujutsu-kaisen-shibuya", "fullmetal-alchemist-finale"
 ]) {
   const scenario = core.scenariosById[scenarioId];
   assert(scenario.normal.length >= 2 && scenario.elite.length >= 1 && scenario.miniboss && scenario.boss, `${scenarioId} should have a full encounter set.`);
@@ -1093,6 +1168,7 @@ function launchEventForScenario(scenarioId) {
   next.run.currentLane = eventNode.lane;
   next = core.chooseMapNode(next, eventNode.id);
   assert(next.screen === "event" && next.pending.choices.length >= 4 && next.pending.choices.length <= 5, `${scenarioId} event stage one should expose four to five choices.`);
+  assert(next.run.banterFeed.some((line) => line.line.includes("奇遇節點")), `${scenarioId} event node should add a short party comm.`);
   return next;
 }
 
@@ -1132,7 +1208,8 @@ const scenarioPowerExpectations = [
   ["pacific-rim-breach", "jaeger-drift-sync"],
   ["fury-road-war-rig", "war-rig-breakthrough"],
   ["resident-evil-6-c-virus", "c-virus-antibody-window"],
-  ["elden-ring-hell-run", "great-rune-overload"]
+  ["elden-ring-hell-run", "great-rune-overload"],
+  ["fullmetal-alchemist-finale", "reverse-nationwide-circle"]
 ];
 for (const [scenarioId, powerId] of scenarioPowerExpectations) {
   const resolved = resolveScenarioThemeEvent(scenarioId);
@@ -1164,6 +1241,17 @@ assert(prisonRealmEvent.screen === "event-result", "Breaking the Prison Realm sh
 assert(prisonRealmEvent.party.some((member) => member.id === "satoru-gojo"), "Breaking the Prison Realm should recruit hidden Gojo.");
 assert(prisonRealmEvent.run.temporaryPowers.some((power) => power.id === "prison-realm-break"), "Breaking the Prison Realm should grant a dedicated temporary power.");
 assert(prisonRealmEvent.pending.result.rewards.length && prisonRealmEvent.pending.result.costs.length && prisonRealmEvent.pending.result.storyImpact, "The Prison Realm result should clearly show rewards, costs, and story impact.");
+
+let alchemyFinaleEvent = launchEventForScenario("fullmetal-alchemist-finale");
+alchemyFinaleEvent = core.resolveEvent(alchemyFinaleEvent, "fma-counter-circle-entry");
+assert(alchemyFinaleEvent.screen === "event" && alchemyFinaleEvent.pending.stage === 2 && alchemyFinaleEvent.pending.choices.some((choice) => choice.id === "fma-hohenheim-soul-grid"), "The Fullmetal Alchemist event should expose the counter-circle stage two route.");
+alchemyFinaleEvent = core.resolveEvent(alchemyFinaleEvent, "fma-hohenheim-soul-grid");
+assert(alchemyFinaleEvent.screen === "event" && alchemyFinaleEvent.pending.stage === 3 && alchemyFinaleEvent.pending.choices.some((choice) => choice.id === "fma-return-alphonse-body"), "The Fullmetal Alchemist event should expose the final equivalent-exchange choice.");
+alchemyFinaleEvent = core.resolveEvent(alchemyFinaleEvent, "fma-return-alphonse-body");
+assert(alchemyFinaleEvent.screen === "event-result", "Returning Alphonse's body should show a result screen before returning to the map.");
+assert(alchemyFinaleEvent.party.some((member) => member.id === "edward-elric"), "Returning Alphonse's body should recruit hidden Edward.");
+assert(alchemyFinaleEvent.run.temporaryPowers.some((power) => power.id === "equivalent-exchange-route"), "Returning Alphonse's body should grant a dedicated temporary power.");
+assert(alchemyFinaleEvent.pending.result.rewards.length && alchemyFinaleEvent.pending.result.costs.length && alchemyFinaleEvent.pending.result.storyImpact.includes("阿爾"), "The Fullmetal Alchemist result should clearly show rewards, costs, and story impact.");
 assert(core.eventOutcomeCount >= 27, "Scenario events should preserve at least the original twenty-seven generic endings.");
 assert(data.scenarios.filter((scenario) => scenario.id !== "tutorial").every((scenario) => scenario.hiddenProtagonistId), "Every formal scenario should declare one hidden protagonist.");
 
@@ -1318,11 +1406,19 @@ assert(renderedHtml.includes("張恆") && renderedHtml.includes("伊莫頓") && 
 assert(["惡魔隊", "天神隊", "北冰洲隊", "印洲隊", "西海隊", "森洲隊", "傳說主角", "生化危機6", "艾爾登法環"].every((label) => renderedHtml.includes(label)), "Rival, legendary, and game crossover characters should display their faction labels.");
 assert(renderedHtml.includes("roster-source-grid") && renderedHtml.includes("roster-source-section") && renderedHtml.includes("roster-source-hero") && renderedHtml.includes("roster-character-grid"), "Roster preparation should render source hero sections and a three-column character grid.");
 assert(renderedHtml.includes("roster-hero-main.png") && renderedHtml.includes("roster-hero-demon-slayer.png") && renderedHtml.includes("roster-hero-attack-on-titan.png") && renderedHtml.includes("roster-hero-re6.png") && renderedHtml.includes("roster-hero-elden-ring.png"), "Roster preparation should use IMAGE2 hero shots for team and source categories.");
+assert(renderedHtml.includes("effect-matrix") && renderedHtml.includes("效果矩陣") && renderedHtml.includes("裝備持有人") && renderedHtml.includes("羈絆 chips"), "The hub should render the tactical effect matrix.");
+assert(renderedHtml.includes("modifier-chip-row") && renderedHtml.includes("專屬牌") && renderedHtml.includes("未裝備"), "Roster cards should render readable modifier chips and loadout state.");
+assert(renderedHtml.includes("signature-preview") && renderedHtml.includes("專屬卡片") && renderedHtml.includes("精神鏈接") && renderedHtml.includes("全隊獲得 3 護甲"), "Roster cards should preview signature card effects and upgrade state.");
 assert(["火影忍者", "海賊王", "龍珠", "鬥破蒼穹", "死神", "鋼之鍊金術師", "獵人", "刀劍神域"].every((label) => renderedHtml.includes(label)), "Legendary protagonists should render under split original-source categories.");
 assert(renderedHtml.includes('class="energy-badge">+3') && renderedHtml.includes('class="energy-badge">0') && renderedHtml.includes('class="energy-badge">-1') && !renderedHtml.includes("+-1"), "Roster UI should format positive, zero, and negative energy correctly.");
 assert(["生命 +8", "專屬牌+", "血統解放"].every((label) => renderedHtml.includes(label)), "Roster source sections should keep character upgrade actions.");
 assert(core.setHubTab(uiState, "shop").hubTab === "shop", "Hub tabs should persist through core state.");
 assert(core.setHubTab(uiState, "growth").hubTab === "growth", "The custom growth tab should persist through core state.");
+uiState.hubTab = "deployment";
+uiState.campaign.unlockedScenarios = data.scenarios.map((scenario) => scenario.id).filter((id) => id !== "tutorial");
+renderedHtml = "";
+await import("../src/game-ui.js?deployment-random");
+assert(renderedHtml.includes("下一場隨機劇本") && renderedHtml.includes("抽選池") && renderedHtml.includes("預估") && renderedHtml.includes("超困難劇本") && renderedHtml.includes("艾爾登法環"), "Deployment should replace normal scenario picking with a random normal entry while keeping super-hard scenarios visible.");
 uiState.hubTab = "growth";
 uiState.rewardPoints = 20000;
 uiState.playerGrowth.tagOffers = ["vampire-seed", "vampire-count", "t-virus-adaptation", "spider-sense", "inner-qi-breath", "black-flame-seed"];
@@ -1336,6 +1432,8 @@ uiState.playerGrowth.supportEquipmentIds = ["ui-support-battery"];
 renderedHtml = "";
 await import("../src/game-ui.js?custom-growth");
 assert(renderedHtml.includes("第 7 人支援") && renderedHtml.includes("血統與裝備槽") && renderedHtml.includes("逆種血核") && renderedHtml.includes("支援裝備 1"), "The custom growth tab should render seventh-support loadout controls.");
+assert(["變異血統", "一般血統 1", "一般血統 2", "支援裝備 1", "支援裝備 2"].every((label) => renderedHtml.includes(label)), "The seventh-support controls should preserve 1 mutation, 2 normal bloodlines, and 2 support equipment slots.");
+assert(renderedHtml.includes("支援槽 1") && renderedHtml.includes("戰術能量電池") && renderedHtml.includes("第 7 人支援"), "The growth effect matrix should surface active support equipment and custom support effects.");
 assert(renderedHtml.includes("RPG 六維") && renderedHtml.includes("主神候選池") && renderedHtml.includes("標籤矩陣") && renderedHtml.includes("初階血族") && renderedHtml.includes("伯爵血核") && renderedHtml.includes("6600 點 / 1 支線"), "The custom growth tab should render stats, offers, tag matrix UI, and dual-resource costs.");
 uiState.hubTab = "shop";
 uiState.rewardPoints = 10000;
@@ -1343,28 +1441,58 @@ uiState.sideStories = 5;
 uiState.deck.push({ uid: "ui-max-field-medicine", instanceId: "ui-max-field-medicine", cardId: "field-medicine", upgraded: true, acquiredRunId: null });
 renderedHtml = "";
 await import("../src/game-ui.js?shop-categories");
-assert(["鬼滅之刃", "進擊的巨人", "Final Fantasy VII", "燕雲十六聲", "金庸武俠", "環太平洋", "瘋狂麥斯", "生化危機6", "艾爾登法環"].every((label) => renderedHtml.includes(label)), "The shop should render collapsed source categories for crossover cards.");
-assert(renderedHtml.includes("shop-cover-grid") && renderedHtml.includes("shop-cover-section") && renderedHtml.includes("source-cover-art") && renderedHtml.includes("source-cover-re6.png") && renderedHtml.includes("source-cover-elden-ring.png"), "The skill shop should render a source cover grid with IMAGE2 cover art.");
+assert(["鬼滅之刃", "進擊的巨人", "Final Fantasy VII", "燕雲十六聲", "金庸武俠", "環太平洋", "瘋狂麥斯", "生化危機6", "艾爾登法環", "鋼之鍊金術師"].every((label) => renderedHtml.includes(label)), "The shop should render collapsed source categories for crossover cards.");
+assert(renderedHtml.includes("shop-cover-grid") && renderedHtml.includes("shop-cover-section") && renderedHtml.includes("source-cover-art") && renderedHtml.includes("source-cover-re6.png") && renderedHtml.includes("source-cover-elden-ring.png") && renderedHtml.includes("source-cover-fullmetal-alchemist.png"), "The skill shop should render a source cover grid with IMAGE2 cover art.");
 assert(renderedHtml.includes("card-frame") && renderedHtml.includes("rarity-ssr") && renderedHtml.includes("已擁有最高級技能"), "The skill shop should render rarity frames and max-owned card state.");
-assert(renderedHtml.includes("霹靂一閃") && renderedHtml.includes("雷槍齊射") && renderedHtml.includes("降龍十八掌") && renderedHtml.includes("火箭肘擊") && renderedHtml.includes("戰爭車衝撞") && renderedHtml.includes("Wing Shooter連射") && renderedHtml.includes("抗病毒血清") && renderedHtml.includes("名刀月隱") && renderedHtml.includes("黃金樹立誓"), "Collapsed shop cover sections should contain their card lists.");
-assert(["動漫神器", "原作決戰武器", "小說神器", "武俠神兵", "環太平洋武裝", "狂怒公路武裝", "C病毒武裝", "交界地神兵"].every((label) => renderedHtml.includes(label)), "The shop should render collapsed source categories for artifact equipment.");
-assert(renderedHtml.includes("equipment-source-section") && renderedHtml.includes("乖離劍 Ea") && renderedHtml.includes("立體機動裝置") && renderedHtml.includes("軒轅劍") && renderedHtml.includes("獵人機甲電漿炮") && renderedHtml.includes("戰爭車裝甲駕駛艙") && renderedHtml.includes("Hydra三管霰彈槍") && renderedHtml.includes("C病毒抗體血清") && renderedHtml.includes("屍山血海") && renderedHtml.includes("仿身淚滴骨灰"), "Collapsed equipment sections should contain their artifact lists.");
+assert(renderedHtml.includes("霹靂一閃") && renderedHtml.includes("雷槍齊射") && renderedHtml.includes("降龍十八掌") && renderedHtml.includes("火箭肘擊") && renderedHtml.includes("戰爭車衝撞") && renderedHtml.includes("Wing Shooter連射") && renderedHtml.includes("抗病毒血清") && renderedHtml.includes("名刀月隱") && renderedHtml.includes("黃金樹立誓") && renderedHtml.includes("焰之鍊金術") && renderedHtml.includes("地刺鍊成"), "Collapsed shop cover sections should contain their card lists.");
+assert(["動漫神器", "原作決戰武器", "小說神器", "武俠神兵", "環太平洋武裝", "狂怒公路武裝", "C病毒武裝", "交界地神兵", "鍊金術裝備"].every((label) => renderedHtml.includes(label)), "The shop should render collapsed source categories for artifact equipment.");
+assert(renderedHtml.includes("equipment-source-section") && renderedHtml.includes("乖離劍 Ea") && renderedHtml.includes("立體機動裝置") && renderedHtml.includes("軒轅劍") && renderedHtml.includes("獵人機甲電漿炮") && renderedHtml.includes("戰爭車裝甲駕駛艙") && renderedHtml.includes("Hydra三管霰彈槍") && renderedHtml.includes("C病毒抗體血清") && renderedHtml.includes("屍山血海") && renderedHtml.includes("仿身淚滴骨灰") && renderedHtml.includes("愛德華的機械鎧右臂") && renderedHtml.includes("火布手套"), "Collapsed equipment sections should contain their artifact lists.");
 
-const combatUiState = core.createInitialState();
+const combatUiState = createCombatTestState({ professionId: "systems-engineer" });
+addCharacter(combatUiState, "zheng-zha", true);
 combatUiState.screen = "combat";
 combatUiState.pending = null;
-combatUiState.run = { id: "ui-run", scenarioId: "tutorial", sourceScenarioId: "tutorial", acquiredDeckIds: [], acquiredEquipmentIds: [], temporaryPowers: [] };
+combatUiState.run = {
+  id: "ui-run",
+  scenarioId: "tutorial",
+  sourceScenarioId: "tutorial",
+  acquiredDeckIds: [],
+  acquiredEquipmentIds: [],
+  temporaryPowers: [],
+  dynamicDifficulty: { mode: "normal", multiplier: 1.15, hpMultiplier: 1.15, intentMultiplier: 1.075, progressPressure: 0.1, streakPressure: 0.05, relief: 0, label: "動態 1.15x" },
+  banterFeed: [{ speaker: "楚軒", line: "目標已鎖定，先確認意圖再出牌。" }]
+};
 combatUiState.activeEncounterId = "bio-lab";
 combatUiState.activeEnemies = [makeActiveEnemy(core.encountersById["bio-lab"].enemies[0])];
 combatUiState.selectedTargetId = combatUiState.activeEnemies[0].uid;
-combatUiState.hand = [{ uid: "ui-focus-fire", instanceId: "ui-focus-fire", cardId: "focus-fire", upgraded: false, acquiredRunId: null }];
+combatUiState.hand = [
+  { uid: "ui-focus-fire", instanceId: "ui-focus-fire", cardId: "focus-fire", upgraded: false, acquiredRunId: null },
+  { uid: "ui-blood-awakening", instanceId: "ui-blood-awakening", cardId: "blood-awakening", ownerId: "zheng-zha", upgraded: false, acquiredRunId: null }
+];
 combatUiState.drawPile = [];
 combatUiState.discardPile = [];
 combatUiState.exhaustedPile = [];
+combatUiState.energy = 0;
+combatUiState.maxEnergy = 3;
+combatUiState.turn = 2;
+combatUiState.permanentUpgrades.bloodlines.push("zheng-zha");
+combatUiState.equipmentInventory.push({ instanceId: "ui-gauss", equipmentId: "gauss-pistol", upgraded: false, acquiredRunId: null });
+combatUiState.equipmentInventory.push({ instanceId: "ui-combat-support-battery", equipmentId: "tactical-battery", upgraded: false, acquiredRunId: null });
+combatUiState.equipped["zheng-zha"] = "ui-gauss";
+combatUiState.playerGrowth.purchasedTags = ["vampire-seed", "t-virus-adaptation"];
+combatUiState.playerGrowth.mutations = ["blood-virus-core"];
+combatUiState.playerGrowth.activeTagIds = ["vampire-seed", "t-virus-adaptation"];
+combatUiState.playerGrowth.activeMutationId = "blood-virus-core";
+combatUiState.playerGrowth.supportEquipmentIds = ["ui-combat-support-battery"];
 globalThis.localStorage = { getItem: () => JSON.stringify(combatUiState), setItem: () => undefined };
 renderedHtml = "";
 await import("../src/game-ui.js?combat-frame");
 assert(renderedHtml.includes("hand-zone") && renderedHtml.includes("card-frame") && renderedHtml.includes("rarity-sr"), "Combat hand cards should output the shared rarity frame class.");
+assert(renderedHtml.includes("combat-status-bar") && renderedHtml.includes("combat-intent-strip") && renderedHtml.includes("抽牌") && renderedHtml.includes("耗盡"), "Combat should render a tactical status bar with energy and pile summaries.");
+assert(renderedHtml.includes("target-lock") && renderedHtml.includes("目標鎖定") && renderedHtml.includes("intent-chip") && renderedHtml.includes("selected"), "Combat should surface the selected enemy and intent summary.");
+assert(renderedHtml.includes("modifier-chip-row") && renderedHtml.includes("血統") && renderedHtml.includes("裝備") && renderedHtml.includes("自創支援") && renderedHtml.includes("能量不足：需要"), "Combat cards should render modifier chips and disabled reasons.");
+assert(renderedHtml.includes("command-rail") && renderedHtml.includes("指揮短欄") && renderedHtml.includes("選中敵人") && renderedHtml.includes("戰場通訊") && renderedHtml.includes("完整戰鬥資料"), "Combat should render a compact command rail with selected target and latest comms before the collapsible details.");
+assert(renderedHtml.includes("戰鬥加成來源") && renderedHtml.includes("高斯手槍") && renderedHtml.includes("戰術能量電池"), "Combat should keep loadout and seventh-support rows inside the collapsible effect matrix.");
 
 const rewardUiState = core.createInitialState();
 rewardUiState.screen = "reward";
@@ -1394,6 +1522,7 @@ renderedHtml = "";
 await import("../src/game-ui.js?scenario-intro");
 assert(renderedHtml.includes("白光散去後") && renderedHtml.includes("主神題要") && renderedHtml.includes("確認投放，選擇路線"), "The scenario opening should render dialogue, premise, and the route entry action.");
 assert(renderedHtml.includes("聖甲蟲潮") && (renderedHtml.includes("哈姆納塔入口") || renderedHtml.includes("亡者地下墓道")), "The scenario opening should render themed story beats and first-route encounter previews.");
+assert(renderedHtml.includes("generated-discussion") && renderedHtml.includes("動態難度"), "The scenario opening should render generated party discussion and transparent dynamic difficulty.");
 
 globalThis.localStorage = { getItem: () => JSON.stringify(prisonRealmEvent), setItem: () => undefined };
 renderedHtml = "";

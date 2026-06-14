@@ -16,7 +16,7 @@
   const customStatIds = customStats.map((stat) => stat.id);
   const customTagsById = indexById(data.customTags || []);
   const customMutationsById = indexById(data.customMutations || []);
-  const SAVE_VERSION = 6;
+  const SAVE_VERSION = 7;
   const PLAYER_ID = "player-avatar";
   const CUSTOM_TAG_SLOT_COUNT = 2;
   const CUSTOM_SUPPORT_EQUIPMENT_SLOT_COUNT = 2;
@@ -179,6 +179,21 @@
     return next;
   }
 
+  function createDynamicDifficultyState() {
+    return { failureRelief: 0, successStreak: 0, randomHistory: [] };
+  }
+
+  function normalizeDynamicDifficulty(value) {
+    const base = createDynamicDifficultyState();
+    const next = { ...base, ...(value && typeof value === "object" ? clone(value) : {}) };
+    next.failureRelief = clamp(Math.floor(Number(next.failureRelief || 0)), 0, 3);
+    next.successStreak = Math.max(0, Math.floor(Number(next.successStreak || 0)));
+    next.randomHistory = Array.isArray(next.randomHistory)
+      ? next.randomHistory.filter((id) => scenariosById[id]).slice(0, 8)
+      : [];
+    return next;
+  }
+
   function createInitialState() {
     return {
       version: SAVE_VERSION,
@@ -207,7 +222,8 @@
         completedScenarios: [],
         infiniteUnlocked: false,
         infiniteTier: 0,
-        firstAlienRecruitBonus: true
+        firstAlienRecruitBonus: true,
+        dynamicDifficulty: createDynamicDifficultyState()
       },
       run: null,
       activeEncounterId: null,
@@ -251,6 +267,7 @@
     next.playerGrowth = normalizePlayerGrowth(next.playerGrowth, next.playerProfile);
     next.onboarding = normalizeOnboarding(next.onboarding, next.playerProfile);
     next.campaign = { ...base.campaign, ...(saved.campaign || {}) };
+    next.campaign.dynamicDifficulty = normalizeDynamicDifficulty(next.campaign.dynamicDifficulty);
     reconcileCampaignUnlocks(next.campaign);
     next.permanentUpgrades = { ...base.permanentUpgrades, ...(saved.permanentUpgrades || {}) };
     next.permanentUpgrades.team = Array.isArray(next.permanentUpgrades.team) ? next.permanentUpgrades.team : [];
@@ -628,11 +645,44 @@
     return startEncounter(next, "bio-lab");
   }
 
+  function isSuperHardScenario(scenario) {
+    return Boolean(scenario && (scenario.difficultyClass === "super-hard" || (Array.isArray(scenario.hellBossPool) && scenario.hellBossPool.length)));
+  }
+
+  function randomNormalScenarioPool(state) {
+    const unlocked = new Set(state.campaign?.unlockedScenarios || []);
+    return data.scenarios.filter((scenario) => {
+      if (scenario.id === "tutorial" || !unlocked.has(scenario.id)) return false;
+      if (!Array.isArray(scenario.normal) || !scenario.normal.length) return false;
+      return !isSuperHardScenario(scenario);
+    });
+  }
+
+  function chooseRandomNormalScenario(state) {
+    const pool = randomNormalScenarioPool(state);
+    if (!pool.length) return null;
+    const history = state.campaign?.dynamicDifficulty?.randomHistory || [];
+    const recent = new Set(history.slice(0, 2));
+    const candidates = pool.length > 2 ? pool.filter((scenario) => !recent.has(scenario.id)) : pool;
+    return randomChoice(state, candidates.length ? candidates : pool);
+  }
+
   function beginScenario(state, requestedScenarioId) {
     const next = clone(state);
     if (next.screen !== "hub") return next;
     let scenarioId = requestedScenarioId;
     let infinite = false;
+    let randomNormal = false;
+    if (scenarioId === "random-normal") {
+      const scenario = chooseRandomNormalScenario(next);
+      if (!scenario) {
+        next.log = appendLog(next.log, "目前沒有可隨機投放的普通劇本。");
+        return next;
+      }
+      scenarioId = scenario.id;
+      randomNormal = true;
+      next.log = appendLog(next.log, `主神隨機抽取：${scenario.name}。`);
+    }
     if (scenarioId === "infinite") {
       if (!next.campaign.infiniteUnlocked) return next;
       infinite = true;
@@ -649,11 +699,11 @@
       return next;
     }
     if (candidates.length) {
-      next.pending = { kind: "recruit", scenarioId, infinite, candidates };
+      next.pending = { kind: "recruit", scenarioId, infinite, randomNormal, candidates };
       next.screen = "recruit";
       return next;
     }
-    return launchRun(next, scenarioId, infinite);
+    return launchRun(next, scenarioId, infinite, { randomNormal });
   }
 
   function recruitmentCandidates(state, scenarioId, infinite = false) {
@@ -699,9 +749,10 @@
       next.campaign.firstAlienRecruitBonus = false;
     }
     const infinite = next.pending.infinite;
+    const randomNormal = Boolean(next.pending.randomNormal);
     next.pending = null;
     ensureFormation(next);
-    return launchRun(next, scenarioId, infinite);
+    return launchRun(next, scenarioId, infinite, { randomNormal });
   }
 
   function recruitCharacter(state, characterId) {
@@ -711,8 +762,10 @@
     state.log = appendLog(state.log, `${charactersById[characterId].name}加入${teamLabel(state)}。`);
   }
 
-  function launchRun(state, scenarioId, infinite) {
+  function launchRun(state, scenarioId, infinite, options = {}) {
     const scenario = scenariosById[scenarioId];
+    const dynamicDifficulty = buildRunDynamicDifficulty(state, scenario, infinite);
+    const openingDiscussion = buildOpeningDiscussion(state, scenario, dynamicDifficulty, options);
     state.run = {
       id: uid(state, "run"),
       scenarioId,
@@ -725,12 +778,167 @@
       acquiredDeckIds: [],
       acquiredEquipmentIds: [],
       temporaryPowers: [],
-      pendingRecruitUsed: false
+      pendingRecruitUsed: false,
+      dynamicDifficulty,
+      openingDiscussion,
+      banterFeed: openingDiscussion.slice(-3)
     };
+    if (options.randomNormal) {
+      const dynamic = normalizeDynamicDifficulty(state.campaign.dynamicDifficulty);
+      dynamic.randomHistory = [scenarioId, ...dynamic.randomHistory.filter((id) => id !== scenarioId)].slice(0, 8);
+      state.campaign.dynamicDifficulty = dynamic;
+    }
     state.screen = scenario.opening ? "scenario-intro" : "map";
     state.pending = null;
     state.log = appendLog(state.log, `${scenario.name}開始：${scenario.intro}`);
     return state;
+  }
+
+  function buildRunDynamicDifficulty(state, scenario, infinite = false) {
+    const dynamic = normalizeDynamicDifficulty(state.campaign?.dynamicDifficulty);
+    if (infinite) {
+      return {
+        mode: "infinite",
+        multiplier: 1,
+        hpMultiplier: 1,
+        intentMultiplier: 1,
+        progressPressure: 0,
+        streakPressure: 0,
+        relief: 0,
+        label: `無限階級 ${state.campaign.infiniteTier}`
+      };
+    }
+    if (isSuperHardScenario(scenario)) {
+      const relief = Math.min(0.075, dynamic.failureRelief * 0.025);
+      const multiplier = clamp(1 - relief, 0.925, 1);
+      return {
+        mode: "super-hard",
+        multiplier,
+        hpMultiplier: multiplier,
+        intentMultiplier: 1 + (multiplier - 1) * 0.5,
+        progressPressure: 0,
+        streakPressure: 0,
+        relief,
+        label: relief > 0 ? `超困難 · 失敗補償 -${formatPercent(relief)}` : "超困難"
+      };
+    }
+    const completedNormalCount = (state.campaign.completedScenarios || []).filter((id) => {
+      const item = scenariosById[id];
+      return item && item.id !== "tutorial" && !isSuperHardScenario(item);
+    }).length;
+    const progressPressure = Math.min(0.50, completedNormalCount * 0.025);
+    const streakPressure = Math.min(0.18, dynamic.successStreak * 0.03);
+    const relief = Math.min(0.15, dynamic.failureRelief * 0.05);
+    const multiplier = clamp(1 + progressPressure + streakPressure - relief, 0.90, 1.65);
+    return {
+      mode: "normal",
+      multiplier,
+      hpMultiplier: multiplier,
+      intentMultiplier: 1 + (multiplier - 1) * 0.5,
+      progressPressure,
+      streakPressure,
+      relief,
+      label: `動態 ${formatMultiplier(multiplier)}x`
+    };
+  }
+
+  function dynamicDifficultyPreview(state) {
+    const pool = randomNormalScenarioPool(state);
+    const preview = buildRunDynamicDifficulty(state, pool[0] || null, false);
+    return {
+      ...preview,
+      poolCount: pool.length,
+      recent: (state.campaign?.dynamicDifficulty?.randomHistory || []).slice(0, 2)
+    };
+  }
+
+  function updateDynamicDifficultyAfterRun(state, won) {
+    if (!state.run || state.run.sourceScenarioId === "tutorial" || state.run.sourceScenarioId === "infinite") return;
+    const dynamic = normalizeDynamicDifficulty(state.campaign.dynamicDifficulty);
+    if (won) {
+      dynamic.successStreak += 1;
+      dynamic.failureRelief = Math.max(0, dynamic.failureRelief - 1);
+    } else {
+      dynamic.successStreak = 0;
+      dynamic.failureRelief = Math.min(3, dynamic.failureRelief + 1);
+    }
+    state.campaign.dynamicDifficulty = dynamic;
+  }
+
+  function appendBanter(state, lines) {
+    if (!state.run) return;
+    const incoming = (Array.isArray(lines) ? lines : [lines]).filter((line) => line?.speaker && line?.line);
+    if (!incoming.length) return;
+    state.run.banterFeed = [...(state.run.banterFeed || []), ...incoming].slice(-8);
+  }
+
+  function buildOpeningDiscussion(state, scenario, dynamicDifficulty, options = {}) {
+    const active = getActiveParty(state);
+    const leader = active.find((member) => member.id === "zheng-zha") || active[0];
+    const analyst = active.find((member) => ["chu-xuan", "xiao-honglu", "clone-chu-xuan"].includes(member.id)) || active.find((member) => member.energyContribution >= 2) || leader;
+    const support = state.party.find((member) => member.id === PLAYER_ID);
+    const growth = state.playerGrowth || {};
+    const activeMutation = customMutationsById[growth.activeMutationId];
+    const supportGear = getSupportEquipmentRowsForState(state);
+    const bonds = getActiveBonds(state);
+    const lines = [
+      { speaker: "主神", line: options.randomNormal ? `隨機投放確認：${scenario.name}。完成整備後進入下一場普通劇本。` : `${scenario.name}投放確認。` },
+      leader ? { speaker: leader.name, line: `所有人跟緊。${scenario.subtitle || scenario.name}的第一波風險不會等我們整理隊形。` } : null,
+      analyst ? { speaker: analyst.name, line: `${scenario.intro} 先把路線當成八層壓力測試，菁英與 Boss 前保留手牌循環。` } : null,
+      activeMutation && support ? { speaker: support.name, line: `第 7 人支援接入：${activeMutation.name}會在後方穩住血統側效果。` } : supportGear[0] && support ? { speaker: support.name, line: `支援裝備已掛載：${supportGear.map((row) => row.name).join("、")}。` } : null,
+      bonds[0] ? { speaker: "主神", line: `羈絆同步：${bonds.slice(0, 2).map((bond) => bond.name).join("、")}已進入本次遠征判定。` } : null,
+      dynamicDifficulty?.mode === "normal" ? { speaker: "主神", line: `動態難度 ${formatMultiplier(dynamicDifficulty.multiplier)}x：通關進度與連勝正在提高敵方壓力，失敗補償會自動抵扣。` } : null,
+      dynamicDifficulty?.mode === "super-hard" ? { speaker: "主神", line: `${scenario.name}屬於超困難劇本，普通進度壓力不套用。` } : null
+    ].filter(Boolean);
+    return lines.slice(0, 6);
+  }
+
+  function buildEncounterBanter(state, encounter) {
+    const active = getAliveActiveParty(state);
+    const analyst = active.find((member) => ["chu-xuan", "xiao-honglu", "clone-chu-xuan"].includes(member.id)) || active[0];
+    const enemyCount = encounter.enemies.length;
+    const tierText = encounter.tier === "boss" ? "Boss" : encounter.tier === "elite" || encounter.tier === "miniboss" ? "高威脅" : "戰鬥";
+    return analyst ? { speaker: analyst.name, line: `${tierText}接觸：${encounter.name}，敵方 ${enemyCount} 組。先讀意圖，再決定是否爆發。` } : null;
+  }
+
+  function buildNodeBanter(state, node) {
+    const scenario = scenariosById[state.run?.scenarioId];
+    const analyst = getActiveParty(state).find((member) => ["chu-xuan", "xiao-honglu", "clone-chu-xuan"].includes(member.id)) || getActiveParty(state)[0];
+    if (!analyst) return null;
+    return { speaker: analyst.name, line: `${scenario?.name || "本劇本"}出現奇遇節點。先看獎勵、代價和劇情影響，不要只選最短路。` };
+  }
+
+  function buildTargetBanter(state, target) {
+    const intent = getEnemyIntent(target);
+    const analyst = getAliveActiveParty(state).find((member) => ["chu-xuan", "xiao-honglu", "clone-chu-xuan"].includes(member.id)) || getAliveActiveParty(state)[0];
+    if (!analyst) return null;
+    return { speaker: analyst.name, line: `目標改為${target.name}，目前意圖是${intent.label}。` };
+  }
+
+  function buildSignatureBanter(state, ownerId, card) {
+    const owner = state.party.find((member) => member.id === ownerId);
+    if (!owner) return null;
+    return { speaker: owner.name, line: `${card.name}已打出，專屬節奏接入。` };
+  }
+
+  function buildCrisisBanter(state) {
+    if (!state.run || state.screen !== "combat") return null;
+    const crisis = getAliveActiveParty(state).find((member) => member.hp <= Math.ceil(member.maxHp * 0.35) || member.stress >= 70);
+    if (!crisis) return null;
+    const healer = getAliveActiveParty(state).find((member) => ["turn-heal-lowest", "turn-stress-relief", "first-support-draw"].includes(member.passiveId));
+    return {
+      speaker: healer?.name || crisis.name,
+      line: `${crisis.name}狀態偏危險。優先看護甲、治療或壓力修正牌。`
+    };
+  }
+
+  function getSupportEquipmentRowsForState(state) {
+    const ids = (state.playerGrowth?.supportEquipmentIds || []).filter(Boolean);
+    return ids.map((instanceId, index) => {
+      const entry = state.equipmentInventory.find((item) => item.instanceId === instanceId);
+      const item = entry ? equipmentById[entry.equipmentId] : null;
+      return item ? { index, name: `${item.name}${entry.upgraded ? "+" : ""}` } : null;
+    }).filter(Boolean);
   }
 
   function continueScenarioIntro(state) {
@@ -790,6 +998,7 @@
       next.pending = { kind: "treasure", choices: chooseEquipmentRewards(next, hasPassive(next, "artifact-sense") ? 4 : 3) };
       return next;
     }
+    appendBanter(next, buildNodeBanter(next, node));
     next.screen = "event";
     next.pending = buildEvent(next);
     return next;
@@ -811,12 +1020,13 @@
   function startEncounter(state, encounterId) {
     const encounter = encountersById[encounterId];
     const infiniteScale = state.run && state.run.sourceScenarioId === "infinite" ? state.campaign.infiniteTier * 0.14 : 0;
+    const hpMultiplier = Number(state.run?.dynamicDifficulty?.hpMultiplier || 1);
+    const intentMultiplier = Number(state.run?.dynamicDifficulty?.intentMultiplier || 1);
     state.screen = "combat";
     state.activeEncounterId = encounterId;
     state.activeEnemies = encounter.enemies.map((enemyId) => {
-      const base = clone(enemiesById[enemyId]);
-      const maxHp = Math.ceil(base.maxHp * (1 + infiniteScale));
-      if (base.phaseTwo?.maxHp) base.phaseTwo.maxHp = Math.ceil(base.phaseTwo.maxHp * (1 + infiniteScale));
+      const base = scaleEnemyForRun(enemiesById[enemyId], (1 + infiniteScale) * hpMultiplier, intentMultiplier);
+      const maxHp = base.maxHp;
       return { ...base, uid: uid(state, "enemy"), enemyId, maxHp, hp: maxHp, block: 0, intentIndex: 0, burn: 0, poison: 0, stun: 0, weak: 0, phaseTwoTriggered: false };
     });
     state.selectedTargetId = state.activeEnemies[0]?.uid || null;
@@ -836,9 +1046,29 @@
     state.drawPile = shuffleWithState(state, [...permanent, ...signatures]);
     state.party = state.party.map((member) => ({ ...member, block: 0, evade: 0 }));
     state.log = appendLog(state.log, `${encounter.name}：敵人出現。`);
+    appendBanter(state, buildEncounterBanter(state, encounter));
     const activeBonds = getActiveBonds(state);
     if (activeBonds.length) state.log = appendLog(state.log, `羈絆啟用：${activeBonds.map((bond) => bond.name).join("、")}。`);
     return startPlayerTurn(state);
+  }
+
+  function scaleEnemyForRun(enemy, hpMultiplier, intentMultiplier) {
+    const base = clone(enemy);
+    const scaleHp = (value) => Math.max(1, Math.ceil(Number(value || 1) * hpMultiplier));
+    base.maxHp = scaleHp(base.maxHp);
+    base.intents = scaleEnemyIntents(base.intents, intentMultiplier);
+    if (base.phaseTwo?.maxHp) {
+      base.phaseTwo.maxHp = scaleHp(base.phaseTwo.maxHp);
+      base.phaseTwo.intents = scaleEnemyIntents(base.phaseTwo.intents || base.intents, intentMultiplier);
+    }
+    return base;
+  }
+
+  function scaleEnemyIntents(intents, multiplier) {
+    return (intents || []).map((intent) => {
+      if (!["attack", "cleave", "stress"].includes(intent.kind) || !Number(intent.amount || 0)) return clone(intent);
+      return { ...clone(intent), amount: Math.max(1, Math.ceil(Number(intent.amount || 0) * multiplier)) };
+    });
   }
 
   function makeCombatCard(state, cardId, ownerId, upgraded, sourceDeckInstanceId) {
@@ -868,6 +1098,7 @@
     if (hasPassive(state, "intent-draw") && reactiveIntent) handSize += 1;
     drawCards(state, handSize);
     state.log = appendLog(state.log, `第 ${state.turn} 回合，存活隊員提供 ${state.maxEnergy} 能量。`);
+    appendBanter(state, buildCrisisBanter(state));
     return state;
   }
 
@@ -886,6 +1117,7 @@
     if (usesCustomFreePlay) next.turnStats.customFreePlaysUsed += 1;
     next.energy -= cost;
     next.hand.splice(handIndex, 1);
+    if (card.category === "signature" && instance.ownerId) appendBanter(next, buildSignatureBanter(next, instance.ownerId, card));
 
     let damage = Number(card.damage || 0);
     let damageAll = Number(card.damageAll || 0);
@@ -1059,7 +1291,12 @@
 
   function selectTarget(state, enemyUid) {
     const next = clone(state);
-    if (getLivingEnemy(next, enemyUid)) next.selectedTargetId = enemyUid;
+    const target = getLivingEnemy(next, enemyUid);
+    if (target) {
+      const previous = next.selectedTargetId;
+      next.selectedTargetId = enemyUid;
+      if (previous !== enemyUid) appendBanter(next, buildTargetBanter(next, target));
+    }
     return next;
   }
 
@@ -1168,10 +1405,11 @@
     state.deck.forEach((entry) => { if (entry.acquiredRunId === state.run.id) entry.acquiredRunId = null; });
     state.equipmentInventory.forEach((entry) => { if (entry.acquiredRunId === state.run.id) entry.acquiredRunId = null; });
     if (!state.campaign.completedScenarios.includes(scenarioId)) state.campaign.completedScenarios.push(scenarioId);
-    const nextScenario = { alien: "juon", juon: "mummy-curse", "mummy-curse": "jurassic-island", "jurassic-island": "abyssal-ark", "abyssal-ark": "evernight-castle", "evernight-castle": "demon-frontier", "demon-frontier": "main-god-trial", "main-god-trial": "starship-troopers", "starship-troopers": "avp-pyramid", "avp-pyramid": "nightmare-elm", "nightmare-elm": "lotr-war", "lotr-war": "rumbling-finale", "rumbling-finale": "infinity-castle", "infinity-castle": "naruto-final-valley", "naruto-final-valley": "bleach-false-karakura", "bleach-false-karakura": "gintama-yoshiwara", "gintama-yoshiwara": "gintama-final-war", "gintama-final-war": "avengers-new-york", "avengers-new-york": "batman-v-superman", "batman-v-superman": "devil-may-cry-5", "devil-may-cry-5": "final-destination", "final-destination": "jinyong-heroic-peak", "jinyong-heroic-peak": "pacific-rim-breach", "pacific-rim-breach": "fury-road-war-rig", "fury-road-war-rig": "resident-evil-6-c-virus", "resident-evil-6-c-virus": "elden-ring-hell-run", "elden-ring-hell-run": "jujutsu-kaisen-shibuya" }[scenarioId];
+    const nextScenario = { alien: "juon", juon: "mummy-curse", "mummy-curse": "jurassic-island", "jurassic-island": "abyssal-ark", "abyssal-ark": "evernight-castle", "evernight-castle": "demon-frontier", "demon-frontier": "main-god-trial", "main-god-trial": "starship-troopers", "starship-troopers": "avp-pyramid", "avp-pyramid": "nightmare-elm", "nightmare-elm": "lotr-war", "lotr-war": "rumbling-finale", "rumbling-finale": "infinity-castle", "infinity-castle": "naruto-final-valley", "naruto-final-valley": "bleach-false-karakura", "bleach-false-karakura": "gintama-yoshiwara", "gintama-yoshiwara": "gintama-final-war", "gintama-final-war": "avengers-new-york", "avengers-new-york": "batman-v-superman", "batman-v-superman": "devil-may-cry-5", "devil-may-cry-5": "final-destination", "final-destination": "jinyong-heroic-peak", "jinyong-heroic-peak": "pacific-rim-breach", "pacific-rim-breach": "fury-road-war-rig", "fury-road-war-rig": "resident-evil-6-c-virus", "resident-evil-6-c-virus": "elden-ring-hell-run", "elden-ring-hell-run": "jujutsu-kaisen-shibuya", "jujutsu-kaisen-shibuya": "fullmetal-alchemist-finale" }[scenarioId];
     if (nextScenario && !state.campaign.unlockedScenarios.includes(nextScenario)) state.campaign.unlockedScenarios.push(nextScenario);
     if (scenarioId === "batman-v-superman") state.campaign.infiniteUnlocked = true;
     if (state.run.sourceScenarioId === "infinite") state.campaign.infiniteTier += 1;
+    updateDynamicDifficultyAfterRun(state, true);
     const sideStoryReward = Number(economy.scenarioSideStoryRewards?.[scenarioId] || 0);
     if (sideStoryReward) state.sideStories += sideStoryReward;
     state.log = appendLog(state.log, `${scenariosById[scenarioId].name}劇本完成。`);
@@ -1620,6 +1858,7 @@
         if (lostEquipment.has(next.equipped[characterId])) delete next.equipped[characterId];
       });
       normalizeSupportEquipment(next);
+      updateDynamicDifficultyAfterRun(next, false);
     }
     next.rewardPoints = Math.floor(next.rewardPoints * 0.8);
     next.log = appendLog(next.log, "遠征失敗：本次普通卡牌、裝備與暫時強化已失去。");
@@ -2418,6 +2657,7 @@
     enemy.phaseTwo = null;
     state.selectedTargetId = enemy.uid;
     state.log = appendLog(state.log, `${enemy.name}進入第二階段，血肉重新構成。`);
+    appendBanter(state, { speaker: "楚軒", line: `${enemy.name}進入第二階段。保留能量，先確認新意圖。` });
   }
 
   function damageCharacter(state, characterId, amount) {
@@ -2681,6 +2921,7 @@
     if (campaign.completedScenarios.includes("fury-road-war-rig")) unlock("resident-evil-6-c-virus");
     if (campaign.completedScenarios.includes("resident-evil-6-c-virus")) unlock("elden-ring-hell-run");
     if (campaign.completedScenarios.includes("elden-ring-hell-run")) unlock("jujutsu-kaisen-shibuya");
+    if (campaign.completedScenarios.includes("jujutsu-kaisen-shibuya")) unlock("fullmetal-alchemist-finale");
     if (campaign.completedScenarios.includes("batman-v-superman")) campaign.infiniteUnlocked = true;
   }
 
@@ -2732,6 +2973,14 @@
     return Math.min(max, Math.max(min, value));
   }
 
+  function formatMultiplier(value) {
+    return Number(value || 1).toFixed(2).replace(/\.?0+$/, "");
+  }
+
+  function formatPercent(value) {
+    return `${Math.round(Number(value || 0) * 100)}%`;
+  }
+
   global.MainGodCore = {
     createInitialState,
     normalizeState,
@@ -2746,6 +2995,9 @@
     renameTeam,
     beginTutorial,
     beginScenario,
+    randomNormalScenarioPool,
+    dynamicDifficultyPreview,
+    isSuperHardScenario,
     chooseRecruit,
     continueScenarioIntro,
     chooseMapNode,
