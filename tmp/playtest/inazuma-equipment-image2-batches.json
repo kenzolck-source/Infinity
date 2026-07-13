@@ -1,0 +1,12 @@
+[
+  {
+    "index": 1,
+    "grid": 2,
+    "assets": [
+      { "fileName": "equipment-mistsplitter-reforged.png", "name": "Mistsplitter Reforged" },
+      { "fileName": "equipment-thundering-pulse.png", "name": "Thundering Pulse" },
+      { "fileName": "equipment-omamori-yae.png", "name": "Narukami omamori" },
+      { "fileName": "equipment-vision-shell.png", "name": "empty Vision shell" }
+    ]
+  }
+]

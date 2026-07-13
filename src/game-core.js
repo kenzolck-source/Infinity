@@ -16,7 +16,7 @@
   const customStatIds = customStats.map((stat) => stat.id);
   const customTagsById = indexById(data.customTags || []);
   const customMutationsById = indexById(data.customMutations || []);
-  const SAVE_VERSION = 7;
+  const SAVE_VERSION = 8;
   const PLAYER_ID = "player-avatar";
   const CUSTOM_TAG_SLOT_COUNT = 2;
   const CUSTOM_SUPPORT_EQUIPMENT_SLOT_COUNT = 2;
@@ -25,8 +25,25 @@
   const dmc5FeaturedRecruitIds = ["nero-dmc5", "v-dmc5", "dante-dmc5"];
   const repeatableCardIds = new Set(["combat-knife", "guard-stance", "adrenaline-rush"]);
   const scenarioEventRoutes = data.scenarioEventRoutes || {};
+  const systemEncounterRoutes = data.systemEncounterRoutes || {};
   const eventBranchPool = data.eventBranchPool || [];
   const eventChoiceTarget = 5;
+  const scenarioProgression = data.scenarioProgression || {};
+  const defeatOutcomes = data.defeatOutcomes || [];
+  const defeatFates = data.defeatFates || {};
+  const defeatRecoveryCosts = data.defeatRecoveryCosts || {};
+  const recoveryStatusIds = new Set(["dead", "injured", "lost"]);
+  const fixedOpeningScenarioIds = (scenarioProgression.fixedOpeningSequence || ["alien", "juon", "mummy-curse", "jurassic-island"]).filter((id) => scenariosById[id]);
+  const fixedOpeningScenarioSet = new Set(fixedOpeningScenarioIds);
+  const BASE_REWARD_CARD_SOURCE_ID = "main-god";
+  const scenarioUnlockTiers = scenarioProgression.unlockTiers || [
+    { bandId: "standard", minClears: 4, baseCount: 6, perClear: 2 },
+    { bandId: "hard", minClears: 7, baseCount: 5, perClear: 2 },
+    { bandId: "nightmare", minClears: 12, baseCount: 3, perClear: 2 },
+    { bandId: "super-hard", minClears: 16, baseCount: 1, perClear: 1 }
+  ];
+  const scenarioBandsById = Object.fromEntries((scenarioProgression.bands || []).map((band) => [band.id, band]));
+  const infiniteUnlockClearCount = Number(scenarioProgression.infiniteUnlockClearCount || 12);
   const characterQuoteLines = {
     "player-avatar": ["第 7 人支援在線。我的強化不是站到最前面，而是讓所有人都能多撐一回合。", "血統、裝備、精神鏈路都接上了。這一次我會在後方把隊伍托住。"],
     "zheng-zha": ["想活下去就跟上我。恐懼可以有，但腳步不能停。", "基因鎖不是奇蹟，是在快死之前逼自己再往前一步。"],
@@ -145,7 +162,21 @@
     "choso": ["我是哥哥，所以我必須站在前面。", "血脈不只是束縛，也是我絕不後退的理由。"],
     "hakari-kinji": ["運氣熱起來了。大獎轉動時，死亡也得等一等。", "賭局還沒結束，因為我還沒玩夠。"],
     "higuruma-hiromi": ["法庭開庭。敵人的罪狀，比咒力更刺眼。", "我不相信正義萬能，但審判至少該落下。"],
-    "satoru-gojo": ["放心，我在這裡。問題通常會變得簡單很多。", "最強不是頭銜，是把不可能也排進課表。"]
+    "satoru-gojo": ["放心，我在這裡。問題通常會變得簡單很多。", "最強不是頭銜，是把不可能也排進課表。"],
+    "zhongli-morax": ["契約既成，便該由人親手履行。", "岩石會記住代價，也會記住守約之人。"],
+    "ningguang": ["群玉閣不是擺設，是我最後一枚棋子。", "璃月港每一條街道，都在我的棋盤上。"],
+    "keqing": ["神明退場後，凡人就該自己站上前線。", "雷楔已定，下一劍會把猶豫切開。"],
+    "ganyu": ["月海亭的文書也可以是戰場命令。", "霜華已凝，請把敵人留在射程內。"],
+    "xiao-genshin": ["無需呼喚太久，我會斬盡邪祟。", "業障由我承擔，你們守住璃月港。"],
+    "beidou": ["南十字的船還在，海上的路就不會斷。", "大浪我來接，你們只管反擊。"],
+    "xiangling": ["鍋巴，上！這次火候要壓住整個戰場。", "打完再吃飯，但香味可以先讓敵人分心。"],
+    "raiden-ei": ["此身所求之永恆，今日也該聽見人的願望。", "無想一刀可以斬斷敵人，也可以斬開停滯。"],
+    "kamisato-ayaka": ["社奉行會守住禮節，也會守住願望。", "白鷺之舞不是退讓，是為了讓下一刀更準。"],
+    "yoimiya": ["煙火要大家一起看才熱鬧，反抗也一樣。", "別眨眼，這一下會把沉默炸得很漂亮。"],
+    "sangonomiya-kokomi": ["補給線還在，前線就還有選擇。", "每一次撤退都要留下下一次反攻的入口。"],
+    "kaedehara-kazuha": ["風裡有未熄的願望，我聽得見。", "友人的刀光不會白白消失，今日由我接下。"],
+    "kujou-sara": ["天領奉行的箭必須指向正確的敵人。", "若忠誠被利用，那就由我親手校正命令。"],
+    "arataki-itto": ["荒瀧派上場！氣勢、力量、還有本大爺，全都滿分！", "計畫？先把敵人揍趴，計畫自然就有了。"]
   };
   const eventApproachChoices = [
     { id: "protagonist-line", title: "追蹤真正主角", text: "放棄最安全路線，追著劇本核心人物留下的痕跡前進。" },
@@ -314,6 +345,57 @@
     return next;
   }
 
+  function normalizeFateArchive(value) {
+    const archive = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+    return Object.fromEntries(Object.entries(archive)
+      .filter(([scenarioId]) => scenariosById[scenarioId])
+      .map(([scenarioId, entry]) => [scenarioId, normalizeFateEntry(scenarioId, entry)]));
+  }
+
+  function normalizeFateEntry(scenarioId, entry = {}) {
+    return {
+      scenarioId,
+      completedRoutes: Array.isArray(entry.completedRoutes) ? [...new Set(entry.completedRoutes.filter(Boolean).map(String))] : [],
+      routeTypes: Array.isArray(entry.routeTypes) ? [...new Set(entry.routeTypes.filter(Boolean).map(String))] : [],
+      hiddenRescued: Boolean(entry.hiddenRescued),
+      rescueCount: Math.max(0, Math.floor(Number(entry.rescueCount || 0))),
+      fatePressure: clamp(Math.floor(Number(entry.fatePressure || 0)), 0, 100),
+      pressurePeak: clamp(Math.floor(Number(entry.pressurePeak || entry.fatePressure || 0)), 0, 100),
+      pressureLog: Array.isArray(entry.pressureLog) ? entry.pressureLog.filter((item) => item && typeof item === "object").slice(-6).map((item) => ({
+        title: typeof item.title === "string" ? item.title : "命運壓力",
+        delta: Math.floor(Number(item.delta || 0)),
+        total: clamp(Math.floor(Number(item.total || 0)), 0, 100)
+      })) : [],
+      fateTags: Array.isArray(entry.fateTags) ? [...new Set(entry.fateTags.filter(Boolean).map(String))].slice(-16) : [],
+      bestEnding: entry.bestEnding && typeof entry.bestEnding === "object" ? clone(entry.bestEnding) : null,
+      lastOutcomeTitle: typeof entry.lastOutcomeTitle === "string" ? entry.lastOutcomeTitle : "",
+      lastRouteType: typeof entry.lastRouteType === "string" ? entry.lastRouteType : "",
+      storyImpacts: Array.isArray(entry.storyImpacts) ? [...new Set(entry.storyImpacts.filter(Boolean).map(String))].slice(-8) : [],
+      worldStates: Array.isArray(entry.worldStates) ? [...new Set(entry.worldStates.filter(Boolean).map(String))].slice(-8) : []
+    };
+  }
+
+  function normalizeRescueMissions(value) {
+    const missions = Array.isArray(value) ? value : Object.values(value || {});
+    const seen = new Set();
+    return missions
+      .filter((mission) => mission && typeof mission === "object")
+      .map((mission) => ({
+        id: String(mission.id || ""),
+        scenarioId: String(mission.scenarioId || ""),
+        characterId: String(mission.characterId || ""),
+        fate: recoveryStatusIds.has(String(mission.fate || "")) ? String(mission.fate) : "lost",
+        status: ["active", "resolved-rescued", "resolved-paid"].includes(mission.status) ? mission.status : "active",
+        originOutcomeId: typeof mission.originOutcomeId === "string" ? mission.originOutcomeId : "",
+        createdInScenarioName: typeof mission.createdInScenarioName === "string" ? mission.createdInScenarioName : "",
+        routeType: typeof mission.routeType === "string" ? mission.routeType : "",
+        storyArc: typeof mission.storyArc === "string" ? mission.storyArc : "",
+        returnMode: typeof mission.returnMode === "string" ? mission.returnMode : "",
+        note: typeof mission.note === "string" ? mission.note : ""
+      }))
+      .filter((mission) => mission.id && scenariosById[mission.scenarioId] && charactersById[mission.characterId] && !seen.has(mission.id) && seen.add(mission.id));
+  }
+
   function createInitialState() {
     return {
       version: SAVE_VERSION,
@@ -343,7 +425,9 @@
         infiniteUnlocked: false,
         infiniteTier: 0,
         firstAlienRecruitBonus: true,
-        dynamicDifficulty: createDynamicDifficultyState()
+        dynamicDifficulty: createDynamicDifficultyState(),
+        fateArchive: {},
+        rescueMissions: []
       },
       run: null,
       activeEncounterId: null,
@@ -388,6 +472,8 @@
     next.onboarding = normalizeOnboarding(next.onboarding, next.playerProfile);
     next.campaign = { ...base.campaign, ...(saved.campaign || {}) };
     next.campaign.dynamicDifficulty = normalizeDynamicDifficulty(next.campaign.dynamicDifficulty);
+    next.campaign.fateArchive = normalizeFateArchive(next.campaign.fateArchive);
+    next.campaign.rescueMissions = normalizeRescueMissions(next.campaign.rescueMissions);
     reconcileCampaignUnlocks(next.campaign);
     next.permanentUpgrades = { ...base.permanentUpgrades, ...(saved.permanentUpgrades || {}) };
     next.permanentUpgrades.team = Array.isArray(next.permanentUpgrades.team) ? next.permanentUpgrades.team : [];
@@ -575,17 +661,31 @@
     }));
   }
 
+  function memberRecoveryStatus(member) {
+    const status = String(member?.recoveryStatus || "");
+    return recoveryStatusIds.has(status) ? status : null;
+  }
+
+  function isMemberUnavailable(member) {
+    return Boolean(memberRecoveryStatus(member));
+  }
+
   function normalizeCharacter(member) {
     const base = charactersById[member.id];
+    const recoveryStatus = memberRecoveryStatus(member);
+    const maxHp = Math.max(base.maxHp, Number(member.maxHp || base.maxHp));
+    const hp = recoveryStatus === "dead" ? 0 : clamp(Number(member.hp ?? base.maxHp), 0, maxHp);
     return {
       ...clone(base),
       ...clone(member),
-      maxHp: Math.max(base.maxHp, Number(member.maxHp || base.maxHp)),
-      hp: clamp(Number(member.hp ?? base.maxHp), 0, Math.max(base.maxHp, Number(member.maxHp || base.maxHp))),
+      maxHp,
+      hp,
       stress: clamp(Number(member.stress ?? base.stress), 0, 100),
       block: Number(member.block || 0),
       evade: Number(member.evade || 0),
-      active: Boolean(member.active)
+      recoveryStatus,
+      recoveryRunsRemaining: recoveryStatus ? Math.max(0, Math.floor(Number(member.recoveryRunsRemaining || 0))) : 0,
+      active: Boolean(member.active) && !recoveryStatus
     };
   }
 
@@ -604,13 +704,15 @@
       passiveText: player.passiveText,
       signatureCardId: player.signatureCardId,
       playerProfile: clone(playerProfile),
+      recoveryStatus: null,
+      recoveryRunsRemaining: 0,
       active: false
     };
   }
 
   function makeCharacter(id, active) {
     const base = charactersById[id];
-    return { ...clone(base), hp: base.maxHp, block: 0, evade: 0, active: Boolean(active) };
+    return { ...clone(base), hp: base.maxHp, block: 0, evade: 0, recoveryStatus: null, recoveryRunsRemaining: 0, active: Boolean(active) };
   }
 
   function makePlayerCharacter(profile, active, playerGrowth = null) {
@@ -769,22 +871,224 @@
     return Boolean(scenario && (scenario.difficultyClass === "super-hard" || (Array.isArray(scenario.hellBossPool) && scenario.hellBossPool.length)));
   }
 
+  function scenarioDifficultyRank(scenario) {
+    if (!scenario) return 1;
+    if (isSuperHardScenario(scenario)) return 4;
+    const explicit = Number(scenario.difficultyRank);
+    if (Number.isFinite(explicit)) return explicit;
+    return Number(scenarioBandsById[scenario.difficultyBand]?.rank || 1);
+  }
+
+  function scenarioDifficultyLabel(scenario) {
+    if (!scenario) return "普通劇本";
+    return scenario.entryLabel || scenarioBandsById[scenario.difficultyBand]?.name || (isSuperHardScenario(scenario) ? "超困難劇本" : "普通劇本");
+  }
+
+  function stableScenarioScore(id) {
+    const text = `${scenarioProgression.shuffleSalt || "main-god-chaos-route"}:${id}`;
+    let score = 2166136261;
+    for (let index = 0; index < text.length; index += 1) {
+      score ^= text.charCodeAt(index);
+      score = Math.imul(score, 16777619);
+    }
+    return score >>> 0;
+  }
+
+  function completedNormalScenarioCount(campaign) {
+    return (campaign?.completedScenarios || []).filter((id) => {
+      const scenario = scenariosById[id];
+      return scenario && id !== "tutorial" && !isSuperHardScenario(scenario);
+    }).length;
+  }
+
+  function currentOpeningScenarioId(campaign) {
+    const unlocked = new Set(campaign?.unlockedScenarios || []);
+    const completed = new Set(campaign?.completedScenarios || []);
+    return fixedOpeningScenarioIds.find((id, index) => {
+      if (completed.has(id)) return false;
+      if (index === 0) return unlocked.has(id) || campaign?.tutorialComplete;
+      return completed.has(fixedOpeningScenarioIds[index - 1]) || unlocked.has(id);
+    }) || null;
+  }
+
+  function shuffledScenariosForBand(bandId) {
+    return data.scenarios
+      .filter((scenario) => scenario.id !== "tutorial" && !fixedOpeningScenarioSet.has(scenario.id))
+      .filter((scenario) => (scenario.difficultyBand || (isSuperHardScenario(scenario) ? "super-hard" : "standard")) === bandId)
+      .sort((a, b) => stableScenarioScore(a.id) - stableScenarioScore(b.id) || a.id.localeCompare(b.id));
+  }
+
+  function progressionUnlockIds(campaign) {
+    const clearCount = completedNormalScenarioCount(campaign);
+    const ids = [];
+    scenarioUnlockTiers.forEach((tier) => {
+      const minClears = Number(tier.minClears || 0);
+      if (clearCount < minClears) return;
+      const count = Number(tier.baseCount || 0) + Math.max(0, clearCount - minClears) * Number(tier.perClear || 0);
+      shuffledScenariosForBand(tier.bandId).slice(0, count).forEach((scenario) => ids.push(scenario.id));
+    });
+    return [...new Set(ids)];
+  }
+
+  function syncScenarioProgressionUnlocks(campaign) {
+    campaign.unlockedScenarios = Array.isArray(campaign.unlockedScenarios) ? campaign.unlockedScenarios.filter((id) => scenariosById[id]) : ["tutorial"];
+    campaign.completedScenarios = Array.isArray(campaign.completedScenarios) ? [...new Set(campaign.completedScenarios.filter((id) => scenariosById[id]))] : [];
+    const completed = new Set(campaign.completedScenarios);
+    const unlock = (id) => {
+      if (scenariosById[id] && !campaign.unlockedScenarios.includes(id)) campaign.unlockedScenarios.push(id);
+    };
+    if (campaign.tutorialComplete || completed.has("tutorial")) unlock(fixedOpeningScenarioIds[0]);
+    fixedOpeningScenarioIds.forEach((id, index) => {
+      const nextId = fixedOpeningScenarioIds[index + 1];
+      if (completed.has(id) && nextId) unlock(nextId);
+    });
+    if (fixedOpeningScenarioIds.every((id) => completed.has(id))) progressionUnlockIds(campaign).forEach(unlock);
+    if (completedNormalScenarioCount(campaign) >= infiniteUnlockClearCount || completed.has("batman-v-superman")) campaign.infiniteUnlocked = true;
+  }
+
+  function scenarioProgressionStatus(state) {
+    const campaign = state.campaign || {};
+    const unlocked = new Set(campaign.unlockedScenarios || []);
+    const completed = new Set(campaign.completedScenarios || []);
+    const randomPool = randomNormalScenarioPool(state);
+    const randomIds = randomPool.filter((scenario) => !fixedOpeningScenarioSet.has(scenario.id)).map((scenario) => scenario.id);
+    const groups = [...new Set(randomIds.map((id) => scenariosById[id]?.difficultyBand || "standard"))]
+      .map((bandId) => {
+        const scenarios = randomIds.map((id) => scenariosById[id]).filter((scenario) => (scenario.difficultyBand || "standard") === bandId);
+        const band = scenarioBandsById[bandId] || { id: bandId, name: scenarioDifficultyLabel(scenarios[0]), hint: "" };
+        return {
+          id: band.id,
+          name: band.name,
+          hint: band.hint || "",
+          scenarioIds: scenarios.map((scenario) => scenario.id),
+          completedCount: scenarios.filter((scenario) => completed.has(scenario.id)).length
+        };
+      })
+      .sort((a, b) => Number(scenarioBandsById[a.id]?.rank || 1) - Number(scenarioBandsById[b.id]?.rank || 1));
+    return {
+      fixedOpening: fixedOpeningScenarioIds.map((id, index) => ({
+        id,
+        name: scenariosById[id]?.name || id,
+        unlocked: unlocked.has(id),
+        complete: completed.has(id),
+        current: currentOpeningScenarioId(campaign) === id,
+        index
+      })),
+      nextFixedId: currentOpeningScenarioId(campaign),
+      completedNormalCount: completedNormalScenarioCount(campaign),
+      infiniteUnlockClearCount,
+      randomPoolCount: randomPool.length,
+      randomUnlockedCount: randomIds.length,
+      groups,
+      openTierNames: scenarioUnlockTiers
+        .filter((tier) => completedNormalScenarioCount(campaign) >= Number(tier.minClears || 0))
+        .map((tier) => scenarioBandsById[tier.bandId]?.name || tier.bandId)
+    };
+  }
+
   function randomNormalScenarioPool(state) {
+    const openingId = currentOpeningScenarioId(state.campaign);
+    if (openingId) {
+      const openingScenario = scenariosById[openingId];
+      return openingScenario && state.campaign?.unlockedScenarios?.includes(openingId) ? [openingScenario] : [];
+    }
     const unlocked = new Set(state.campaign?.unlockedScenarios || []);
     return data.scenarios.filter((scenario) => {
       if (scenario.id === "tutorial" || !unlocked.has(scenario.id)) return false;
+      if (fixedOpeningScenarioSet.has(scenario.id)) return false;
       if (!Array.isArray(scenario.normal) || !scenario.normal.length) return false;
       return !isSuperHardScenario(scenario);
     });
   }
 
+  function rescueMissionsForScenario(state, scenarioId) {
+    return normalizeRescueMissions(state.campaign?.rescueMissions || [])
+      .filter((mission) => mission.status === "active" && mission.scenarioId === scenarioId);
+  }
+
+  function rescueMissionsForCharacter(state, characterId) {
+    return normalizeRescueMissions(state.campaign?.rescueMissions || [])
+      .filter((mission) => mission.status === "active" && mission.characterId === characterId);
+  }
+
+  function scenarioFateStatus(state, scenarioId) {
+    const archive = normalizeFateArchive(state.campaign?.fateArchive || {});
+    const entry = archive[scenarioId] || normalizeFateEntry(scenarioId);
+    const rescueMissions = rescueMissionsForScenario(state, scenarioId);
+    const pressure = clamp(entry.fatePressure + rescueMissions.length * 8, 0, 100);
+    const pressureLevel = fatePressureLevel(pressure);
+    const bossPreview = scenarioBossFatePreviewFromEntry(entry, pressure);
+    return {
+      ...entry,
+      fatePressure: pressure,
+      pressureLevel,
+      bossPreview,
+      shopDiscountRate: scenarioFateShopDiscountRateFromEntry(entry),
+      completedRouteCount: entry.completedRoutes.length,
+      hasFate: Boolean(entry.completedRoutes.length || entry.bestEnding || entry.hiddenRescued),
+      rescueMissions,
+      activeRescueCount: rescueMissions.length
+    };
+  }
+
+  function scenarioFatePressure(state, scenarioId) {
+    return scenarioFateStatus(state, scenarioId).fatePressure;
+  }
+
+  function fatePressureLevel(pressure) {
+    const value = clamp(Math.floor(Number(pressure || 0)), 0, 100);
+    if (value >= 76) return { id: "critical", label: "臨界", tone: "danger", text: "Boss 會更兇，但高壓獎勵提高。" };
+    if (value >= 51) return { id: "high", label: "高壓", tone: "risk", text: "救援與壞結局代價正在推高劇本反噬。" };
+    if (value >= 26) return { id: "medium", label: "偏壓", tone: "warning", text: "劇本開始記住隊伍選擇。" };
+    return { id: "stable", label: "穩定", tone: "signal", text: "目前輪迴檔案仍可控。" };
+  }
+
+  function scenarioFateShopDiscountRateFromEntry(entry) {
+    const tags = new Set(entry?.fateTags || []);
+    let rate = 0;
+    if (tags.has("gray-shop-opened") || tags.has("core-skill")) rate += 0.05;
+    if (tags.has("core-sealed") || tags.has("gray-world-state")) rate += 0.03;
+    if ((entry?.worldStates || []).some((text) => /補給|商店|暗格|樣本/.test(text))) rate += 0.02;
+    return Math.min(0.12, rate);
+  }
+
+  function shopFateDiscountRate(state) {
+    const archive = normalizeFateArchive(state.campaign?.fateArchive || {});
+    const scenarioRates = Object.values(archive).map(scenarioFateShopDiscountRateFromEntry).filter((rate) => rate > 0);
+    const total = scenarioRates.reduce((sum, rate) => sum + rate, 0);
+    return Math.min(0.22, total);
+  }
+
+  function discountedShopRewardPointCost(state, rewardPointCost) {
+    const base = Math.max(0, Math.floor(Number(rewardPointCost || 0)));
+    const discount = shopFateDiscountRate(state);
+    return Math.max(0, Math.ceil(base * (1 - discount)));
+  }
+
+  function scenarioBossFatePreviewFromEntry(entry, pressure) {
+    const tags = new Set(entry?.fateTags || []);
+    const labels = [];
+    if (tags.has("gray-boss-altered") || tags.has("core-power") || tags.has("core-sealed")) labels.push("Boss 節奏已改寫");
+    if (entry?.hiddenRescued || tags.has("hidden-rescue") || tags.has("costly-hidden-rescue")) labels.push("隱藏主角線削弱開場");
+    if (pressure >= 51) labels.push("高壓提高 Boss 反噬");
+    if (scenarioFateShopDiscountRateFromEntry(entry) > 0) labels.push("補給暗格已開放");
+    return {
+      labels,
+      affectsBoss: labels.some((label) => label.includes("Boss") || label.includes("開場") || label.includes("反噬")),
+      affectsShop: labels.some((label) => label.includes("補給")),
+      pressure
+    };
+  }
+
   function chooseRandomNormalScenario(state) {
     const pool = randomNormalScenarioPool(state);
     if (!pool.length) return null;
+    const unfinished = pool.filter((scenario) => !(state.campaign?.completedScenarios || []).includes(scenario.id));
+    const basePool = unfinished.length ? unfinished : pool;
     const history = state.campaign?.dynamicDifficulty?.randomHistory || [];
     const recent = new Set(history.slice(0, 2));
-    const candidates = pool.length > 2 ? pool.filter((scenario) => !recent.has(scenario.id)) : pool;
-    return randomChoice(state, candidates.length ? candidates : pool);
+    const candidates = basePool.length > 2 ? basePool.filter((scenario) => !recent.has(scenario.id)) : basePool;
+    return randomChoice(state, candidates.length ? candidates : basePool);
   }
 
   function beginScenario(state, requestedScenarioId) {
@@ -949,8 +1253,9 @@
     }).length;
     const progressPressure = Math.min(0.50, completedNormalCount * 0.025);
     const streakPressure = Math.min(0.18, dynamic.successStreak * 0.03);
+    const scenarioPressure = Math.min(0.16, Math.max(0, scenarioDifficultyRank(scenario) - 1) * 0.055);
     const relief = Math.min(0.15, dynamic.failureRelief * 0.05);
-    const multiplier = clamp(1 + progressPressure + streakPressure - relief, 0.90, 1.65);
+    const multiplier = clamp(1 + progressPressure + streakPressure + scenarioPressure - relief, 0.90, 1.72);
     return {
       mode: "normal",
       multiplier,
@@ -958,8 +1263,9 @@
       intentMultiplier: 1 + (multiplier - 1) * 0.5,
       progressPressure,
       streakPressure,
+      scenarioPressure,
       relief,
-      label: `動態 ${formatMultiplier(multiplier)}x`
+      label: `動態 ${formatMultiplier(multiplier)}x · ${scenarioDifficultyLabel(scenario)}`
     };
   }
 
@@ -1230,7 +1536,8 @@
   function generateMap(state, scenario) {
     const randomTypes = ["battle", "battle", "elite", "event", "treasure"];
     const hellBossPool = Array.isArray(scenario.hellBossPool) && scenario.hellBossPool.length ? scenario.hellBossPool : null;
-    const layerCount = scenario.id === "tutorial" ? 8 : 5 + Math.floor(nextRandom(state) * 8);
+    const randomLayerCount = 5 + Math.floor(nextRandom(state) * 8);
+    const layerCount = scenario.id === "tutorial" ? 8 : Math.max(randomLayerCount, Number(scenario.minLayerCount || 0));
     const bossLayer = layerCount;
     const minibossLayer = Math.max(2, Math.floor(layerCount * 0.5));
     const campLayer = Math.min(bossLayer - 1, Math.max(minibossLayer + 1, Math.ceil(layerCount * 0.64)));
@@ -1305,19 +1612,34 @@
     const infiniteScale = state.run && state.run.sourceScenarioId === "infinite" ? state.campaign.infiniteTier * 0.14 : 0;
     const hpMultiplier = Number(state.run?.dynamicDifficulty?.hpMultiplier || 1);
     const intentMultiplier = Number(state.run?.dynamicDifficulty?.intentMultiplier || 1);
+    const node = state.run?.map ? findMapNode(state.run.map, state.run.currentNodeId) : null;
+    const fateCombat = scenarioCombatFateModifier(state, encounter, node);
     state.screen = "combat";
     state.activeEncounterId = encounterId;
     state.activeEnemies = encounter.enemies.map((enemyId) => {
-      const base = scaleEnemyForRun(enemiesById[enemyId], (1 + infiniteScale) * hpMultiplier, intentMultiplier);
+      const base = scaleEnemyForRun(enemiesById[enemyId], (1 + infiniteScale) * hpMultiplier * fateCombat.hpMultiplier, intentMultiplier * fateCombat.intentMultiplier);
       const maxHp = base.maxHp;
-      return { ...base, uid: uid(state, "enemy"), enemyId, maxHp, hp: maxHp, block: 0, intentIndex: 0, burn: 0, poison: 0, stun: 0, weak: 0, phaseTwoTriggered: false };
+      return {
+        ...base,
+        uid: uid(state, "enemy"),
+        enemyId,
+        maxHp,
+        hp: maxHp,
+        block: fateCombat.openingBlock,
+        intentIndex: 0,
+        burn: 0,
+        poison: 0,
+        stun: fateCombat.openingStun,
+        weak: fateCombat.openingWeak,
+        phaseTwoTriggered: false
+      };
     });
     state.selectedTargetId = state.activeEnemies[0]?.uid || null;
     state.turn = 0;
     state.hand = [];
     state.discardPile = [];
     state.exhaustedPile = [];
-    state.combatFlags = { lastChanceUsed: [], bondTriggers: [] };
+    state.combatFlags = { lastChanceUsed: [], bondTriggers: [], fateCombat };
     const permanent = state.deck.map((entry) => makeCombatCard(state, entry.cardId, entry.ownerId || null, entry.upgraded, entry.instanceId));
     const signatures = getAliveActiveParty(state).map((member) => makeCombatCard(
       state,
@@ -1329,10 +1651,66 @@
     state.drawPile = shuffleWithState(state, [...permanent, ...signatures]);
     state.party = state.party.map((member) => ({ ...member, block: 0, evade: 0 }));
     state.log = appendLog(state.log, `${encounter.name}：敵人出現。`);
+    if (fateCombat.labels.length) state.log = appendLog(state.log, `輪迴檔案影響戰場：${fateCombat.labels.join("、")}。`);
     appendBanter(state, buildEncounterBanter(state, encounter));
     const activeBonds = getActiveBonds(state);
     if (activeBonds.length) state.log = appendLog(state.log, `羈絆啟用：${activeBonds.map((bond) => bond.name).join("、")}。`);
     return startPlayerTurn(state);
+  }
+
+  function scenarioCombatFateModifier(state, encounter, node) {
+    const neutral = {
+      hpMultiplier: 1,
+      intentMultiplier: 1,
+      rewardMultiplier: 1,
+      openingWeak: 0,
+      openingStun: 0,
+      openingBlock: 0,
+      labels: []
+    };
+    if (!state.run || !["miniboss", "boss"].includes(node?.type)) return neutral;
+    const scenarioId = state.run.scenarioId;
+    const entry = normalizeFateArchive(state.campaign?.fateArchive || {})[scenarioId] || normalizeFateEntry(scenarioId);
+    const pressure = scenarioFatePressure(state, scenarioId);
+    const tags = new Set(entry.fateTags || []);
+    const modifier = { ...neutral, labels: [] };
+    const pressureLevel = fatePressureLevel(pressure);
+    if (pressure >= 76) {
+      modifier.hpMultiplier += 0.14;
+      modifier.intentMultiplier += 0.10;
+      modifier.rewardMultiplier += 0.12;
+      modifier.labels.push(`命運壓力${pressureLevel.label}`);
+    } else if (pressure >= 51) {
+      modifier.hpMultiplier += 0.07;
+      modifier.intentMultiplier += 0.05;
+      modifier.rewardMultiplier += 0.06;
+      modifier.labels.push(`命運壓力${pressureLevel.label}`);
+    }
+    if (tags.has("gray-boss-altered") || tags.has("core-power") || tags.has("core-sealed")) {
+      modifier.hpMultiplier -= 0.10;
+      modifier.intentMultiplier -= 0.04;
+      modifier.openingWeak = Math.max(modifier.openingWeak, node.type === "boss" ? 4 : 2);
+      modifier.labels.push("Boss 節奏被灰色路線讀破");
+    }
+    if (entry.hiddenRescued || tags.has("hidden-rescue") || tags.has("costly-hidden-rescue")) {
+      modifier.openingStun = Math.max(modifier.openingStun, node.type === "boss" ? 1 : 0);
+      modifier.openingWeak = Math.max(modifier.openingWeak, 2);
+      modifier.labels.push("隱藏人物線削弱開場");
+    }
+    if (tags.has("risk-high-reward") || tags.has("risk-score") || tags.has("risk-curse") || tags.has("risk-blood")) {
+      modifier.rewardMultiplier += 0.08;
+      modifier.labels.push("高代價路線提高戰利品");
+    }
+    if (tags.has("dark-return")) {
+      modifier.rewardMultiplier += 0.05;
+      modifier.openingWeak = Math.max(modifier.openingWeak, 1);
+      modifier.labels.push("黑化歸來線留下反制情報");
+    }
+    modifier.hpMultiplier = clamp(modifier.hpMultiplier, 0.78, 1.24);
+    modifier.intentMultiplier = clamp(modifier.intentMultiplier, 0.82, 1.18);
+    modifier.rewardMultiplier = clamp(modifier.rewardMultiplier, 1, 1.28);
+    modifier.labels = [...new Set(modifier.labels)];
+    return modifier;
   }
 
   function scaleEnemyForRun(enemy, hpMultiplier, intentMultiplier) {
@@ -1367,14 +1745,15 @@
     applyBondTurnStartEffects(state);
     const passiveOpeningEnergy = state.turn === 1 && hasPassive(state, "opening-overdrive") ? 2 : 0;
     const bondOpeningEnergy = state.turn === 1 ? bondEffectTotal(state, "openingEnergy") : 0;
-    state.maxEnergy = calculateEnergy(state) + (state.turn === 1 ? equipmentEffectTotal(state, "openingEnergy") + customEffectTotal(state, "openingEnergy") : 0) + passiveOpeningEnergy + bondOpeningEnergy;
+    const teamOpeningEnergy = state.turn === 1 ? teamUpgradeEffectTotal(state, "openingEnergy") : 0;
+    state.maxEnergy = calculateEnergy(state) + (state.turn === 1 ? equipmentEffectTotal(state, "openingEnergy") + customEffectTotal(state, "openingEnergy") : 0) + passiveOpeningEnergy + bondOpeningEnergy + teamOpeningEnergy;
     state.energy = state.maxEnergy;
     let handSize = 5;
     if (state.turn === 1) {
       handSize += equipmentEffectTotal(state, "openingDraw");
       handSize += customStatTier(state, "technique") + customEffectTotal(state, "openingDraw");
       handSize += bondEffectTotal(state, "openingDraw");
-      if (state.permanentUpgrades.team.includes("team-opening-draw")) handSize += 1;
+      handSize += teamUpgradeEffectTotal(state, "openingDraw");
       if (hasPassive(state, "opening-forecast")) handSize += 2;
     }
     const reactiveIntent = getLivingEnemies(state).some((enemy) => ["guard", "stress"].includes(getEnemyIntent(enemy).kind));
@@ -1419,13 +1798,14 @@
         if (card.damage) damage += bonus;
         if (card.damageAll) damageAll += bonus;
       };
-      const sharedBonus = equipmentEffectTotal(next, "attackBonus") + temporaryPowerAmount(next, "attackBonus");
+      const sharedBonus = equipmentEffectTotal(next, "attackBonus") + temporaryPowerAmount(next, "attackBonus") + teamUpgradeEffectTotal(next, "attackBonus");
       applyAttackBonus(sharedBonus);
       applyAttackBonus(customStatTier(next, "strength") + customEffectTotal(next, "attackBonus"));
       applyAttackBonus(customEffectTotal(next, "ownerAttackBonus"));
       applyAttackBonus(bondEffectTotal(next, "attackBonus"));
       if (card.damageAll) damageAll += bondEffectTotal(next, "damageAllBonus");
       if (card.damageAll) damageAll += customEffectTotal(next, "damageAllBonus");
+      if (card.damageAll) damageAll += teamUpgradeEffectTotal(next, "damageAllBonus");
       if (instance.ownerId) applyAttackBonus(bondOwnerAttackBonus(next, instance.ownerId));
       if (getAliveActiveParty(next).some((member) => member.hp <= member.maxHp / 2)) applyAttackBonus(customEffectTotal(next, "lowHpAttackBonus"));
       if (hasPassive(next, "first-attack") && !next.turnStats.firstAttackUsed) {
@@ -1445,6 +1825,7 @@
       if (card.damage && target && hasPassive(next, "status-exploit") && hasEnemyStatus(target)) damage += 6;
       if (card.damage && target && hasEnemyStatus(target)) damage += bondEffectTotal(next, "statusExploitBonus");
       if (card.damage && target && hasEnemyStatus(target)) damage += customEffectTotal(next, "statusExploitBonus");
+      if (card.damage && target && hasEnemyStatus(target)) damage += teamUpgradeEffectTotal(next, "statusExploitBonus");
       if (card.damage && target?.block > 0 && hasPassive(next, "armor-breaker")) {
         damage += 5;
         piercingAttack = true;
@@ -1452,6 +1833,10 @@
       if (bondEffectTotal(next, "firstAttackPierce") > 0 && !next.turnStats.firstBondPierceUsed) {
         piercingAttack = true;
         next.turnStats.firstBondPierceUsed = true;
+      }
+      if (teamUpgradeEffectTotal(next, "firstAttackPierce") > 0 && !next.turnStats.teamFirstAttackPierceUsed) {
+        piercingAttack = true;
+        next.turnStats.teamFirstAttackPierceUsed = true;
       }
       if (hasPassive(next, "first-attack-pierce") && !next.turnStats.firstPassivePierceUsed) {
         piercingAttack = true;
@@ -1539,6 +1924,7 @@
     const bondResult = applyBondCardEffects(next, instance, card, target?.uid);
     if (bondResult === "combat-complete") return completeCombat(next);
     applyCustomCardEffects(next, instance, card, target?.uid);
+    applyTeamCardEffects(next, instance, card, target?.uid);
     if (hasPassive(next, "first-card-draw") && next.turnStats.cardsPlayed === 0) drawCards(next, 1);
     if (card.type === "support" && hasPassive(next, "first-support-draw") && !next.turnStats.firstSupportUsed) {
       drawCards(next, 1);
@@ -1566,7 +1952,7 @@
     if (getLivingEnemies(next).length === 0) return completeCombat(next);
     if (getAliveActiveParty(next).length === 0) {
       next.screen = "defeat";
-      next.pending = { kind: "defeat" };
+      next.pending = { kind: "defeat", report: buildDefeatReport(next) };
       next.log = appendLog(next.log, `${teamLabel(next)}全員失去戰鬥能力。`);
       return next;
     }
@@ -1587,8 +1973,10 @@
   function completeCombat(state) {
     const encounter = encountersById[state.activeEncounterId];
     const multiplier = state.run?.sourceScenarioId === "infinite" ? 1 + state.campaign.infiniteTier * 0.12 : 1;
-    state.rewardPoints += Math.ceil(encounter.rewardPoints * multiplier);
-    state.log = appendLog(state.log, `${encounter.name}完成，獲得 ${Math.ceil(encounter.rewardPoints * multiplier)} 獎勵點。`);
+    const fateRewardMultiplier = Number(state.combatFlags?.fateCombat?.rewardMultiplier || 1);
+    const rewardPoints = Math.ceil(encounter.rewardPoints * multiplier * fateRewardMultiplier);
+    state.rewardPoints += rewardPoints;
+    state.log = appendLog(state.log, `${encounter.name}完成，獲得 ${rewardPoints} 獎勵點。`);
     state.activeEnemies = [];
     state.selectedTargetId = null;
     if (state.run?.scenarioId === "tutorial") return completeTutorialCombat(state);
@@ -1689,9 +2077,7 @@
     state.deck.forEach((entry) => { if (entry.acquiredRunId === state.run.id) entry.acquiredRunId = null; });
     state.equipmentInventory.forEach((entry) => { if (entry.acquiredRunId === state.run.id) entry.acquiredRunId = null; });
     if (!state.campaign.completedScenarios.includes(scenarioId)) state.campaign.completedScenarios.push(scenarioId);
-    const nextScenario = { alien: "juon", juon: "mummy-curse", "mummy-curse": "jurassic-island", "jurassic-island": "abyssal-ark", "abyssal-ark": "evernight-castle", "evernight-castle": "demon-frontier", "demon-frontier": "main-god-trial", "main-god-trial": "starship-troopers", "starship-troopers": "avp-pyramid", "avp-pyramid": "nightmare-elm", "nightmare-elm": "lotr-war", "lotr-war": "rumbling-finale", "rumbling-finale": "infinity-castle", "infinity-castle": "naruto-final-valley", "naruto-final-valley": "bleach-false-karakura", "bleach-false-karakura": "gintama-yoshiwara", "gintama-yoshiwara": "gintama-final-war", "gintama-final-war": "avengers-new-york", "avengers-new-york": "batman-v-superman", "batman-v-superman": "devil-may-cry-5", "devil-may-cry-5": "final-destination", "final-destination": "jinyong-heroic-peak", "jinyong-heroic-peak": "pacific-rim-breach", "pacific-rim-breach": "fury-road-war-rig", "fury-road-war-rig": "resident-evil-6-c-virus", "resident-evil-6-c-virus": "elden-ring-hell-run", "elden-ring-hell-run": "jujutsu-kaisen-shibuya", "jujutsu-kaisen-shibuya": "fullmetal-alchemist-finale" }[scenarioId];
-    if (nextScenario && !state.campaign.unlockedScenarios.includes(nextScenario)) state.campaign.unlockedScenarios.push(nextScenario);
-    if (scenarioId === "batman-v-superman") state.campaign.infiniteUnlocked = true;
+    syncScenarioProgressionUnlocks(state.campaign);
     if (state.run.sourceScenarioId === "infinite") state.campaign.infiniteTier += 1;
     updateDynamicDifficultyAfterRun(state, true);
     const sideStoryReward = Number(economy.scenarioSideStoryRewards?.[scenarioId] || 0);
@@ -1742,28 +2128,142 @@
       candidate,
       hiddenCandidate,
       hiddenProtagonistId: hiddenId || null,
+      rescueMissions: rescueMissionsForScenario(state, scenarioId),
       scenarioId
     };
   }
 
   function buildEventRoutes(state, scenario) {
+    const rescueRoutes = buildRescueEventRoutes(state, scenario);
     const generatedRoutes = (scenarioEventRoutes[scenario?.id] || []).map(clone);
+    const systemRoutes = buildSystemEncounterRoutes(state, scenario);
     const scriptedRoutes = scenarioTreeRoutes(scenario);
     const legacyRoutes = legacyEventRoutes();
-    const existingIds = new Set([...generatedRoutes, ...scriptedRoutes, ...legacyRoutes].map((route) => route.id));
+    const existingIds = new Set([...generatedRoutes, ...systemRoutes, ...scriptedRoutes, ...legacyRoutes].map((route) => route.id));
     const branchRoutes = takeRandom(
       state,
       eventBranchPool.filter((route) => !existingIds.has(route.id)).map(clone),
       Math.max(12, eventChoiceTarget * 3)
     );
     return uniqueEventRoutes([
+      ...rescueRoutes,
       ...generatedRoutes.filter((route) => route.priority === "fixed"),
       ...scriptedRoutes.filter((route) => route.priority === "fixed"),
-      ...generatedRoutes.filter((route) => route.priority !== "fixed"),
       ...scriptedRoutes.filter((route) => route.priority !== "fixed"),
+      ...generatedRoutes.filter((route) => route.priority !== "fixed"),
+      ...systemRoutes,
       ...branchRoutes,
       ...legacyRoutes
     ]);
+  }
+
+  function buildSystemEncounterRoutes(state, scenario) {
+    const routes = (systemEncounterRoutes[scenario?.id] || []).map(clone);
+    return routes.length ? shuffleWithState(state, routes) : [];
+  }
+
+  function buildRescueEventRoutes(state, scenario) {
+    if (!scenario?.id) return [];
+    return rescueMissionsForScenario(state, scenario.id).map((mission) => {
+      const character = charactersById[mission.characterId];
+      const fateLabel = defeatFates[mission.fate]?.label || "失散";
+      const story = rescueMissionStory(mission, scenario, character, fateLabel);
+      return {
+        id: `rescue-route-${mission.id}`,
+        routeType: story.routeType,
+        priority: "fixed",
+        rescueMissionId: mission.id,
+        stage1: {
+          id: `rescue-${mission.id}-trace`,
+          title: story.stage1Title,
+          text: story.stage1Text
+        },
+        stage2: {
+          id: `rescue-${mission.id}-anchor`,
+          title: story.stage2Title,
+          text: story.stage2Text
+        },
+        final: {
+          id: `rescue-${mission.id}-return`,
+          title: story.finalTitle,
+          text: story.finalText
+        },
+        outcome: {
+          title: story.outcomeTitle,
+          text: story.outcomeText,
+          effects: [
+            { type: "recover-character", characterId: character.id, missionId: mission.id },
+            ...story.effects,
+            { type: "record-fate", fateType: story.fateType, endingRank: story.rank }
+          ],
+          rewards: story.rewards,
+          costs: story.costs,
+          storyImpact: story.storyImpact,
+          worldState: story.worldState
+        }
+      };
+    });
+  }
+
+  function rescueMissionStory(mission, scenario, character, fateLabel) {
+    if (mission.fate === "dead") {
+      return {
+        routeType: mission.routeType || "復活代價線",
+        fateType: "revival-price",
+        rank: 4,
+        stage1Title: `追蹤${character.name}的死亡回聲`,
+        stage1Text: `${scenario.name}裡還留著${character.name}死亡瞬間的白光殘片，這不是免費復活，而是一場要付代價的回收。`,
+        stage2Title: "談判復活代價",
+        stage2Text: "主神把復活價格拆成詛咒、壓力與劇本裂縫，隊伍可以用奇遇路線替代直接付費。",
+        finalTitle: `用代價換回${character.name}`,
+        finalText: `${character.name}被從死亡判定邊緣拉回，但復活痕跡會留在牌組與精神壓力裡。`,
+        outcomeTitle: `${character.name}復活代價成立`,
+        outcomeText: `${character.name}回到主神空間，死亡不再只是扣資源，而是寫成一條付出代價的救援故事。`,
+        effects: [{ type: "curse" }, { type: "stress", amount: 16 }],
+        rewards: [`復活${character.name}`, "輪迴檔案新增復活代價線"],
+        costs: ["牌組加入詛咒", "出戰成員承受壓力"],
+        storyImpact: `${character.name}的死亡被${scenario.name}改寫成復活代價線。`,
+        worldState: `${scenario.name}的死亡節點留下主神裂縫，之後仍可追蹤類似代價。`
+      };
+    }
+    if (mission.fate === "injured") {
+      return {
+        routeType: mission.routeType || "重傷復健線",
+        fateType: "injury-recovery",
+        rank: 3,
+        stage1Title: `接回${character.name}的重傷坐標`,
+        stage1Text: `${character.name}沒有死亡，但傷勢被${scenario.name}的劇本規則卡住，需要重進一次節點才能穩定。`,
+        stage2Title: "固定治療窗口",
+        stage2Text: "第 7 人支援把主神治療與劇本殘留傷口對齊，避免重傷變成長期離隊。",
+        finalTitle: `讓${character.name}重新站上整備區`,
+        finalText: "隊伍把治療窗口搶回來，重傷不再只是等待倒數，而是一次可主動完成的復健線。",
+        outcomeTitle: `${character.name}復健完成`,
+        outcomeText: `${character.name}從重傷狀態恢復，並把這次傷勢記錄成後續防範資料。`,
+        effects: [{ type: "heal", amount: 0.12, stressRelief: 8 }],
+        rewards: [`治療${character.name}`, "全隊恢復少量生命與壓力"],
+        costs: ["本次奇遇機會用於復健，普通獎勵減少。"],
+        storyImpact: `${character.name}的重傷被${scenario.name}復健線提前處理。`,
+        worldState: `${scenario.name}的醫療與主神修復資料被保存。`
+      };
+    }
+    return {
+      routeType: mission.routeType || "黑化歸來線",
+      fateType: "dark-return",
+      rank: 5,
+      stage1Title: `追上${character.name}的失散黑影`,
+      stage1Text: `${character.name}沒有回到主神空間，而是在${scenario.name}裂縫裡獨自活過一段時間；訊號變強，也變得危險。`,
+      stage2Title: "壓住黑化分岔",
+      stage2Text: "隊伍必須先承認他在失散期間變強了，再把那股壓力導回中洲隊。夢魘不能白白吞掉一個人。",
+      finalTitle: `讓${character.name}變強歸來`,
+      finalText: `${character.name}帶著失散期間學會的狠勁回隊，專屬能力被主神永久標記。`,
+      outcomeTitle: `${character.name}黑化歸來`,
+      outcomeText: `${character.name}不只是被找回，而是從失散裂縫裡變強回來。這次失敗反而長出一條新戰力線。`,
+      effects: [{ type: "awaken-character", characterId: character.id }, { type: "stress", amount: 10 }],
+      rewards: [`救回${character.name}`, `${character.name}專屬牌永久強化`],
+      costs: ["全隊承受失散殘響壓力。"],
+      storyImpact: `${character.name}的失散被${scenario.name}改寫成黑化／變強歸來線。`,
+      worldState: `${scenario.name}的裂縫裡留下失散者變強歸來的傳聞。`
+    };
   }
 
   function scenarioTreeRoutes(scenario) {
@@ -1840,16 +2340,23 @@
     return routes.find((route) => route[key]?.id === choiceId) || null;
   }
 
+  function routeForPath(routes, path) {
+    if (!Array.isArray(path) || path.length < 3) return null;
+    return routes.find((route) => (
+      route.stage1?.id === path[0] &&
+      route.stage2?.id === path[1] &&
+      route.final?.id === path[2]
+    )) || routeForChoice(routes, 3, path[2]);
+  }
+
   function routesForEventStage(routes, stage, path) {
     const preferred = [];
     if (stage === 1) preferred.push(...routes.filter((route) => route.priority === "fixed"));
     if (stage === 2) {
-      const selected = routeForChoice(routes, 1, path[0]);
-      if (selected) preferred.push(selected);
+      preferred.push(...routes.filter((route) => route.stage1?.id === path[0]));
     }
     if (stage === 3) {
-      const selected = routeForChoice(routes, 2, path[1]);
-      if (selected) preferred.push(selected);
+      preferred.push(...routes.filter((route) => route.stage2?.id === path[1]));
     }
     const output = [];
     const choiceIds = new Set();
@@ -1860,7 +2367,27 @@
         output.push(route);
       }
     });
-    return output.slice(0, eventChoiceTarget);
+    const visible = output.slice(0, eventChoiceTarget);
+    if (stage === 1 && !visible.some((route) => route.systemEncounter)) {
+      const visibleChoiceIds = new Set(visible.map((route) => route.stage1?.id).filter(Boolean));
+      const systemRoute = routes.find((route) => route.systemEncounter && route.stage1?.id && !visibleChoiceIds.has(route.stage1.id));
+      if (systemRoute) {
+        if (visible.length < eventChoiceTarget) {
+          visible.push(systemRoute);
+        } else {
+          let replaceIndex = -1;
+          for (let index = visible.length - 1; index >= 0; index -= 1) {
+            const stage1Id = visible[index]?.stage1?.id || "";
+            if (visible[index]?.priority !== "fixed" && !stage1Id.includes("theme-entry")) {
+              replaceIndex = index;
+              break;
+            }
+          }
+          if (replaceIndex >= 0) visible[replaceIndex] = systemRoute;
+        }
+      }
+    }
+    return visible;
   }
 
   function eventChoicesFor(state, stage, path, scenario = null, event = null) {
@@ -1924,16 +2451,17 @@
   function applyEventOutcome(state, event, path) {
     const finalChoiceId = path[2];
     const scenario = scenariosById[event.scenarioId] || scenariosById[state.run?.scenarioId];
-    const route = routeForChoice(event.routes || [], 3, finalChoiceId);
+    const route = routeForPath(event.routes || [], path);
     const outcome = eventOutcomeForFinalChoice(finalChoiceId, scenario, route);
     if (!outcome) return;
     const applied = { rewards: [], costs: [] };
     (outcome.effects || []).forEach((effect) => {
-      const detail = applyEventEffect(state, event, scenario, effect);
+      const detail = applyEventEffect(state, event, scenario, effect, route, outcome, path);
       applied.rewards.push(...(detail?.rewards || []));
       applied.costs.push(...(detail?.costs || []));
     });
-    const result = buildEventResult(state, event, scenario, route, outcome, applied, path);
+    const teamStance = applyTeamStanceReactions(state, scenario, route, outcome);
+    const result = buildEventResult(state, event, scenario, route, outcome, applied, path, teamStance);
     state.screen = "event-result";
     state.pending = { kind: "event-result", scenarioId: scenario?.id || event.scenarioId, result };
     state.log = appendLog(state.log, `${scenario?.name || "輪迴"}奇遇：${outcome.title}。${outcome.text}`);
@@ -1943,9 +2471,10 @@
     return route?.outcome || scenario?.eventOutcomes?.[finalChoiceId] || eventOutcomeByFinalChoice[finalChoiceId] || null;
   }
 
-  function buildEventResult(state, event, scenario, route, outcome, applied, path) {
+  function buildEventResult(state, event, scenario, route, outcome, applied, path, teamStance = null) {
     const rewards = uniqueTexts([...(applied.rewards || []), ...textList(outcome.rewards)]);
     const costs = uniqueTexts([...(applied.costs || []), ...textList(outcome.costs)]);
+    const fateStatus = scenario?.id ? scenarioFateStatus(state, scenario.id) : null;
     return {
       title: outcome.title || "奇遇收束",
       text: outcome.text || "路線已經被隊伍推向新的結局。",
@@ -1954,9 +2483,67 @@
       path: path || event.path || [],
       rewards: rewards.length ? rewards : ["沒有直接獎勵，但路線已完成。"],
       costs: costs.length ? costs : ["沒有額外代價。"],
+      imageFile: outcome.imageFile || "",
+      dialogue: Array.isArray(outcome.dialogue) ? outcome.dialogue.map(clone) : [],
+      teamStance,
+      fatePressure: fateStatus?.fatePressure ?? null,
+      pressureLevel: fateStatus?.pressureLevel || null,
       storyImpact: outcome.storyImpact || defaultStoryImpact(scenario, route),
       worldState: outcome.worldState || `${scenario?.name || "本劇本"}的局勢已被中洲隊改寫。`
     };
+  }
+
+  function eventFateType(outcome, route) {
+    const record = (outcome?.effects || []).find((effect) => effect.type === "record-fate");
+    const type = String(record?.fateType || route?.routeType || "");
+    if (/hidden|rescue|救援|主角/.test(type)) return "rescue";
+    if (/gray|core|boss|shop|world|劇本專屬|核心/.test(type)) return "control";
+    if (/revival|dark-return|injury|復活|黑化|重傷/.test(type)) return "rescue";
+    if (/risk|curse|blood|score|高代價|壞/.test(type)) return "risk";
+    return "control";
+  }
+
+  function applyTeamStanceReactions(state, scenario, route, outcome) {
+    const kind = eventFateType(outcome, route);
+    const active = getAliveActiveParty(state);
+    if (!active.length) return null;
+    const reactions = [];
+    state.party = state.party.map((member) => {
+      if (!member.active || member.hp <= 0 || isMemberUnavailable(member)) return member;
+      const stance = allyStanceForFate(member, kind);
+      if (!stance) return member;
+      if (reactions.length < 4) reactions.push(`${member.name}：${stance.text}`);
+      return { ...member, stress: clamp(Number(member.stress || 0) + stance.stress, 0, 100) };
+    });
+    if (!reactions.length) return null;
+    const summary = {
+      rescue: `${scenario?.name || "本劇本"}的救援立場讓隊伍更願意冒險保人。`,
+      control: "灰色控制路線讓分析型隊友得到發揮，前排則保持觀望。",
+      risk: "高代價截獎讓強攻角色興奮，也讓支援與保守隊友壓力上升。"
+    }[kind] || "隊友記住了這次選擇。";
+    return { kind, summary, reactions };
+  }
+
+  function allyStanceForFate(member, kind) {
+    const id = member.id;
+    const roleText = `${member.role || ""}${member.passiveText || ""}`;
+    const analyst = ["chu-xuan", "xiao-honglu", "clone-chu-xuan", "adam", "nios", "armin-arlert", "tony-stark", "bruce-wayne-batman", "higuruma-hiromi"].includes(id) || member.energyContribution >= 2;
+    const protector = ["zheng-zha", "zhan-lan", "cheng-xiao", "liu-yu", "tanjiro-kamado", "naofumi-shield", "melina-kindling-maiden"].includes(id) || /醫療|支援|治療|守護|盾/.test(roleText);
+    const striker = ["zero", "zhao-yingkong", "ba-wang", "zhang-heng", "clone-zheng-zha", "dante-dmc5", "levi-ackerman", "satoru-gojo", "asta-anti-magic"].includes(id) || member.energyContribution <= 0;
+    if (kind === "rescue") {
+      if (protector) return { stress: -4, text: "同意先保人，壓力下降。" };
+      if (analyst) return { stress: 1, text: "接受救援，但要求保留撤退窗口。" };
+      return { stress: -1, text: "願意跟上救援節奏。" };
+    }
+    if (kind === "control") {
+      if (analyst) return { stress: -4, text: "支持先拆規則，壓力下降。" };
+      if (striker) return { stress: 1, text: "覺得節奏偏慢，但承認有用。" };
+      return { stress: -1, text: "接受穩妥推進。" };
+    }
+    if (striker) return { stress: -3, text: "認可高風險換高回報。" };
+    if (protector) return { stress: 5, text: "反對拿隊伍生命作籌碼。" };
+    if (analyst) return { stress: 3, text: "同意收益，但記下風險上限。" };
+    return { stress: 2, text: "對代價保持不安。" };
   }
 
   function defaultStoryImpact(scenario, route) {
@@ -1974,12 +2561,24 @@
     return [...new Set(items.filter(Boolean).map(String))];
   }
 
-  function applyEventEffect(state, event, scenario, effect) {
+  function applyEventEffect(state, event, scenario, effect, route = null, outcome = null, path = []) {
+    if (effect.type === "record-fate") {
+      return recordScenarioFate(state, scenario, route, outcome, effect, path);
+    }
+    if (effect.type === "recover-character") {
+      return recoverEventCharacter(state, effect);
+    }
+    if (effect.type === "awaken-character") {
+      return awakenEventCharacter(state, effect.characterId);
+    }
     if (effect.type === "recruit-hidden") {
-      return grantEventCharacter(state, event.hiddenCandidate || event.candidate, "隱藏角色");
+      return grantEventCharacter(state, event.hiddenCandidate || scenario?.hiddenProtagonistId || event.candidate, "隱藏角色");
     }
     if (effect.type === "recruit-candidate") {
       return grantEventCharacter(state, event.candidate || event.hiddenCandidate, "劇情人物");
+    }
+    if (effect.type === "recruit-character") {
+      return grantEventCharacter(state, effect.characterId, effect.label || "指定角色");
     }
     if (effect.type === "rare-card") {
       const card = chooseCardRewards(state, 1, "elite")[0];
@@ -2040,6 +2639,124 @@
     return null;
   }
 
+  function fatePressureDeltaFor(fateType) {
+    const type = String(fateType || "");
+    if (!type) return 2;
+    if (type.includes("system-hidden-rescue")) return -8;
+    if (type.includes("system-chu-layout") || type.includes("system-world-rewrite")) return -4;
+    if (type.includes("system-price-reward")) return type.includes("costly") ? 22 : 14;
+    if (["hidden-rescue", "rescue-support", "hidden-coordinate", "core-sealed", "injury-recovery"].includes(type)) return -8;
+    if (["core-power", "core-skill", "gray-boss-altered", "gray-shop-opened", "gray-world-state"].includes(type)) return -4;
+    if (["costly-hidden-rescue", "revival-price", "dark-return"].includes(type)) return 12;
+    if (type === "defeat-follow-up") return 10;
+    if (type.includes("curse")) return 18;
+    if (type.includes("blood")) return 20;
+    if (type.includes("risk") || type.includes("high-reward") || type.includes("score")) return 14;
+    if (type.includes("rescue")) return -5;
+    return 3;
+  }
+
+  function applyFatePressureChange(entry, title, fateType) {
+    const delta = fatePressureDeltaFor(fateType);
+    const total = clamp(Number(entry.fatePressure || 0) + delta, 0, 100);
+    entry.fatePressure = total;
+    entry.pressurePeak = Math.max(Number(entry.pressurePeak || 0), total);
+    entry.pressureLog = [...(entry.pressureLog || []), { title, delta, total }].slice(-6);
+    return { delta, total };
+  }
+
+  function recordScenarioFate(state, scenario, route, outcome, effect, path = []) {
+    const scenarioId = scenario?.id || effect.scenarioId || state.run?.scenarioId;
+    if (!scenarioId || !scenariosById[scenarioId]) return null;
+    const archive = normalizeFateArchive(state.campaign?.fateArchive || {});
+    const entry = archive[scenarioId] || normalizeFateEntry(scenarioId);
+    const routeId = route?.id || (path || []).join(">");
+    if (routeId && !entry.completedRoutes.includes(routeId)) entry.completedRoutes.push(routeId);
+    const fateType = String(effect.fateType || "");
+    const routeType = route?.routeType || fateType || "奇遇路線";
+    if (routeType && !entry.routeTypes.includes(routeType)) entry.routeTypes.push(routeType);
+    const title = outcome?.title || effect.title || "改命記錄";
+    const rank = Number(effect.endingRank || 0);
+    if (!entry.bestEnding || rank >= Number(entry.bestEnding.rank || 0)) {
+      entry.bestEnding = { title, routeType, fateType, rank };
+    }
+    if (fateType && !entry.fateTags.includes(fateType)) entry.fateTags.push(fateType);
+    entry.fateTags = entry.fateTags.slice(-16);
+    if (fateType.includes("hidden")) entry.hiddenRescued = true;
+    if (["rescue-mission", "revival-price", "injury-recovery", "dark-return"].includes(fateType)) entry.rescueCount += 1;
+    const pressureChange = applyFatePressureChange(entry, title, fateType);
+    entry.lastOutcomeTitle = title;
+    entry.lastRouteType = routeType;
+    if (outcome?.storyImpact && !entry.storyImpacts.includes(outcome.storyImpact)) entry.storyImpacts.push(outcome.storyImpact);
+    if (outcome?.worldState && !entry.worldStates.includes(outcome.worldState)) entry.worldStates.push(outcome.worldState);
+    entry.storyImpacts = entry.storyImpacts.slice(-8);
+    entry.worldStates = entry.worldStates.slice(-8);
+    archive[scenarioId] = entry;
+    state.campaign.fateArchive = archive;
+    const pressureText = pressureChange.delta === 0
+      ? ""
+      : `命運壓力 ${pressureChange.delta > 0 ? "+" : ""}${pressureChange.delta}（目前 ${pressureChange.total}/100）`;
+    return {
+      rewards: [`輪迴檔案：${title}`, pressureChange.delta < 0 ? pressureText : ""].filter(Boolean),
+      costs: pressureChange.delta > 0 ? [pressureText] : []
+    };
+  }
+
+  function recoverEventCharacter(state, effect) {
+    const characterId = effect.characterId;
+    const mission = effect.missionId ? normalizeRescueMissions(state.campaign?.rescueMissions || []).find((item) => item.id === effect.missionId) : null;
+    const member = state.party.find((item) => item.id === characterId);
+    const character = charactersById[characterId];
+    if (!character) return null;
+    if (member) {
+      member.recoveryStatus = null;
+      member.recoveryRunsRemaining = 0;
+      member.hp = member.maxHp;
+      member.stress = 20;
+      member.block = 0;
+      member.evade = 0;
+      if (mission?.returnMode) {
+        member.fateReturnMode = mission.returnMode;
+        member.fateReturnScenarioId = mission.scenarioId;
+        member.fateReturnNote = mission.note || "";
+      }
+    } else {
+      recruitCharacter(state, characterId);
+      const recruited = state.party.find((item) => item.id === characterId);
+      if (recruited && mission?.returnMode) {
+        recruited.fateReturnMode = mission.returnMode;
+        recruited.fateReturnScenarioId = mission.scenarioId;
+        recruited.fateReturnNote = mission.note || "";
+      }
+    }
+    if (effect.missionId) resolveRescueMission(state, effect.missionId, "resolved-rescued");
+    ensureFormation(state);
+    state.log = appendLog(state.log, `救援完成：${character.name}回到${teamLabel(state)}。`);
+    return { rewards: [`救援完成：${character.name}`] };
+  }
+
+  function awakenEventCharacter(state, characterId) {
+    const character = charactersById[characterId];
+    if (!character) return null;
+    const rewards = [];
+    state.permanentUpgrades.signatures = state.permanentUpgrades.signatures || [];
+    state.permanentUpgrades.bloodlines = state.permanentUpgrades.bloodlines || [];
+    if (!state.permanentUpgrades.signatures.includes(characterId)) {
+      state.permanentUpgrades.signatures.push(characterId);
+      rewards.push(`${character.name}專屬牌永久強化`);
+    }
+    if (bloodlinesByCharacterId[characterId] && !state.permanentUpgrades.bloodlines.includes(characterId)) {
+      state.permanentUpgrades.bloodlines.push(characterId);
+      rewards.push(`${character.name}血統解放`);
+    }
+    const member = state.party.find((item) => item.id === characterId);
+    if (member) {
+      member.stress = clamp(Number(member.stress || 0) + 18, 0, 100);
+      member.hp = Math.max(1, member.hp || Math.round(member.maxHp * 0.7));
+    }
+    return rewards.length ? { rewards } : { rewards: [`${character.name}已經完成覺醒`] };
+  }
+
   function grantEventCharacter(state, characterId, label = "角色") {
     if (characterId && charactersById[characterId] && !state.party.some((member) => member.id === characterId)) {
       recruitCharacter(state, characterId);
@@ -2047,6 +2764,68 @@
     }
     state.rewardPoints += 700;
     return { rewards: [`獎勵點 +700（${label}已持有或沒有候選人）`] };
+  }
+
+  function queueRescueMission(state, report, fate) {
+    if (!["dead", "injured", "lost"].includes(fate?.fate)) return;
+    const scenarioId = report?.scenarioId || state.run?.scenarioId;
+    if (!scenarioId || !scenariosById[scenarioId] || !charactersById[fate.characterId]) return;
+    state.campaign.rescueMissions = normalizeRescueMissions(state.campaign.rescueMissions);
+    const existing = state.campaign.rescueMissions.find((mission) => mission.status === "active" && mission.scenarioId === scenarioId && mission.characterId === fate.characterId);
+    if (existing) return;
+    const story = rescueMissionSeed(fate, report, scenariosById[scenarioId]);
+    state.campaign.rescueMissions.push({
+      id: uid(state, "rescue"),
+      scenarioId,
+      characterId: fate.characterId,
+      fate: fate.fate,
+      status: "active",
+      originOutcomeId: report?.outcomeId || "",
+      createdInScenarioName: report?.scenarioName || scenariosById[scenarioId]?.name || "",
+      routeType: story.routeType,
+      storyArc: story.storyArc,
+      returnMode: story.returnMode,
+      note: story.note
+    });
+  }
+
+  function rescueMissionSeed(fate, report, scenario) {
+    const name = fate.name || charactersById[fate.characterId]?.name || "隊員";
+    const scenarioName = report?.scenarioName || scenario?.name || "劇本";
+    if (fate.fate === "dead") {
+      return {
+        routeType: "復活代價線",
+        storyArc: "revival-price",
+        returnMode: "costly-revival",
+        note: `${name}在${scenarioName}死亡，主神留下可用詛咒與壓力交換的復活裂縫。`
+      };
+    }
+    if (fate.fate === "injured") {
+      return {
+        routeType: "重傷復健線",
+        storyArc: "injury-recovery",
+        returnMode: "field-rehab",
+        note: `${name}在${scenarioName}重傷，傷勢與劇本規則纏在一起，可透過復健線提前回歸。`
+      };
+    }
+    return {
+      routeType: "黑化歸來線",
+      storyArc: "dark-return",
+      returnMode: "hardened-return",
+      note: `${name}在${scenarioName}失散，訊號變得更強也更危險，可能帶著新力量回來。`
+    };
+  }
+
+  function resolveRescueMission(state, missionId, status = "resolved-rescued") {
+    state.campaign.rescueMissions = normalizeRescueMissions(state.campaign.rescueMissions).map((mission) => (
+      mission.id === missionId ? { ...mission, status } : mission
+    ));
+  }
+
+  function resolveRescueMissionsForCharacter(state, characterId, status = "resolved-paid") {
+    state.campaign.rescueMissions = normalizeRescueMissions(state.campaign.rescueMissions).map((mission) => (
+      mission.characterId === characterId && mission.status === "active" ? { ...mission, status } : mission
+    ));
   }
 
   function addRandomCurse(state) {
@@ -2134,8 +2913,75 @@
     return state;
   }
 
+  function buildDefeatReport(state) {
+    const scenario = scenariosById[state.run?.scenarioId] || null;
+    const outcome = chooseDefeatOutcome(state, scenario);
+    const fallback = {
+      id: "main-god-defeat",
+      title: "遠征失敗",
+      subtitle: "白光把隊伍拖回主神空間，但後果才剛開始。",
+      imageFiles: ["ui-main-god-nexus.png"],
+      lines: ["主神沒有解釋，只有結算。"],
+      fateWeights: { dead: 8, injured: 35, lost: 12, escaped: 45 }
+    };
+    const selected = outcome || fallback;
+    const imageFile = randomChoice(state, selected.imageFiles || []) || fallback.imageFiles[0];
+    const line = randomChoice(state, selected.lines || []) || fallback.lines[0];
+    const fates = getActiveParty(state).map((member) => {
+      const fate = rollDefeatFate(state, selected);
+      const fateMeta = defeatFates[fate] || { label: fate, text: "後果未明。", tone: "escape" };
+      return {
+        characterId: member.id,
+        name: member.name,
+        fate,
+        label: fateMeta.label,
+        text: fateMeta.text,
+        tone: fateMeta.tone || fate
+      };
+    });
+    return {
+      kind: "defeat-report",
+      outcomeId: selected.id,
+      title: selected.title,
+      subtitle: selected.subtitle,
+      line,
+      imageFile,
+      scenarioId: scenario?.id || state.run?.scenarioId || null,
+      scenarioName: scenario?.name || "未知劇本",
+      superHard: Boolean(isSuperHardScenario(scenario) || state.run?.dynamicDifficulty?.mode === "super-hard"),
+      fates
+    };
+  }
+
+  function chooseDefeatOutcome(state, scenario) {
+    if (!defeatOutcomes.length) return null;
+    const superHard = Boolean(isSuperHardScenario(scenario) || state.run?.dynamicDifficulty?.mode === "super-hard");
+    return weightedPick(state, defeatOutcomes, (outcome) => Number((superHard ? outcome.superHardWeight : outcome.weight) ?? outcome.weight ?? 1));
+  }
+
+  function rollDefeatFate(state, outcome) {
+    const weights = outcome?.fateWeights || {};
+    const entries = ["dead", "injured", "lost", "escaped"].map((id) => ({ id, weight: Number(weights[id] || 0) }));
+    return weightedPick(state, entries, (entry) => entry.weight)?.id || "escaped";
+  }
+
+  function weightedPick(state, items, weightFn) {
+    const weighted = (items || [])
+      .map((item) => ({ item, weight: Math.max(0, Number(weightFn(item) || 0)) }))
+      .filter((entry) => entry.weight > 0);
+    if (!weighted.length) return items?.[0] || null;
+    const total = weighted.reduce((sum, entry) => sum + entry.weight, 0);
+    let roll = nextRandom(state) * total;
+    for (const entry of weighted) {
+      roll -= entry.weight;
+      if (roll <= 0) return entry.item;
+    }
+    return weighted.at(-1).item;
+  }
+
   function returnAfterDefeat(state) {
     const next = clone(state);
+    const report = next.pending?.report || buildDefeatReport(next);
     if (next.run) {
       next.deck = next.deck.filter((entry) => entry.acquiredRunId !== next.run.id || cardsById[entry.cardId].category === "curse");
       const lostEquipment = new Set(next.equipmentInventory.filter((entry) => entry.acquiredRunId === next.run.id).map((entry) => entry.instanceId));
@@ -2148,11 +2994,66 @@
     }
     next.rewardPoints = Math.floor(next.rewardPoints * 0.8);
     next.log = appendLog(next.log, "遠征失敗：本次普通卡牌、裝備與暫時強化已失去。");
-    return returnToHubWithRepair(next);
+    const repaired = returnToHubWithRepair(next);
+    return applyDefeatReportConsequences(repaired, report);
+  }
+
+  function applyDefeatReportConsequences(state, report) {
+    if (!report?.fates?.length) return state;
+    const fateById = new Map(report.fates.map((item) => [item.characterId, item]));
+    const summaries = [];
+    state.party = state.party.map((member) => {
+      const result = fateById.get(member.id);
+      if (!result) return member;
+      summaries.push(`${result.name}${result.label}`);
+      if (result.fate === "dead") {
+        queueRescueMission(state, report, result);
+        return { ...member, active: false, recoveryStatus: "dead", recoveryRunsRemaining: 0, hp: 0, stress: 100, block: 0, evade: 0 };
+      }
+      if (result.fate === "injured") {
+        queueRescueMission(state, report, result);
+        return { ...member, active: false, recoveryStatus: "injured", recoveryRunsRemaining: 2, hp: Math.max(1, Math.round(member.maxHp * 0.35)), stress: clamp(member.stress + 35, 0, 100), block: 0, evade: 0 };
+      }
+      if (result.fate === "lost") {
+        queueRescueMission(state, report, result);
+        return { ...member, active: false, recoveryStatus: "lost", recoveryRunsRemaining: 3, hp: Math.max(1, Math.round(member.maxHp * 0.5)), stress: clamp(member.stress + 45, 0, 100), block: 0, evade: 0 };
+      }
+      return { ...member, recoveryStatus: null, recoveryRunsRemaining: 0, hp: Math.max(1, member.hp), stress: clamp(member.stress + 15, 0, 100), block: 0, evade: 0 };
+    });
+    state.lastDefeatReport = report;
+    recordDefeatReportStory(state, report);
+    ensureFormation(state);
+    state.log = appendLog(state.log, `失敗結算：${summaries.join("、")}。`);
+    return state;
+  }
+
+  function recordDefeatReportStory(state, report) {
+    const scenarioId = report?.scenarioId || state.run?.scenarioId;
+    if (!scenarioId || !scenariosById[scenarioId]) return;
+    const archive = normalizeFateArchive(state.campaign?.fateArchive || {});
+    const entry = archive[scenarioId] || normalizeFateEntry(scenarioId);
+    const routeId = `defeat-${report.outcomeId || "unknown"}-${entry.completedRoutes.length}`;
+    if (!entry.completedRoutes.includes(routeId)) entry.completedRoutes.push(routeId);
+    if (!entry.routeTypes.includes("失敗後續")) entry.routeTypes.push("失敗後續");
+    const title = report.title || "失敗後續";
+    entry.lastOutcomeTitle = title;
+    entry.lastRouteType = "失敗後續";
+    if (!entry.fateTags.includes("defeat-follow-up")) entry.fateTags.push("defeat-follow-up");
+    applyFatePressureChange(entry, title, "defeat-follow-up");
+    const fates = (report.fates || []).map((fate) => `${fate.name}${fate.label}`).join("、");
+    const impact = fates ? `${scenariosById[scenarioId].name}失敗後續：${fates}。` : `${scenariosById[scenarioId].name}留下失敗後續。`;
+    const worldState = report.line || "這次失敗沒有被抹掉，而是變成下一次重進劇本時可追的線索。";
+    if (!entry.storyImpacts.includes(impact)) entry.storyImpacts.push(impact);
+    if (!entry.worldStates.includes(worldState)) entry.worldStates.push(worldState);
+    entry.storyImpacts = entry.storyImpacts.slice(-8);
+    entry.worldStates = entry.worldStates.slice(-8);
+    archive[scenarioId] = entry;
+    state.campaign.fateArchive = archive;
   }
 
   function returnToHubWithRepair(state) {
-    const repairMembers = state.party.filter((member) => member.id !== PLAYER_ID);
+    advanceRecoveryTimers(state);
+    const repairMembers = state.party.filter((member) => member.id !== PLAYER_ID && !isMemberUnavailable(member));
     const missingHp = repairMembers.reduce((sum, member) => sum + Math.max(0, member.maxHp - member.hp), 0);
     const stress = repairMembers.reduce((sum, member) => sum + member.stress, 0);
     const downed = repairMembers.filter((member) => member.hp <= 0).length;
@@ -2160,7 +3061,12 @@
     const paid = Math.min(state.rewardPoints, fullCost);
     const ratio = fullCost > 0 ? paid / fullCost : 1;
     state.rewardPoints -= paid;
-    state.party = state.party.map((member) => member.id === PLAYER_ID ? { ...member, active: false, block: 0, evade: 0 } : ({
+    state.party = state.party.map((member) => member.id === PLAYER_ID ? { ...member, active: false, block: 0, evade: 0 } : isMemberUnavailable(member) ? ({
+      ...member,
+      active: false,
+      block: 0,
+      evade: 0
+    }) : ({
       ...member,
       hp: member.hp <= 0 ? Math.max(1, Math.round(member.maxHp * ratio)) : Math.min(member.maxHp, Math.round(member.hp + (member.maxHp - member.hp) * ratio)),
       stress: Math.max(0, Math.round(member.stress * (1 - ratio))),
@@ -2180,11 +3086,57 @@
     return state;
   }
 
+  function advanceRecoveryTimers(state) {
+    state.party = state.party.map((member) => {
+      const status = memberRecoveryStatus(member);
+      if (!status || status === "dead") return member;
+      const remaining = Math.max(0, Math.floor(Number(member.recoveryRunsRemaining || 0)) - 1);
+      if (remaining > 0) return { ...member, recoveryRunsRemaining: remaining, active: false };
+      const label = defeatFates[status]?.label || "傷勢";
+      state.log = appendLog(state.log, `${member.name}已脫離${label}狀態，可以重新整備。`);
+      return {
+        ...member,
+        recoveryStatus: null,
+        recoveryRunsRemaining: 0,
+        hp: Math.max(1, Math.round(member.maxHp * 0.7)),
+        stress: status === "lost" ? 40 : 20,
+        active: false,
+        block: 0,
+        evade: 0
+      };
+    });
+  }
+
+  function recoverCharacter(state, characterId) {
+    const next = clone(state);
+    if (next.screen !== "hub") return next;
+    const member = next.party.find((item) => item.id === characterId);
+    const status = memberRecoveryStatus(member);
+    if (!member || !status) return next;
+    const cost = defeatRecoveryCosts[status] || { rewardPointCost: 0, sideStoryCost: 0 };
+    if (!spendResourceCost(next, cost)) return next;
+    const action = status === "dead" ? "復活" : status === "lost" ? "追蹤回收" : "主神治療";
+    member.recoveryStatus = null;
+    member.recoveryRunsRemaining = 0;
+    member.hp = member.maxHp;
+    member.stress = status === "dead" ? 25 : status === "lost" ? 35 : 10;
+    member.block = 0;
+    member.evade = 0;
+    member.fateReturnMode = "paid-recovery";
+    member.fateReturnScenarioId = "";
+    member.fateReturnNote = `${member.name}透過主神資源修復回歸。`;
+    resolveRescueMissionsForCharacter(next, characterId, "resolved-paid");
+    next.log = appendLog(next.log, `${action}完成：${member.name}可以重新加入出戰。`);
+    ensureFormation(next);
+    return next;
+  }
+
   function toggleActive(state, characterId) {
     const next = clone(state);
     if (next.screen !== "hub") return next;
     const target = next.party.find((member) => member.id === characterId);
     if (!target || target.id === PLAYER_ID) return next;
+    if (isMemberUnavailable(target)) return next;
     const count = getActiveParty(next).length;
     if (target.active && count <= 3) return next;
     if (!target.active && count >= 6) return next;
@@ -2221,7 +3173,8 @@
     if (next.screen !== "hub") return next;
     const item = shopById[shopId];
     const bought = next.purchased[shopId] || 0;
-    if (!item || next.rewardPoints < item.rewardPointCost || next.sideStories < Number(item.sideStoryCost || 0)) return next;
+    const rewardPointCost = discountedShopRewardPointCost(next, item?.rewardPointCost || 0);
+    if (!item || next.rewardPoints < rewardPointCost || next.sideStories < Number(item.sideStoryCost || 0)) return next;
     const card = item.kind === "card" ? cardsById[item.itemId] : null;
     const repeatableCard = item.kind === "card" && isRepeatableCard(item.itemId);
     const ownedCard = item.kind === "card" ? findOwnedCardEntry(next, item.itemId) : null;
@@ -2229,7 +3182,7 @@
     if ((item.kind !== "card" || repeatableCard) && bought >= item.stock) return next;
     if (maxedUniqueCard) return next;
     if (item.kind === "equipment" && next.equipmentInventory.some((entry) => entry.equipmentId === item.itemId)) return next;
-    next.rewardPoints -= item.rewardPointCost;
+    next.rewardPoints -= rewardPointCost;
     next.sideStories -= Number(item.sideStoryCost || 0);
     next.purchased[shopId] = bought + 1;
     if (item.kind === "card") grantOrUpgradeCard(next, item.itemId, null);
@@ -2291,6 +3244,15 @@
       state.upgradeTokens -= 1;
       return true;
     }
+    if (state.rewardPoints < rewardPointCost) return false;
+    if (state.sideStories < sideStoryCost) return false;
+    state.rewardPoints -= rewardPointCost;
+    state.sideStories -= sideStoryCost;
+    return true;
+  }
+
+  function spendResourceCost(state, cost) {
+    const { rewardPointCost, sideStoryCost } = normalizeUpgradeCost(cost);
     if (state.rewardPoints < rewardPointCost) return false;
     if (state.sideStories < sideStoryCost) return false;
     state.rewardPoints -= rewardPointCost;
@@ -2447,6 +3409,16 @@
       const previousMaxHp = Number(member.maxHp || desiredMaxHp);
       const delta = desiredMaxHp - previousMaxHp;
       member.maxHp = desiredMaxHp;
+      if (memberRecoveryStatus(member) === "dead") {
+        member.hp = 0;
+        member.active = false;
+        return;
+      }
+      if (isMemberUnavailable(member)) {
+        member.hp = clamp(Number(member.hp || Math.round(desiredMaxHp * 0.5)), 1, desiredMaxHp);
+        member.active = false;
+        return;
+      }
       member.hp = Math.max(1, Math.min(desiredMaxHp, Number(member.hp || desiredMaxHp) + Math.max(0, delta)));
     });
     return state;
@@ -2545,8 +3517,35 @@
   function isCardRewardAvailable(state, cardId) {
     const card = cardsById[cardId];
     if (!card || card.category !== "general") return false;
+    if (!isCardAllowedForScenarioReward(state, card)) return false;
     if (isRepeatableCard(cardId)) return true;
     return !isUniqueCardMaxed(state, cardId);
+  }
+
+  function cardRewardSourceId(card) {
+    return card?.sourceId || BASE_REWARD_CARD_SOURCE_ID;
+  }
+
+  function scenarioCardRewardSourceIds(state) {
+    const scenario = scenariosById[state?.run?.scenarioId];
+    const sourceIds = new Set([BASE_REWARD_CARD_SOURCE_ID]);
+    if (!scenario) return sourceIds;
+    const explicitSourceIds = [
+      ...(Array.isArray(scenario.cardRewardSourceIds) ? scenario.cardRewardSourceIds : []),
+      ...(Array.isArray(scenario.cardSourceIds) ? scenario.cardSourceIds : [])
+    ];
+    explicitSourceIds.filter(Boolean).forEach((id) => sourceIds.add(String(id)));
+    const scenarioSourceIds = new Set([scenario.id, scenario.sourceId, scenario.cardSourceId].filter(Boolean).map(String));
+    const scenarioSourceNames = new Set([scenario.name, scenario.sourceName].filter(Boolean).map(String));
+    for (const source of data.cardSources || []) {
+      if (!source?.id) continue;
+      if (scenarioSourceIds.has(source.id) || scenarioSourceNames.has(source.name)) sourceIds.add(source.id);
+    }
+    return sourceIds;
+  }
+
+  function isCardAllowedForScenarioReward(state, card) {
+    return scenarioCardRewardSourceIds(state).has(cardRewardSourceId(card));
   }
 
   function grantOrUpgradeCard(state, cardId, acquiredRunId) {
@@ -2636,23 +3635,28 @@
     const customTurnStress = customEffectTotal(state, "turnStressAll");
     const customTurnReduceStress = customEffectTotal(state, "turnReduceStressAll");
     const customOwnerHeal = customEffectTotal(state, "turnHealOwner");
+    const teamTurnBlock = teamUpgradeEffectTotal(state, "turnBlockAll");
+    const teamTurnHeal = teamUpgradeEffectTotal(state, "turnHealAll");
+    const teamTurnReduceStress = teamUpgradeEffectTotal(state, "turnReduceStressAll");
     const temporaryBlock = state.turn === 1 ? temporaryPowerAmount(state, "openingBlock") : 0;
     const customOpeningBlock = state.turn === 1 ? customEffectTotal(state, "openingBlockAll") : 0;
-    if (turnBlock || temporaryBlock || customTurnBlock || customOpeningBlock) affectAliveActive(state, (member) => ({ ...member, block: member.block + turnBlock + temporaryBlock + customTurnBlock + customOpeningBlock }));
+    const teamOpeningBlock = state.turn === 1 ? teamUpgradeEffectTotal(state, "openingBlockAll") : 0;
+    if (turnBlock || temporaryBlock || customTurnBlock || customOpeningBlock || teamTurnBlock || teamOpeningBlock) affectAliveActive(state, (member) => ({ ...member, block: member.block + turnBlock + temporaryBlock + customTurnBlock + customOpeningBlock + teamTurnBlock + teamOpeningBlock }));
     if (stressRelief) affectAliveActive(state, (member) => ({ ...member, stress: Math.max(0, member.stress - stressRelief) }));
     if (customTurnStress) affectAliveActive(state, (member) => ({ ...member, stress: clamp(member.stress + customTurnStress, 0, 100) }));
     if (customTurnReduceStress) affectAliveActive(state, (member) => ({ ...member, stress: Math.max(0, member.stress - customTurnReduceStress) }));
+    if (teamTurnReduceStress) affectAliveActive(state, (member) => ({ ...member, stress: Math.max(0, member.stress - teamTurnReduceStress) }));
     if (customTurnHeal) affectAliveActive(state, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + customTurnHeal) }));
+    if (teamTurnHeal) affectAliveActive(state, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + teamTurnHeal) }));
     if (customOwnerHeal) affectAliveActive(state, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + customOwnerHeal) }));
     if (turnHealLowest) {
       const lowest = [...getAliveActiveParty(state)].sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0];
       if (lowest) updateMember(state, lowest.id, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + turnHealLowest) }));
     }
     if (state.turn === 1) {
-      const openingEvade = equipmentEffectTotal(state, "openingEvade") + customEffectTotal(state, "openingEvade");
+      const openingEvade = equipmentEffectTotal(state, "openingEvade") + customEffectTotal(state, "openingEvade") + teamUpgradeEffectTotal(state, "openingEvade");
       if (openingEvade) affectAliveActive(state, (member) => ({ ...member, evade: Number(member.evade || 0) + openingEvade }));
     }
-    if (state.turn === 1 && state.permanentUpgrades.team.includes("team-opening-block")) affectAliveActive(state, (member) => ({ ...member, block: member.block + 4 }));
   }
 
   function applyBondTurnStartEffects(state) {
@@ -2814,6 +3818,37 @@
     if (card.type === "attack") {
       const heal = customEffectTotal(state, "healOwnerOnAttack");
       if (heal) affectAliveActive(state, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + heal) }));
+    }
+  }
+
+  function applyTeamCardEffects(state, instance, card, targetEnemyUid) {
+    const currentCardNumber = state.turnStats.cardsPlayed + 1;
+    const target = state.activeEnemies.find((enemy) => enemy.uid === targetEnemyUid) || getLivingEnemies(state)[0];
+    if (card.type === "tactic" && !state.turnStats.teamFirstTacticUsed) {
+      const draw = teamUpgradeEffectTotal(state, "firstTacticDraw");
+      const energy = teamUpgradeEffectTotal(state, "firstTacticEnergy");
+      const weakAll = teamUpgradeEffectTotal(state, "firstTacticWeakAll");
+      if (draw) drawCards(state, draw);
+      if (energy) state.energy += energy;
+      if (weakAll) getLivingEnemies(state).forEach((enemy) => addEnemyStatus(state, enemy.uid, "weak", weakAll));
+      if (draw || energy || weakAll) {
+        state.turnStats.teamFirstTacticUsed = true;
+        state.log = appendLog(state.log, "隊伍永久戰術循環啟動。");
+      }
+    }
+    if (currentCardNumber === 2) {
+      const damage = teamUpgradeEffectTotal(state, "secondCardDamage");
+      if (damage && target) damageEnemy(state, target.uid, damage, "隊伍永久追擊", { pierce: true });
+    }
+    if (currentCardNumber === 5) {
+      const draw = teamUpgradeEffectTotal(state, "fifthCardDraw");
+      const healAll = teamUpgradeEffectTotal(state, "fifthCardHealAll");
+      const blockAll = teamUpgradeEffectTotal(state, "fifthCardBlockAll");
+      const damageAll = teamUpgradeEffectTotal(state, "fifthCardDamageAll");
+      if (draw) drawCards(state, draw);
+      if (healAll) affectAliveActive(state, (member) => ({ ...member, hp: Math.min(member.maxHp, member.hp + healAll) }));
+      if (blockAll) affectAliveActive(state, (member) => ({ ...member, block: member.block + blockAll }));
+      if (damageAll) getLivingEnemies(state).forEach((enemy) => damageEnemy(state, enemy.uid, damageAll, "隊伍永久連段", { pierce: true }));
     }
   }
 
@@ -3032,13 +4067,13 @@
   }
 
   function getActiveParty(state) {
-    return state.party.filter((member) => member.id !== PLAYER_ID && member.active);
+    return state.party.filter((member) => member.id !== PLAYER_ID && member.active && !isMemberUnavailable(member));
   }
 
   function getLeaderId(state) {
-    return state.party.find((member) => member.id === "zheng-zha" && member.active)?.id
+    return state.party.find((member) => member.id === "zheng-zha" && member.active && !isMemberUnavailable(member))?.id
       || getActiveParty(state)[0]?.id
-      || state.party.find((member) => member.id !== PLAYER_ID)?.id
+      || state.party.find((member) => member.id !== PLAYER_ID && !isMemberUnavailable(member))?.id
       || null;
   }
 
@@ -3047,12 +4082,12 @@
   }
 
   function isAlive(member) {
-    return member.hp > 0;
+    return member.hp > 0 && !isMemberUnavailable(member);
   }
 
   function isCharacterAliveActive(state, id) {
     const member = state.party.find((item) => item.id === id);
-    return Boolean(member && member.active && member.hp > 0);
+    return Boolean(member && member.active && member.hp > 0 && !isMemberUnavailable(member));
   }
 
   function calculateEnergy(state) {
@@ -3079,7 +4114,8 @@
     const membersOk = (bond.members || []).every((id) => activeIds.has(id));
     const anyMembersOk = !bond.anyMembers || bond.anyMembers.some((id) => activeIds.has(id));
     const factionOk = !bond.faction || active.filter((member) => member.factionId === bond.faction).length >= Number(bond.count || 1);
-    return membersOk && anyMembersOk && factionOk;
+    const sourceMembersOk = !bond.sourceMembers || active.filter((member) => bond.sourceMembers.includes(member.id)).length >= Number(bond.count || 1);
+    return membersOk && anyMembersOk && factionOk && sourceMembersOk;
   }
 
   function bondEffectTotal(state, effect) {
@@ -3114,12 +4150,19 @@
     return amount;
   }
 
+  function teamUpgradeEffectTotal(state, effect) {
+    return (state.permanentUpgrades?.team || []).reduce((sum, upgradeId) => {
+      const upgrade = permanentUpgradesById[upgradeId];
+      return sum + Number(upgrade?.effects?.[effect] || 0);
+    }, 0);
+  }
+
   function temporaryPowerAmount(state, effect) {
     return (state.run?.temporaryPowers || []).filter((power) => power.effect === effect).reduce((sum, power) => sum + power.amount, 0);
   }
 
   function healActive(state, percent, stressRelief) {
-    state.party = state.party.map((member) => member.active ? {
+    state.party = state.party.map((member) => member.active && !isMemberUnavailable(member) ? {
       ...member,
       hp: Math.min(member.maxHp, member.hp + Math.ceil(member.maxHp * percent)),
       stress: Math.max(0, member.stress - stressRelief)
@@ -3127,7 +4170,7 @@
   }
 
   function affectAliveActive(state, transform) {
-    state.party = state.party.map((member) => member.active && member.hp > 0 ? transform(member) : member);
+    state.party = state.party.map((member) => member.active && member.hp > 0 && !isMemberUnavailable(member) ? transform(member) : member);
   }
 
   function updateMember(state, id, transform) {
@@ -3153,6 +4196,8 @@
       firstPassivePierceUsed: false,
       firstPassiveBurnUsed: false,
       firstBondPierceUsed: false,
+      teamFirstAttackPierceUsed: false,
+      teamFirstTacticUsed: false,
       firstGuardWeakUsed: false,
       equipmentFirstAttackUsed: false,
       equipmentFirstPierceUsed: false,
@@ -3170,45 +4215,15 @@
     if (active.length > 6) active.slice(6).forEach((member) => { member.active = false; });
     const minimum = state.campaign?.tutorialComplete ? 3 : 1;
     active = getActiveParty(state);
-    state.party.filter((member) => member.id !== PLAYER_ID && !member.active).slice(0, Math.max(0, minimum - active.length)).forEach((member) => { member.active = true; });
+    state.party
+      .filter((member) => member.id !== PLAYER_ID && !member.active && !isMemberUnavailable(member))
+      .slice(0, Math.max(0, minimum - active.length))
+      .forEach((member) => { member.active = true; });
     state.party.filter((member) => member.id === PLAYER_ID).forEach((member) => { member.active = false; });
   }
 
   function reconcileCampaignUnlocks(campaign) {
-    campaign.unlockedScenarios = Array.isArray(campaign.unlockedScenarios) ? campaign.unlockedScenarios : ["tutorial"];
-    campaign.completedScenarios = Array.isArray(campaign.completedScenarios) ? campaign.completedScenarios : [];
-    const unlock = (id) => {
-      if (!campaign.unlockedScenarios.includes(id)) campaign.unlockedScenarios.push(id);
-    };
-    if (campaign.completedScenarios.includes("alien")) unlock("juon");
-    if (campaign.completedScenarios.includes("juon")) unlock("mummy-curse");
-    if (campaign.completedScenarios.includes("mummy-curse")) unlock("jurassic-island");
-    if (campaign.completedScenarios.includes("jurassic-island")) unlock("abyssal-ark");
-    if (campaign.completedScenarios.includes("abyssal-ark")) unlock("evernight-castle");
-    if (campaign.completedScenarios.includes("evernight-castle")) unlock("demon-frontier");
-    if (campaign.completedScenarios.includes("demon-frontier")) unlock("main-god-trial");
-    if (campaign.completedScenarios.includes("main-god-trial")) unlock("starship-troopers");
-    if (campaign.completedScenarios.includes("starship-troopers")) unlock("avp-pyramid");
-    if (campaign.completedScenarios.includes("avp-pyramid")) unlock("nightmare-elm");
-    if (campaign.completedScenarios.includes("nightmare-elm")) unlock("lotr-war");
-    if (campaign.completedScenarios.includes("lotr-war")) unlock("rumbling-finale");
-    if (campaign.completedScenarios.includes("rumbling-finale")) unlock("infinity-castle");
-    if (campaign.completedScenarios.includes("infinity-castle")) unlock("naruto-final-valley");
-    if (campaign.completedScenarios.includes("naruto-final-valley")) unlock("bleach-false-karakura");
-    if (campaign.completedScenarios.includes("bleach-false-karakura")) unlock("gintama-yoshiwara");
-    if (campaign.completedScenarios.includes("gintama-yoshiwara")) unlock("gintama-final-war");
-    if (campaign.completedScenarios.includes("gintama-final-war")) unlock("avengers-new-york");
-    if (campaign.completedScenarios.includes("avengers-new-york")) unlock("batman-v-superman");
-    if (campaign.completedScenarios.includes("batman-v-superman")) unlock("devil-may-cry-5");
-    if (campaign.completedScenarios.includes("devil-may-cry-5")) unlock("final-destination");
-    if (campaign.completedScenarios.includes("final-destination")) unlock("jinyong-heroic-peak");
-    if (campaign.completedScenarios.includes("jinyong-heroic-peak")) unlock("pacific-rim-breach");
-    if (campaign.completedScenarios.includes("pacific-rim-breach")) unlock("fury-road-war-rig");
-    if (campaign.completedScenarios.includes("fury-road-war-rig")) unlock("resident-evil-6-c-virus");
-    if (campaign.completedScenarios.includes("resident-evil-6-c-virus")) unlock("elden-ring-hell-run");
-    if (campaign.completedScenarios.includes("elden-ring-hell-run")) unlock("jujutsu-kaisen-shibuya");
-    if (campaign.completedScenarios.includes("jujutsu-kaisen-shibuya")) unlock("fullmetal-alchemist-finale");
-    if (campaign.completedScenarios.includes("batman-v-superman")) campaign.infiniteUnlocked = true;
+    syncScenarioProgressionUnlocks(campaign);
   }
 
   function clearCombatPiles(state) {
@@ -3283,6 +4298,13 @@
     beginScenario,
     randomNormalScenarioPool,
     dynamicDifficultyPreview,
+    scenarioProgressionStatus,
+    scenarioFateStatus,
+    scenarioFatePressure,
+    rescueMissionsForScenario,
+    shopFateDiscountRate,
+    discountedShopRewardPointCost,
+    scenarioDifficultyLabel,
     isSuperHardScenario,
     chooseRecruit,
     continueScenarioIntro,
@@ -3299,8 +4321,10 @@
     eventOutcomeCount: Object.keys(eventOutcomeByFinalChoice).length + eventBranchPool.length + Object.values(scenarioEventRoutes).reduce((sum, routes) => sum + routes.length, 0),
     eventBranchPoolCount: eventBranchPool.length,
     scenarioEventRouteCount: Object.values(scenarioEventRoutes).reduce((sum, routes) => sum + routes.length, 0),
+    systemEncounterRouteCount: Object.values(systemEncounterRoutes).reduce((sum, routes) => sum + routes.length, 0),
     campAction,
     returnAfterDefeat,
+    recoverCharacter,
     toggleActive,
     setHubTab,
     equipItem,
@@ -3327,6 +4351,8 @@
     getCardCost,
     getActiveParty,
     getAliveActiveParty,
+    memberRecoveryStatus,
+    isMemberUnavailable,
     getLivingEnemies,
     getEnemyIntent,
     getActiveBonds,
@@ -3351,6 +4377,9 @@
     shopById,
     bloodlinesByCharacterId,
     bondsById,
+    defeatOutcomes,
+    defeatFates,
+    defeatRecoveryCosts,
     characterQuoteLines,
     customTagsById,
     customMutationsById

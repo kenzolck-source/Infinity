@@ -1819,6 +1819,378 @@
     }
   ];
 
+  const genshinLiyueCharacters = [
+    { id: "zhongli-morax", name: "鍾離", role: "岩王帝君", faction: "原神·璃月", factionId: "genshin-liyue", maxHp: 138, stress: 4, energyContribution: -1, passiveId: "turn-block", passiveText: "隱藏人物。回合開始全隊獲得 3 護甲；契約與岩脊會把戰場壓成可守的形狀。", signatureCardId: "zhongli-planet-befall", unlock: "hidden-liyue-contract", hidden: true },
+    { id: "ningguang", name: "凝光", role: "天權星", faction: "原神·璃月", factionId: "genshin-liyue", maxHp: 88, stress: 6, energyContribution: 2, passiveId: "opening-forecast", passiveText: "每場戰鬥第一回合額外抽 2 張牌。群玉閣的情報會比敵人的第一步更早落下。", signatureCardId: "ningguang-jade-chamber", unlock: "genshin-liyue-childe" },
+    { id: "keqing", name: "刻晴", role: "玉衡星雷楔劍士", faction: "原神·璃月", factionId: "genshin-liyue", maxHp: 94, stress: 9, energyContribution: 0, passiveId: "second-card-strike", passiveText: "每回合打出第二張牌時，追加 5 點傷害。雷楔落位後，第二劍才是真正的切入。", signatureCardId: "keqing-stellar-restoration", unlock: "genshin-liyue-childe" },
+    { id: "ganyu", name: "甘雨", role: "月海亭麒麟射手", faction: "原神·璃月", factionId: "genshin-liyue", maxHp: 82, stress: 7, energyContribution: 1, passiveId: "first-heavy-attack", passiveText: "每回合第一張費用 2 以上的攻擊牌傷害 +6。霜華箭會把遠處的破綻凍成靶心。", signatureCardId: "ganyu-frostflake-arrow", unlock: "genshin-liyue-childe" },
+    { id: "xiao-genshin", name: "魈", role: "護法夜叉", faction: "原神·璃月", factionId: "genshin-liyue", maxHp: 108, stress: 18, energyContribution: 0, passiveId: "opening-overdrive", passiveText: "每場戰鬥第一回合額外獲得 2 能量，但自身壓力 +8。靖妖儺舞會把戰場直接壓進高空。", signatureCardId: "xiao-bane-of-all-evil", unlock: "genshin-liyue-childe" },
+    { id: "beidou", name: "北斗", role: "南十字船長", faction: "原神·璃月", factionId: "genshin-liyue", maxHp: 110, stress: 13, energyContribution: 0, passiveId: "front-guard", passiveText: "回合開始時，前排與生命比例最低的隊員獲得 4 護甲。斫雷會先替隊伍吃下最重的一擊。", signatureCardId: "beidou-tidecaller", unlock: "genshin-liyue-childe" },
+    { id: "xiangling", name: "香菱", role: "萬民堂火輪廚師", faction: "原神·璃月", factionId: "genshin-liyue", maxHp: 84, stress: 10, energyContribution: 1, passiveId: "first-attack-burn", passiveText: "每回合第一張攻擊牌使命中目標燃燒 4 點。鍋巴和旋火輪會把退路也烤成火線。", signatureCardId: "xiangling-pyronado-guoba", unlock: "genshin-liyue-childe" }
+  ];
+  characters.push(...genshinLiyueCharacters);
+
+  customTags.push(
+    { id: "geo-adeptus-contract", name: "岩神契約", family: "元素力", tier: "A", cost: 8200, art: "./src/assets/generated/skill-zhongli-planet-befall.png", text: "開場護甲 +12；每回合第一張戰術牌使所有敵人虛弱 3 點。", effects: { openingBlockAll: 12, firstTacticWeakAll: 3 } },
+    { id: "hydro-fatui-delusion", name: "水雷邪眼", family: "元素力", tier: "A", cost: 8000, art: "./src/assets/generated/enemy-genshin-childe-foul-legacy.png", text: "攻擊牌傷害 +2；第一張攻擊牌穿甲並施加 4 中毒。", effects: { attackBonus: 2, firstAttackPierce: 1, firstAttackPoison: 4 } },
+    { id: "liyue-qixing-command", name: "璃月七星調度", family: "元素力", tier: "B", cost: 3600, art: "./src/assets/generated/skill-ningguang-jade-chamber.png", text: "開場抽 1 張牌；回合開始全隊獲得 2 護甲。", effects: { openingDraw: 1, turnBlockAll: 2 } }
+  );
+  customMutations.push(
+    { id: "geo-qi-contract", name: "岩契內息", requiredTags: ["geo-adeptus-contract", "inner-qi-breath"], art: "./src/assets/generated/skill-zhongli-planet-befall.png", text: "開場護甲 +16；回合開始全隊恢復 2 生命並獲得 4 護甲。", effects: { openingBlockAll: 16, turnHealAll: 2, turnBlockAll: 4 } },
+    { id: "hydro-blackfire-delusion", name: "邪眼黑火", requiredTags: ["hydro-fatui-delusion", "black-flame-seed"], art: "./src/assets/generated/enemy-genshin-childe-foul-legacy.png", text: "攻擊同時附加燃燒與中毒；攻擊帶狀態敵人時傷害 +7。", effects: { attackBurn: 3, attackPoison: 3, statusExploitBonus: 7 } },
+    { id: "qixing-sharingan-board", name: "七星預判棋盤", requiredTags: ["liyue-qixing-command", "sharingan-prediction"], art: "./src/assets/generated/skill-ningguang-jade-chamber.png", text: "開場抽 2 張牌；第一張戰術牌使所有敵人虛弱 5 點。", effects: { openingDraw: 2, firstTacticWeakAll: 5 } }
+  );
+
+  cards.push(
+    { id: "zhongli-planet-befall", name: "鍾離·天星墜落", category: "signature", type: "attack", rarity: "signature", cost: 3, damageAll: 42, stunTarget: 1, blockAll: 20, weakAll: 6, text: "天星砸入戰場，對所有敵人造成 42 傷害並虛弱 6 點，封鎖目標下一次行動，全隊獲得 20 護甲。", upgrade: { damageAll: 58, blockAll: 30, weakAll: 9 }, tags: ["鍾離", "岩元素"] },
+    { id: "ningguang-jade-chamber", name: "凝光·群玉閣炮擊", category: "signature", type: "tactic", rarity: "signature", cost: 2, damageAll: 20, draw: 2, blockAll: 12, weakAll: 4, text: "凝光以群玉閣鎖定海面，對所有敵人造成 20 傷害並虛弱 4 點，抽 2 張牌，全隊獲得 12 護甲。", upgrade: { damageAll: 30, draw: 3, blockAll: 18 }, tags: ["凝光", "群玉閣"] },
+    { id: "keqing-stellar-restoration", name: "刻晴·星斗歸位", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 34, pierce: true, draw: 1, evadeOwner: 1, text: "雷楔閃入敵陣，穿透護甲造成 34 傷害，抽 1 張牌，刻晴獲得 1 次閃避。", upgrade: { damage: 48, draw: 2 }, tags: ["刻晴", "雷楔"] },
+    { id: "ganyu-frostflake-arrow", name: "甘雨·霜華矢", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 30, damageAll: 14, weakAll: 5, text: "霜華箭命中後炸開，造成 30 單體傷害與 14 群體傷害，所有敵人虛弱 5 點。", upgrade: { damage: 42, damageAll: 22, weakAll: 8 }, tags: ["甘雨", "霜華"] },
+    { id: "xiao-bane-of-all-evil", name: "魈·靖妖儺舞", category: "signature", type: "attack", rarity: "signature", cost: 3, damageAll: 36, pierce: true, addStress: 6, gainEnergy: 1, text: "魈戴上儺面俯衝，穿透護甲對所有敵人造成 36 傷害，獲得 1 能量；全隊壓力 +6。", upgrade: { damageAll: 52, addStress: 3 }, tags: ["魈", "夜叉"] },
+    { id: "beidou-tidecaller", name: "北斗·斫雷反擊", category: "signature", type: "guard", rarity: "signature", cost: 2, damageAll: 18, blockAll: 26, counterDamage: 8, text: "北斗橫刀接下浪潮，對所有敵人造成 18 傷害，全隊獲得 26 護甲，下一次反擊更重。", upgrade: { damageAll: 26, blockAll: 38, counterDamage: 12 }, tags: ["北斗", "南十字"] },
+    { id: "xiangling-pyronado-guoba", name: "香菱·鍋巴旋火輪", category: "signature", type: "attack", rarity: "signature", cost: 2, damageAll: 18, burnAll: 8, draw: 1, text: "鍋巴噴火後旋火輪貼地轉開，對所有敵人造成 18 傷害並燃燒 8 點，抽 1 張牌。", upgrade: { damageAll: 28, burnAll: 12, draw: 2 }, tags: ["香菱", "火輪"] },
+    { id: "genshin-adeptus-spear", name: "仙眾夜叉槍", category: "general", type: "attack", rarity: "rare", cost: 2, damage: 32, pierce: true, weakTarget: 5, text: "穿透護甲造成 32 傷害並使目標虛弱 5 點。槍影像從荻花洲夜色裡直接落下。", upgrade: { damage: 45, weakTarget: 8 }, tags: ["原神", "璃月", "仙眾"], sourceId: "genshin-liyue", sourceName: "原神·璃月" },
+    { id: "genshin-jade-screen", name: "璇璣屏防線", category: "general", type: "guard", rarity: "uncommon", cost: 1, blockAll: 15, draw: 1, text: "全隊獲得 15 護甲，抽 1 張牌。玉石屏障把奧賽爾的水槍擋在港口之外。", upgrade: { blockAll: 23, draw: 2 }, tags: ["原神", "璃月", "玉屏"], sourceId: "genshin-liyue", sourceName: "原神·璃月" },
+    { id: "genshin-elemental-reaction", name: "元素反應連鎖", category: "general", type: "attack", rarity: "uncommon", cost: 2, damageAll: 16, burnAll: 4, poisonAll: 4, text: "對所有敵人造成 16 傷害，施加 4 燃燒與 4 中毒。水雷火冰在主神戰場裡被壓成連鎖爆發。", upgrade: { damageAll: 24, burnAll: 7, poisonAll: 7 }, tags: ["原神", "元素反應"], sourceId: "genshin-liyue", sourceName: "原神·璃月" },
+    { id: "genshin-qixing-command", name: "七星總動員", category: "general", type: "support", rarity: "rare", cost: 2, healAll: 6, blockAll: 12, reduceStress: 6, draw: 1, text: "全隊恢復 6 生命、獲得 12 護甲、壓力 -6，抽 1 張牌。璃月港不再等神明下令。", upgrade: { healAll: 10, blockAll: 18, reduceStress: 10, draw: 2 }, tags: ["原神", "璃月七星"], sourceId: "genshin-liyue", sourceName: "原神·璃月" }
+  );
+
+  equipment.push(
+    { id: "vortex-vanquisher", name: "貫虹之槊", rarity: "legendary", effect: "firstAttackPierce", amount: 9, upgradedAmount: 14, text: "每回合第一張攻擊牌穿透護甲，並額外造成 9 點傷害。古老長槊仍記得岩王帝君鎮海的重量。", sourceId: "genshin-liyue-equipment", sourceName: "璃月法器" },
+    { id: "jade-chamber-beacon", name: "群玉閣通訊玉符", rarity: "legendary", effect: "openingDraw", amount: 2, upgradedAmount: 3, text: "每場戰鬥第一回合額外抽 2 張牌。凝光的情報網會先替隊伍標出海面火力坐標。", sourceId: "genshin-liyue-equipment", sourceName: "璃月法器" },
+    { id: "adeptus-talisman", name: "仙家符籙", rarity: "rare", effect: "turnBlock", amount: 6, upgradedAmount: 9, text: "回合開始時全隊獲得 6 護甲。留雲與削月的符籙把防線釘在港口前。", sourceId: "genshin-liyue-equipment", sourceName: "璃月法器" },
+    { id: "delusion-shard", name: "邪眼碎片", rarity: "legendary", effect: "attackBonus", amount: 5, upgradedAmount: 8, text: "持有者存活時，所有攻擊牌傷害 +5。碎片仍帶著公子魔王武裝的危險電光。", sourceId: "genshin-liyue-equipment", sourceName: "璃月法器" }
+  );
+
+  bloodlines.push(
+    { characterId: "zhongli-morax", name: "岩王帝君神格", text: "天星墜落額外提供全隊 18 護甲，並使所有敵人再虛弱 6 點。", sideStoryCost: { rewardPointCost: 15000, sideStoryCost: 6 }, effect: { blockAll: 18, weakAll: 6 } },
+    { characterId: "ningguang", name: "天權星棋局", text: "群玉閣炮擊額外抽 2 張牌，全隊再獲得 10 護甲。", sideStoryCost: { rewardPointCost: 9800, sideStoryCost: 4 }, effect: { draw: 2, blockAll: 10 } },
+    { characterId: "keqing", name: "玉衡雷楔", text: "星斗歸位造成 1.6 倍暴擊傷害，刻晴獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 9400, sideStoryCost: 4 }, effect: { criticalMultiplier: 1.6, evadeOwner: 1 } },
+    { characterId: "ganyu", name: "半仙麒麟血", text: "霜華矢穿透護甲，額外使所有敵人虛弱 6 點。", sideStoryCost: { rewardPointCost: 9600, sideStoryCost: 4 }, effect: { pierce: true, weakAll: 6 } },
+    { characterId: "xiao-genshin", name: "護法夜叉業障", text: "靖妖儺舞額外對所有敵人造成 12 穿甲傷害，魈獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 11000, sideStoryCost: 5 }, effect: { extraDamageAll: 12, evadeOwner: 1 } },
+    { characterId: "beidou", name: "斬海雷獸", text: "斫雷反擊額外提供全隊 14 護甲，並使所有敵人燃燒 5 點。", sideStoryCost: { rewardPointCost: 9200, sideStoryCost: 4 }, effect: { blockAll: 14, burnAll: 5 } },
+    { characterId: "xiangling", name: "萬民堂火候", text: "鍋巴旋火輪額外燃燒所有敵人 8 點，並讓全隊恢復 4 生命。", sideStoryCost: { rewardPointCost: 8400, sideStoryCost: 3 }, effect: { burnAll: 8, healAll: 4 } }
+  );
+
+  enemies.push(
+    { id: "genshin-fatui-skirmishers", name: "愚人眾先遣隊", maxHp: 320, stressAura: 15, intents: [{ kind: "attack", label: "元素槍線", amount: 48, targetMode: "random" }, { kind: "guard", label: "元素護盾", amount: 42 }, { kind: "stress", label: "外交壓迫", amount: 24, targetMode: "all" }] },
+    { id: "genshin-ruin-guard-line", name: "歸離原遺跡守衛", maxHp: 420, stressAura: 17, regen: 8, intents: [{ kind: "cleave", label: "旋轉重擊", amount: 30, targetMode: "all" }, { kind: "attack", label: "導彈鎖定", amount: 62, targetMode: "front" }, { kind: "regen", label: "古代機關重啟", amount: 34, block: 18 }] },
+    { id: "genshin-adepti-trial", name: "三眼五顯仙人試煉", maxHp: 560, stressAura: 21, intents: [{ kind: "cleave", label: "仙法威壓", amount: 38, targetMode: "all" }, { kind: "guard", label: "洞天結界", amount: 56 }, { kind: "stress", label: "契約審問", amount: 34, targetMode: "all" }] },
+    { id: "genshin-childe-foul-legacy", name: "公子·魔王武裝", maxHp: 780, stressAura: 27, regen: 12, intents: [{ kind: "attack", label: "水刃突刺", amount: 92, targetMode: "random" }, { kind: "cleave", label: "雷鯨落擊", amount: 48, targetMode: "all" }, { kind: "stress", label: "邪眼解放", amount: 44, targetMode: "all" }, { kind: "regen", label: "戰意沸騰", amount: 52, block: 30 }] },
+    { id: "genshin-osial-vortex", name: "漩渦之魔神奧賽爾", maxHp: 1080, stressAura: 34, regen: 20, intents: [{ kind: "cleave", label: "海嘯水槍", amount: 58, targetMode: "all" }, { kind: "attack", label: "魔神觸鬚壓港", amount: 118, targetMode: "front" }, { kind: "stress", label: "孤雲閣封印破裂", amount: 58, targetMode: "all" }, { kind: "regen", label: "海潮回灌", amount: 70, block: 40 }], phaseTwo: { name: "奧賽爾 封印崩裂", maxHp: 860, stressAura: 40, regen: 28, intents: [{ kind: "cleave", label: "吞港巨浪", amount: 72, targetMode: "all" }, { kind: "attack", label: "魔神怒潮", amount: 142, targetMode: "random" }, { kind: "stress", label: "璃月港將沉", amount: 68, targetMode: "all" }, { kind: "regen", label: "漩渦重生", amount: 84, block: 48 }] } }
+  );
+
+  encounters.push(
+    { id: "genshin-guili-fatui", name: "歸離原·愚人眾伏線", tier: "normal", enemies: ["genshin-fatui-skirmishers", "genshin-ruin-guard-line"], rewardPoints: 6200 },
+    { id: "genshin-golden-house-entry", name: "黃金屋·仙祖法蛻", tier: "normal", enemies: ["genshin-fatui-skirmishers", "genshin-fatui-skirmishers"], rewardPoints: 6600 },
+    { id: "genshin-adepti-summit", name: "絕雲間·仙人試煉", tier: "elite", enemies: ["genshin-adepti-trial", "genshin-ruin-guard-line"], rewardPoints: 9200 },
+    { id: "genshin-golden-house-childe", name: "黃金屋·公子決鬥", tier: "miniboss", enemies: ["genshin-childe-foul-legacy"], rewardPoints: 14200 },
+    { id: "genshin-osial-harbor", name: "孤雲閣·奧賽爾破封", tier: "boss", enemies: ["genshin-osial-vortex"], rewardPoints: 24000 }
+  );
+
+  const genshinLiyueScenario = { id: "genshin-liyue-childe", name: "原神·璃月", subtitle: "請仙典儀到黃金屋決戰", intro: "白光散去，璃月港的請仙典儀已經被死亡陰影撕開。旅行者被通緝，鍾離仍在籌備送仙典儀，愚人眾正把仙祖法蛻與百無禁忌籙推向黃金屋；公子在那裡等待一場真正的戰鬥。", recruitmentPool: ["ningguang", "keqing", "ganyu", "xiao-genshin", "beidou", "xiangling", "chu-xuan", "qi-tengyi", "zhan-lan", "luo-yinglong"], normal: ["genshin-guili-fatui", "genshin-golden-house-entry"], elite: ["genshin-adepti-summit"], miniboss: "genshin-golden-house-childe", boss: "genshin-osial-harbor", eventTitle: "送仙典儀與百無禁忌籙", eventText: "鍾離把契約留在沉默裡，凝光調動群玉閣，公子則把黃金屋變成魔王武裝的舞台。若中洲隊能看穿這場神明退位的測試，就能讓璃月以凡人之手接住奧賽爾。", scenarioPowerName: "璃月契約防線", scenarioPowerText: "本次遠征每回合全隊額外獲得 6 護甲，第一回合額外抽 1 張牌。", scenarioPower: { id: "liyue-contract-line", effect: "turnBlock", amount: 6 }, hiddenProtagonistId: "zhongli-morax", eventChoices: { stage1: [{ id: "genshin-rite-of-parting", title: "完成送仙典儀", text: "跟隨鍾離收攏夜泊石、永生香與儀式線索，讓假死的岩神測試不再把璃月推向失控。" }, { id: "genshin-golden-house-rush", title: "直奔黃金屋", text: "跳過儀式迷霧，直接追上公子與仙祖法蛻，在魔王武裝完全解放前打穿他的節奏。" }, { id: "genshin-qixing-defense", title: "接入七星防線", text: "讓凝光、刻晴與甘雨把通緝、仙人、千岩軍與群玉閣火力重新排成同一張戰術圖。" }], stage2: { "genshin-rite-of-parting": [{ id: "genshin-contract-read", title: "讀懂岩神契約", text: "齊騰一與楚軒把送仙物件逐一標記，確認鍾離不是受害者，而是在測試璃月是否能離開神明。" }, { id: "genshin-adepti-trust", title: "取得仙人信任", text: "把絕雲間仙人的敵意壓下去，讓削月、理水與留雲把戰場交給璃月港。" }], "genshin-golden-house-rush": [{ id: "genshin-childe-duel-window", title: "壓住公子水雷節奏", text: "公子的水刃與邪眼雷光輪換太快，必須用中洲隊的火力把魔王武裝打出硬直。" }, { id: "genshin-sigil-disrupt", title: "截斷百無禁忌籙", text: "先毀掉愚人眾複製的符籙通道，避免奧賽爾提前破封。" }], "genshin-qixing-defense": [{ id: "genshin-jade-chamber-aim", title: "校準群玉閣炮擊", text: "凝光把群玉閣壓到海面上方，刻晴調整千岩軍撤離線，甘雨把火力窗口寫成命令。" }, { id: "genshin-harbor-evacuation", title: "疏散璃月港", text: "北斗與香菱帶人從碼頭撤出，萬民堂火線和南十字船隊把平民拉出潮位線。" }] }, stage3: { "genshin-contract-read": [{ id: "genshin-morax-contract-revealed", title: "岩王帝君現身立約", text: "鍾離承認契約的最後條款：若璃月能接住魔神，他便以凡人身份加入中洲隊，觀察新的契約。" }, { id: "genshin-contract-stone-tablet", title: "保留契約石板", text: "不揭開鍾離身份，只把契約石板拓印成主神承認的岩元素防線。" }], "genshin-adepti-trust": [{ id: "genshin-morax-contract-revealed", title: "岩王帝君現身立約", text: "仙人承認璃月港的選擇，鍾離把最後的神明擔保交給凡人。" }, { id: "genshin-adepti-talisman", title: "帶走仙家符籙", text: "仙人給出符籙防線，隊伍換取傳說裝備而不是立即招募鍾離。" }], "genshin-childe-duel-window": [{ id: "genshin-childe-defeated", title: "擊破魔王武裝", text: "公子被打出黃金屋，愚人眾的節奏斷裂，隊伍取得水雷邪眼碎片與本次遠征攻擊窗口。" }, { id: "genshin-morax-contract-revealed", title: "以公子為契約見證", text: "讓公子的敗北成為契約成立的證詞，逼鍾離承認中洲隊已經看穿測試。" }], "genshin-sigil-disrupt": [{ id: "genshin-sigil-lockdown", title: "封住符籙複製線", text: "百無禁忌籙被截斷，奧賽爾延後破封，璃月港防線多出準備時間。" }, { id: "genshin-childe-defeated", title: "回頭擊破公子", text: "符籙通道被封後，公子只能以魔王武裝正面迎戰。" }], "genshin-jade-chamber-aim": [{ id: "genshin-jade-chamber-sacrifice", title: "群玉閣墜海鎮魔", text: "凝光放棄群玉閣，仙人與七星合力把奧賽爾重新壓回孤雲閣。" }, { id: "genshin-morax-contract-revealed", title: "凡人接住神明考題", text: "群玉閣火力證明璃月不必再由岩神親自出手，鍾離的隱藏招募條件成立。" }], "genshin-harbor-evacuation": [{ id: "genshin-harbor-saved", title: "璃月港撤離完成", text: "碼頭人群被撤出潮位線，隊伍換取恢復與支線獎勵。" }, { id: "genshin-jade-chamber-sacrifice", title: "以群玉閣完成封印", text: "撤離完成後，凝光終於能把群玉閣砸向奧賽爾而不牽連港口。" }] } }, eventOutcomes: { "genshin-morax-contract-revealed": { title: "新契約成立", text: "鍾離以岩王帝君身份補完最後條款：璃月由人治理，契約由人承擔。他以隱藏人物身份加入隊伍，將岩元素權柄暫時借給中洲隊。", effects: [{ type: "recruit-hidden" }, { type: "side-story", amount: 2 }, { type: "run-power", id: "morax-contract-route", effect: "turnBlock", amount: 8 }], rewards: ["隱藏角色：鍾離", "支線劇情 +2", "本次遠征每回合護甲 +8"], costs: ["璃月正式進入無神治理，後續戰鬥不再有岩神托底。"], storyImpact: "請仙典儀、送仙典儀、黃金屋與奧賽爾封印被串成一次完整的璃月交接，岩王帝君不再替凡人代答。", worldState: "群玉閣與仙眾共同守住海面，七星接下璃月，愚人眾失去把魔神危機嫁禍給璃月的窗口。" }, "genshin-contract-stone-tablet": { title: "契約石板拓印", text: "你們沒有揭開鍾離身份，但契約石板被主神承認為岩元素強化。", effects: [{ type: "scenario-power" }, { type: "side-story", amount: 1 }], rewards: ["劇本增益：璃月契約防線", "支線劇情 +1"], costs: ["鍾離仍停留在旁觀者位置，隱藏招募延後。"], storyImpact: "璃月的神明退位仍在進行，但中洲隊只保留了契約工具，沒有真正改寫核心見證。", worldState: "送仙典儀繼續推進，港口壓力稍微下降。" }, "genshin-adepti-talisman": { title: "仙家符籙入手", text: "仙人把防線符籙交給隊伍，代價是中洲隊必須承受仙眾審視。", effects: [{ type: "legendary-equipment" }, { type: "stress", amount: 18 }], rewards: ["傳說裝備"], costs: ["全隊壓力 +18"], storyImpact: "仙人沒有完全信任七星，但願意讓凡人先守住璃月港。", worldState: "絕雲間與璃月港之間的敵意降溫。" }, "genshin-childe-defeated": { title: "公子敗出黃金屋", text: "水刃、雷槍與魔王武裝被逐段拆開。公子承認這場戰鬥夠痛快，愚人眾奪取神之心的節奏被迫轉入幕後。", effects: [{ type: "run-power", id: "foul-legacy-break", effect: "attackBonus", amount: 6 }, { type: "reward-points", amount: 1200 }], rewards: ["本次遠征攻擊 +6", "獎勵點 +1200"], costs: ["奧賽爾仍可能破封，必須回防港口。"], storyImpact: "黃金屋之戰不再只是旅行者單挑公子，中洲隊把魔王武裝的威脅提前暴露給璃月。", worldState: "北國銀行的暗線暫時沉默，但魔神封印仍在海底震動。" }, "genshin-sigil-lockdown": { title: "百無禁忌籙封鎖", text: "複製符籙被燒毀，愚人眾無法立刻喚醒奧賽爾。隊伍獲得喘息與岩元素防線。", effects: [{ type: "run-power", id: "sigil-lockdown-line", effect: "openingBlock", amount: 12 }, { type: "heal", amount: 0.12, stressRelief: 10 }], rewards: ["開場護甲 +12", "全隊恢復與壓力下降"], costs: ["錯過一次直接擊破公子的窗口"], storyImpact: "璃月港多出準備時間，群玉閣可以從象徵變成真正的決戰武器。", worldState: "孤雲閣海面短暫平靜，千岩軍撤離線完整。" }, "genshin-jade-chamber-sacrifice": { title: "群玉閣鎮海", text: "凝光親手放棄群玉閣，仙人、七星與中洲隊把火力匯成墜落軌跡，奧賽爾被重新壓回封印。", effects: [{ type: "scenario-power" }, { type: "rare-card" }, { type: "side-story", amount: 1 }], rewards: ["劇本增益：璃月契約防線", "稀有牌獎勵", "支線劇情 +1"], costs: ["群玉閣沉入海面，凝光失去最重要的戰略高地。"], storyImpact: "凡人用自己的代價完成封印，岩神退位的考題被璃月正面答完。", worldState: "港口得救，七星威望上升，仙眾承認凡人的決意。" }, "genshin-harbor-saved": { title: "港口撤離完成", text: "北斗的船隊與萬民堂火線把人群撤出潮位線，隊伍傷勢恢復，支線判定補回。", effects: [{ type: "heal", amount: 0.18, stressRelief: 18 }, { type: "side-story", amount: 1 }], rewards: ["全隊恢復與壓力下降", "支線劇情 +1"], costs: ["少拿一段正面擊破魔神的火力窗口"], storyImpact: "璃月港不再只是被魔神威脅的人群背景，而是被每一條街道共同救下來的城市。", worldState: "碼頭保存完整，奧賽爾戰後重建壓力下降。" } } };
+  scenarioOpenings["genshin-liyue-childe"] = {
+    title: "璃月契約的最後一夜",
+    premise: "白光散去時，請仙典儀剛剛中斷。岩王帝君的法蛻落在玉京台，旅行者成了嫌疑人，璃月七星與仙人彼此猜疑；而黃金屋深處，公子已經準備用百無禁忌籙把漩渦之魔神推上海面。",
+    dialogue: [
+      { speaker: "主神", line: "主線：追查岩神遇刺、完成送仙典儀、擊敗黃金屋公子，並在奧賽爾破封前守住璃月港。隱藏判定：看穿鍾離契約。" },
+      { speaker: "鍾離", line: "契約既成，便該有人履行。只是這一次，答案未必仍由神明寫下。" },
+      { speaker: "凝光", line: "群玉閣可以是棋盤，也可以是代價。若海面真的裂開，我會親自落子。" },
+      { speaker: "刻晴", line: "璃月不能永遠等神明開口。千岩軍、七星、仙人，都必須在今晚站到同一條線上。" },
+      { speaker: "公子", line: "既然你們也來到黃金屋，那就別浪費時間。打一場，看看誰能先逼出真正的底牌。" },
+      { speaker: "楚軒", line: "這不是單純的弒神疑案，而是神明退位壓力測試。公子是外部衝擊，奧賽爾是最終驗證。" }
+    ],
+    panels: [
+      { enemyId: "genshin-fatui-skirmishers", title: "請仙典儀中斷", text: "玉京台上人群驚散，愚人眾在混亂邊緣收攏情報，岩神法蛻讓整座璃月失聲。" },
+      { enemyId: "genshin-ruin-guard-line", title: "歸離原追查", text: "遺跡守衛在荒草裡重啟，古老機關與愚人眾暗線把線索一路推向黃金屋。" },
+      { enemyId: "genshin-adepti-trial", title: "絕雲間仙眾", text: "仙人立在雲海石台之上，契約、憤怒與不信任像結界一樣壓向凡人。" },
+      { enemyId: "genshin-childe-foul-legacy", title: "黃金屋公子", text: "水刃落地，雷光拔高，公子的魔王武裝在仙祖法蛻前撕開第二層戰場。" },
+      { enemyId: "genshin-osial-vortex", title: "奧賽爾破封", text: "孤雲閣海面翻起巨浪，群玉閣下墜前的一瞬，璃月港所有火力同時指向魔神。" }
+    ]
+  };
+  genshinLiyueScenario.opening = scenarioOpenings["genshin-liyue-childe"];
+  scenarios.push(genshinLiyueScenario);
+  hiddenProtagonistsByScenario["genshin-liyue-childe"] = "zhongli-morax";
+
+  const genshinInazumaCharacters = [
+    { id: "raiden-ei", name: "雷電影", role: "永恆雷神", faction: "原神·稻妻", factionId: "genshin-inazuma", maxHp: 132, stress: 6, energyContribution: -1, passiveId: "opening-energy", passiveText: "隱藏人物。第一回合全隊額外獲得 1 能量；一心淨土會把敵人的第一波壓迫斬斷。", signatureCardId: "raiden-musou-shinsetsu", unlock: "hidden-inazuma-eternity", hidden: true },
+    { id: "kamisato-ayaka", name: "神里綾華", role: "社奉行白鷺公主", faction: "原神·稻妻", factionId: "genshin-inazuma", maxHp: 86, stress: 8, energyContribution: 1, passiveId: "first-heavy-attack", passiveText: "每回合第一張費用 2 以上攻擊牌傷害 +6。霜滅會把眼狩令的縫隙凍成破口。", signatureCardId: "ayaka-soumetsu", unlock: "genshin-inazuma-vision-hunt" },
+    { id: "yoimiya", name: "宵宮", role: "長野原煙火師", faction: "原神·稻妻", factionId: "genshin-inazuma", maxHp: 84, stress: 10, energyContribution: 1, passiveId: "first-attack-burn", passiveText: "每回合第一張攻擊牌使命中目標燃燒 4 點。煙火會把無聲的願望炸成信號。", signatureCardId: "yoimiya-ryukin-saxifrage", unlock: "genshin-inazuma-vision-hunt" },
+    { id: "sangonomiya-kokomi", name: "珊瑚宮心海", role: "海祇島軍師", faction: "原神·稻妻", factionId: "genshin-inazuma", maxHp: 92, stress: 5, energyContribution: 2, passiveId: "turn-heal", passiveText: "回合開始時全隊恢復 2 生命。海祇島的戰線靠補給與預案活下去。", signatureCardId: "kokomi-nereids-ascension", unlock: "genshin-inazuma-vision-hunt" },
+    { id: "kaedehara-kazuha", name: "楓原萬葉", role: "浪人風詩劍士", faction: "原神·稻妻", factionId: "genshin-inazuma", maxHp: 88, stress: 7, energyContribution: 1, passiveId: "opening-draw", passiveText: "每場戰鬥第一回合額外抽 1 張牌。風會把戰場上最細的殺意先送到耳邊。", signatureCardId: "kazuha-kazuha-slash", unlock: "genshin-inazuma-vision-hunt" },
+    { id: "kujou-sara", name: "九條裟羅", role: "天領奉行大將", faction: "原神·稻妻", factionId: "genshin-inazuma", maxHp: 90, stress: 12, energyContribution: 0, passiveId: "first-attack-pierce", passiveText: "每回合第一張攻擊牌穿透護甲。天狗羽箭會先撕開敵人的指揮線。", signatureCardId: "sara-tengu-jurai", unlock: "genshin-inazuma-vision-hunt" },
+    { id: "arataki-itto", name: "荒瀧一斗", role: "荒瀧派鬼王", faction: "原神·稻妻", factionId: "genshin-inazuma", maxHp: 118, stress: 16, energyContribution: -1, passiveId: "fifth-card-damage", passiveText: "每回合第 5 張牌額外對所有敵人造成 6 穿甲傷害。鬼王的氣勢通常比計畫先到。", signatureCardId: "itto-royal-descent", unlock: "genshin-inazuma-vision-hunt" }
+  ];
+  characters.push(...genshinInazumaCharacters);
+
+  customTags.push(
+    { id: "electro-vision-inazuma", name: "稻妻雷願", family: "元素力", tier: "A", cost: 8200, art: "./src/assets/generated/skill-raiden-musou-shinsetsu.png", text: "第一回合能量 +1；每回合第一張攻擊牌穿透護甲。", effects: { openingEnergy: 1, firstAttackPierce: 1 } },
+    { id: "sangonomiya-war-table", name: "海祇兵法", family: "戰術", tier: "B", cost: 3600, art: "./src/assets/generated/skill-kokomi-nereids-ascension.png", text: "開場抽 1 張牌；回合開始全隊恢復 2 生命。", effects: { openingDraw: 1, turnHealAll: 2 } },
+    { id: "hanamizaka-firework", name: "花見坂煙火", family: "燃燒", tier: "B", cost: 3400, art: "./src/assets/generated/skill-yoimiya-ryukin-saxifrage.png", text: "第一張攻擊牌燃燒 +5；第 5 張牌抽 1 張。", effects: { firstAttackBurn: 5, fifthCardDraw: 1 } }
+  );
+  customMutations.push(
+    { id: "electro-sharingan-judgment", name: "雷瞳裁決", requiredTags: ["electro-vision-inazuma", "sharingan-prediction"], art: "./src/assets/generated/skill-raiden-musou-shinsetsu.png", text: "開場閃避 +1、能量 +1；第一張戰術牌使所有敵人虛弱 5 點。", effects: { openingEvade: 1, openingEnergy: 1, firstTacticWeakAll: 5 } },
+    { id: "firework-black-sun", name: "黑日煙火", requiredTags: ["hanamizaka-firework", "black-flame-seed"], art: "./src/assets/generated/skill-yoimiya-ryukin-saxifrage.png", text: "第一張攻擊牌燃燒 +12；攻擊帶狀態敵人時傷害 +5。", effects: { firstAttackBurn: 12, statusExploitBonus: 5 } },
+    { id: "watatsumi-qi-command", name: "海祇內息陣", requiredTags: ["sangonomiya-war-table", "inner-qi-breath"], art: "./src/assets/generated/skill-kokomi-nereids-ascension.png", text: "回合開始全隊恢復 3 生命並獲得 4 護甲；第一張戰術牌抽 1 張。", effects: { turnHealAll: 3, turnBlockAll: 4, firstTacticDraw: 1 } }
+  );
+
+  cards.push(
+    { id: "raiden-musou-shinsetsu", name: "雷電影·夢想真說", category: "signature", type: "attack", rarity: "signature", cost: 3, damageAll: 44, pierce: true, gainEnergy: 1, weakAll: 5, text: "無想一刀斬開一心淨土，穿透護甲對所有敵人造成 44 傷害並虛弱 5 點，獲得 1 能量。", upgrade: { damageAll: 62, weakAll: 8 }, tags: ["雷電影", "無想一刀"] },
+    { id: "ayaka-soumetsu", name: "神里綾華·神里流霜滅", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 30, damageAll: 16, weakAll: 5, text: "霜風雪關扇切入敵陣，造成 30 單體傷害與 16 群體傷害，所有敵人虛弱 5 點。", upgrade: { damage: 42, damageAll: 24, weakAll: 8 }, tags: ["神里綾華", "霜滅"] },
+    { id: "yoimiya-ryukin-saxifrage", name: "宵宮·琉金雲間草", category: "signature", type: "attack", rarity: "signature", cost: 2, damageAll: 20, burnAll: 8, draw: 1, text: "煙火在敵陣上空炸開，對所有敵人造成 20 傷害並燃燒 8 點，抽 1 張牌。", upgrade: { damageAll: 30, burnAll: 12, draw: 2 }, tags: ["宵宮", "煙火"] },
+    { id: "kokomi-nereids-ascension", name: "心海·海人化羽", category: "signature", type: "support", rarity: "signature", cost: 2, healAll: 12, blockAll: 14, draw: 1, reduceStress: 5, text: "海月潮汐覆蓋戰線，全隊恢復 12 生命、獲得 14 護甲、壓力 -5，抽 1 張牌。", upgrade: { healAll: 18, blockAll: 22, reduceStress: 8, draw: 2 }, tags: ["心海", "海祇島"] },
+    { id: "kazuha-kazuha-slash", name: "萬葉·萬葉之一刀", category: "signature", type: "attack", rarity: "signature", cost: 2, damageAll: 24, weakAll: 4, draw: 1, evadeOwner: 1, text: "風聲收束成一刀，對所有敵人造成 24 傷害並虛弱 4 點，抽 1 張牌，萬葉獲得 1 次閃避。", upgrade: { damageAll: 36, weakAll: 7, draw: 2 }, tags: ["萬葉", "風"] },
+    { id: "sara-tengu-jurai", name: "九條裟羅·天狗咒雷", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 38, pierce: true, blockAll: 10, weakTarget: 6, text: "天狗羽箭落雷，穿透護甲造成 38 傷害並使目標虛弱 6 點，全隊獲得 10 護甲。", upgrade: { damage: 54, blockAll: 18, weakTarget: 9 }, tags: ["九條裟羅", "天狗"] },
+    { id: "itto-royal-descent", name: "荒瀧一斗·最惡鬼王", category: "signature", type: "attack", rarity: "signature", cost: 3, damage: 56, damageAll: 12, addStress: 5, blockAll: 12, text: "鬼王金碎棒正面砸下，造成 56 單體傷害與 12 群體傷害，全隊獲得 12 護甲，壓力 +5。", upgrade: { damage: 74, damageAll: 20, addStress: 2, blockAll: 20 }, tags: ["荒瀧一斗", "鬼王"] },
+    { id: "genshin-inazuma-iai", name: "雷光居合", category: "general", type: "attack", rarity: "rare", cost: 2, damage: 34, pierce: true, gainEnergy: 1, text: "穿透護甲造成 34 傷害並獲得 1 能量。眼狩令的刀光快到只剩雷聲。", upgrade: { damage: 48 }, tags: ["原神", "稻妻", "雷"], sourceId: "genshin-inazuma", sourceName: "原神·稻妻" },
+    { id: "genshin-inazuma-resistance-plan", name: "海祇反攻策", category: "general", type: "support", rarity: "rare", cost: 2, healAll: 8, blockAll: 14, draw: 1, text: "全隊恢復 8 生命、獲得 14 護甲，抽 1 張牌。心海的預案把敗退變成誘敵。", upgrade: { healAll: 13, blockAll: 22, draw: 2 }, tags: ["原神", "稻妻", "海祇島"], sourceId: "genshin-inazuma", sourceName: "原神·稻妻" },
+    { id: "genshin-inazuma-firework-signal", name: "長野原煙火信號", category: "general", type: "attack", rarity: "uncommon", cost: 1, damageAll: 12, burnAll: 5, text: "對所有敵人造成 12 傷害並燃燒 5 點。煙火不是慶典，是反抗軍集合信號。", upgrade: { damageAll: 20, burnAll: 8 }, tags: ["原神", "稻妻", "煙火"], sourceId: "genshin-inazuma", sourceName: "原神·稻妻" },
+    { id: "genshin-inazuma-vision-echo", name: "願望迴響", category: "general", type: "tactic", rarity: "uncommon", cost: 1, draw: 2, weakAll: 3, reduceStress: 4, text: "抽 2 張牌，所有敵人虛弱 3 點，全隊壓力 -4。被奪走的神之眼仍在千手百眼像下回響。", upgrade: { draw: 3, weakAll: 5, reduceStress: 7 }, tags: ["原神", "稻妻", "願望"], sourceId: "genshin-inazuma", sourceName: "原神·稻妻" }
+  );
+
+  equipment.push(
+    { id: "mistsplitter-reforged", name: "霧切之回光", rarity: "legendary", effect: "firstAttackPierce", amount: 10, upgradedAmount: 15, text: "每回合第一張攻擊牌穿透護甲，並額外造成 10 點傷害。刀光像稻妻雷暴裡的裂縫。", sourceId: "genshin-inazuma-equipment", sourceName: "稻妻神器" },
+    { id: "thundering-pulse", name: "飛雷之弦振", rarity: "legendary", effect: "attackBonus", amount: 5, upgradedAmount: 8, text: "持有者存活時，所有攻擊牌傷害 +5。弓弦震動時，煙火與雷鳴同時落下。", sourceId: "genshin-inazuma-equipment", sourceName: "稻妻神器" },
+    { id: "omamori-yae", name: "鳴神御守", rarity: "rare", effect: "openingDraw", amount: 2, upgradedAmount: 3, text: "每場戰鬥第一回合額外抽 2 張牌。八重神子的御守總在最尷尬時刻派上用場。", sourceId: "genshin-inazuma-equipment", sourceName: "稻妻神器" },
+    { id: "vision-shell", name: "神之眼空殼", rarity: "legendary", effect: "openingEnergy", amount: 1, upgradedAmount: 2, text: "第一回合額外獲得 1 能量。空殼裡殘留的願望會短暫照亮一心淨土。", sourceId: "genshin-inazuma-equipment", sourceName: "稻妻神器" }
+  );
+
+  bloodlines.push(
+    { characterId: "raiden-ei", name: "一心淨土", text: "夢想真說額外造成 14 群體穿甲傷害，並使所有敵人再虛弱 6 點。", sideStoryCost: { rewardPointCost: 15000, sideStoryCost: 6 }, effect: { extraDamageAll: 14, weakAll: 6 } },
+    { characterId: "kamisato-ayaka", name: "白鷺霜華", text: "神里流霜滅穿透護甲，額外使所有敵人虛弱 5 點。", sideStoryCost: { rewardPointCost: 9400, sideStoryCost: 4 }, effect: { pierce: true, weakAll: 5 } },
+    { characterId: "yoimiya", name: "長野原火候", text: "琉金雲間草額外燃燒所有敵人 8 點，並抽 1 張牌。", sideStoryCost: { rewardPointCost: 8600, sideStoryCost: 3 }, effect: { burnAll: 8, draw: 1 } },
+    { characterId: "sangonomiya-kokomi", name: "現人神巫女兵法", text: "海人化羽額外恢復全隊 8 生命，並讓全隊壓力再下降 5。", sideStoryCost: { rewardPointCost: 9800, sideStoryCost: 4 }, effect: { healAll: 8, reduceStress: 5 } },
+    { characterId: "kaedehara-kazuha", name: "友人願望之風", text: "萬葉之一刀額外抽 1 張牌，萬葉獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 9200, sideStoryCost: 4 }, effect: { draw: 1, evadeOwner: 1 } },
+    { characterId: "kujou-sara", name: "天狗雷羽", text: "天狗咒雷額外造成 12 傷害，並讓全隊獲得 8 護甲。", sideStoryCost: { rewardPointCost: 9000, sideStoryCost: 4 }, effect: { extraDamage: 12, blockAll: 8 } },
+    { characterId: "arataki-itto", name: "赤鬼王血", text: "最惡鬼王額外造成 16 單體傷害，並使一斗獲得 10 護甲。", sideStoryCost: { rewardPointCost: 9200, sideStoryCost: 4 }, effect: { extraDamage: 16, blockOwner: 10 } }
+  );
+
+  const cyberpunkEdgerunnersCharacters = [
+    { id: "david-martinez", name: "大衛·馬丁尼茲", role: "沙德威斯坦邊緣行者", faction: "Cyberpunk: Edgerunners", factionId: "cyberpunk-edgerunners", maxHp: 112, stress: 30, energyContribution: -1, passiveId: "opening-overdrive", passiveText: "隱藏人物。第一回合額外獲得 2 能量，但自身壓力 +8；沙德威斯坦會把夜城的第一秒拉長到足夠改命。", signatureCardId: "david-sandevistan-overdrive", unlock: "hidden-night-city-moon", hidden: true },
+    { id: "lucy-kushinada", name: "露西", role: "月面夢想網路行者", faction: "Cyberpunk: Edgerunners", factionId: "cyberpunk-edgerunners", maxHp: 74, stress: 12, energyContribution: 3, passiveId: "first-tactic-discount", passiveText: "每回合第一張戰術牌費用 -1，最低為 0。她會先切斷敵方網路，再讓隊伍進場。", signatureCardId: "lucy-moonwire-breach", unlock: "cyberpunk-edgerunners-night-city" },
+    { id: "rebecca-edgerunners", name: "蕾貝卡", role: "雙槍狂火突擊手", faction: "Cyberpunk: Edgerunners", factionId: "cyberpunk-edgerunners", maxHp: 86, stress: 22, energyContribution: 0, passiveId: "second-card-strike", passiveText: "每回合打出第二張牌時，追加 5 點傷害。她的第二聲槍響通常比警報還快。", signatureCardId: "rebecca-guts-barrage", unlock: "cyberpunk-edgerunners-night-city" },
+    { id: "maine-edgerunners", name: "曼恩", role: "重鉻義體隊長", faction: "Cyberpunk: Edgerunners", factionId: "cyberpunk-edgerunners", maxHp: 122, stress: 28, energyContribution: -1, passiveId: "front-guard", passiveText: "回合開始前排與生命最低隊員獲得 4 護甲。重鉻義體把火線扛在最前面。", signatureCardId: "maine-projectile-launcher", unlock: "cyberpunk-edgerunners-night-city" },
+    { id: "dorio-edgerunners", name: "朵莉歐", role: "近戰護衛副隊", faction: "Cyberpunk: Edgerunners", factionId: "cyberpunk-edgerunners", maxHp: 104, stress: 16, energyContribution: 1, passiveId: "turn-block", passiveText: "回合開始全隊獲得 3 護甲。她會把失控的隊友和槍線一起按回隊形。", signatureCardId: "dorio-bodyguard-lock", unlock: "cyberpunk-edgerunners-night-city" },
+    { id: "kiwi-edgerunners", name: "琦薇", role: "冷接口黑客", faction: "Cyberpunk: Edgerunners", factionId: "cyberpunk-edgerunners", maxHp: 66, stress: 10, energyContribution: 3, passiveId: "intent-draw", passiveText: "敵人準備防禦或施加壓力時，回合開始額外抽 1 張牌。冷啟動比信任更可靠。", signatureCardId: "kiwi-icebreaker", unlock: "cyberpunk-edgerunners-night-city" },
+    { id: "falco-edgerunners", name: "法爾科", role: "夜城撤離車手", faction: "Cyberpunk: Edgerunners", factionId: "cyberpunk-edgerunners", maxHp: 92, stress: 13, energyContribution: 1, passiveId: "opening-draw", passiveText: "每場戰鬥第一回合額外抽 1 張牌。車輪先找到退路，槍才決定誰能上車。", signatureCardId: "falco-getaway-drive", unlock: "cyberpunk-edgerunners-night-city" }
+  ];
+  characters.push(...cyberpunkEdgerunnersCharacters);
+
+  customTags.push(
+    { id: "sandevistan-reflexware", name: "沙德威斯坦神經件", family: "義體", tier: "A", cost: 8400, art: "./src/assets/generated/skill-david-sandevistan-overdrive.png", text: "第一回合能量 +1；開場閃避 +1；回合開始全隊壓力 +1。", effects: { openingEnergy: 1, openingEvade: 1, turnStressAll: 1 } },
+    { id: "netrunner-icebath", name: "冰浴網路行者", family: "黑客", tier: "B", cost: 3800, art: "./src/assets/generated/skill-lucy-moonwire-breach.png", text: "第一張戰術牌抽 1 張並使所有敵人虛弱 3 點。", effects: { firstTacticDraw: 1, firstTacticWeakAll: 3 } },
+    { id: "chrome-tolerance", name: "重鉻耐受", family: "義體", tier: "A", cost: 7800, art: "./src/assets/generated/equipment-military-grade-sandevistan.png", text: "最大生命 +15；攻擊牌傷害 +2；回合開始全隊壓力 +1。", effects: { maxHp: 15, attackBonus: 2, turnStressAll: 1 } }
+  );
+  customMutations.push(
+    { id: "sandevistan-super-soldier", name: "超兵沙德威斯坦", requiredTags: ["sandevistan-reflexware", "super-soldier-serum"], art: "./src/assets/generated/skill-david-sandevistan-overdrive.png", text: "第一回合能量 +2、開場閃避 +1，攻擊牌傷害 +2。", effects: { openingEnergy: 2, openingEvade: 1, attackBonus: 2 } },
+    { id: "netrunner-sharingan-loop", name: "冰浴寫輪迴路", requiredTags: ["netrunner-icebath", "sharingan-prediction"], art: "./src/assets/generated/skill-lucy-moonwire-breach.png", text: "開場抽 1 張牌；第一張戰術牌使所有敵人虛弱 6 點並抽 1 張。", effects: { openingDraw: 1, firstTacticWeakAll: 6, firstTacticDraw: 1 } },
+    { id: "chrome-g-virus-frame", name: "重鉻G病毒骨架", requiredTags: ["chrome-tolerance", "g-virus-regeneration"], art: "./src/assets/generated/equipment-cyberskeleton-frame.png", text: "最大生命 +25；回合開始自創角色恢復 4 生命；所有攻擊牌傷害 +2。", effects: { maxHp: 25, turnHealOwner: 4, attackBonus: 2 } }
+  );
+
+  cards.push(
+    { id: "david-sandevistan-overdrive", name: "大衛·沙德威斯坦超頻", category: "signature", type: "attack", rarity: "signature", cost: 3, damageAll: 38, pierce: true, gainEnergy: 1, evadeOwner: 1, addStress: 6, text: "大衛把時間切成殘影，穿透護甲對所有敵人造成 38 傷害，獲得 1 能量與 1 次閃避；全隊壓力 +6。", upgrade: { damageAll: 56, addStress: 3 }, tags: ["大衛", "沙德威斯坦"] },
+    { id: "lucy-moonwire-breach", name: "露西·月面線纜入侵", category: "signature", type: "tactic", rarity: "signature", cost: 2, damageAll: 14, weakAll: 6, draw: 2, reduceStress: 4, text: "單分子線纜與深網入侵同時切入，對所有敵人造成 14 傷害並虛弱 6 點，抽 2 張牌，全隊壓力 -4。", upgrade: { damageAll: 24, weakAll: 9, draw: 3 }, tags: ["露西", "黑客"] },
+    { id: "rebecca-guts-barrage", name: "蕾貝卡·GUTS亂射", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 42, damageAll: 10, burnAll: 4, text: "霰彈火力近距離炸開，造成 42 單體傷害與 10 群體傷害，所有敵人燃燒 4 點。", upgrade: { damage: 60, damageAll: 18, burnAll: 7 }, tags: ["蕾貝卡", "重火力"] },
+    { id: "maine-projectile-launcher", name: "曼恩·腕炮壓制", category: "signature", type: "attack", rarity: "signature", cost: 2, damageAll: 26, blockAll: 14, addStress: 4, text: "腕部發射器轟開槍線，對所有敵人造成 26 傷害，全隊獲得 14 護甲；全隊壓力 +4。", upgrade: { damageAll: 38, blockAll: 22, addStress: 2 }, tags: ["曼恩", "重鉻"] },
+    { id: "dorio-bodyguard-lock", name: "朵莉歐·近身封鎖", category: "signature", type: "guard", rarity: "signature", cost: 2, damage: 24, blockAll: 24, weakTarget: 6, text: "朵莉歐貼身壓住火線，造成 24 傷害並使目標虛弱 6 點，全隊獲得 24 護甲。", upgrade: { damage: 36, blockAll: 36, weakTarget: 9 }, tags: ["朵莉歐", "護衛"] },
+    { id: "kiwi-icebreaker", name: "琦薇·破冰後門", category: "signature", type: "tactic", rarity: "signature", cost: 1, draw: 2, weakAll: 4, poisonAll: 4, text: "冰冷後門鑽進敵方義眼，抽 2 張牌，所有敵人虛弱 4 點並中毒 4 點。", upgrade: { draw: 3, weakAll: 6, poisonAll: 7 }, tags: ["琦薇", "破冰"] },
+    { id: "falco-getaway-drive", name: "法爾科·極限撤離", category: "signature", type: "support", rarity: "signature", cost: 1, blockAll: 12, draw: 1, evadeAll: 1, reduceStress: 5, text: "法爾科把車甩進槍線死角，全隊獲得 12 護甲與 1 次閃避，抽 1 張牌，壓力 -5。", upgrade: { blockAll: 20, draw: 2, reduceStress: 8 }, tags: ["法爾科", "撤離"] },
+    { id: "edgerunners-sandevistan-slash", name: "沙德威斯坦殘影斬", category: "general", type: "attack", rarity: "rare", cost: 2, damage: 34, pierce: true, evadeOwner: 1, addStress: 3, text: "穿透護甲造成 34 傷害，使用者獲得 1 次閃避；全隊壓力 +3。夜城的速度永遠有利息。", upgrade: { damage: 49, addStress: 1 }, tags: ["Cyberpunk", "沙德威斯坦"], sourceId: "cyberpunk-edgerunners", sourceName: "Cyberpunk: Edgerunners" },
+    { id: "edgerunners-smartgun-barrage", name: "智能槍彈幕", category: "general", type: "attack", rarity: "uncommon", cost: 1, damageAll: 13, weakAll: 3, text: "對所有敵人造成 13 傷害並虛弱 3 點。智能彈道會自己找到夜城最薄的掩體。", upgrade: { damageAll: 21, weakAll: 5 }, tags: ["Cyberpunk", "智能槍"], sourceId: "cyberpunk-edgerunners", sourceName: "Cyberpunk: Edgerunners" },
+    { id: "edgerunners-icebath-breach", name: "冰浴深潛入侵", category: "general", type: "tactic", rarity: "rare", cost: 2, draw: 2, weakAll: 4, poisonAll: 4, text: "抽 2 張牌，所有敵人虛弱 4 點並中毒 4 點。黑牆邊緣的寒意會先熄掉敵方義體。", upgrade: { draw: 3, weakAll: 6, poisonAll: 7 }, tags: ["Cyberpunk", "黑客"], sourceId: "cyberpunk-edgerunners", sourceName: "Cyberpunk: Edgerunners" },
+    { id: "edgerunners-crew-cover", name: "邊緣行者火力掩護", category: "general", type: "guard", rarity: "uncommon", cost: 1, blockAll: 16, counterDamage: 6, draw: 1, text: "全隊獲得 16 護甲，下一次反擊更重，抽 1 張牌。夜城小隊活下來靠的不是乾淨計畫。", upgrade: { blockAll: 25, counterDamage: 10, draw: 2 }, tags: ["Cyberpunk", "小隊"], sourceId: "cyberpunk-edgerunners", sourceName: "Cyberpunk: Edgerunners" }
+  );
+
+  equipment.push(
+    { id: "military-grade-sandevistan", name: "軍用級沙德威斯坦", rarity: "legendary", effect: "openingEnergy", amount: 1, upgradedAmount: 2, text: "第一回合額外獲得 1 能量。植入件把戰場第一秒拆成可以搶跑的數十幀。", sourceId: "cyberpunk-equipment", sourceName: "夜城義體" },
+    { id: "monowire-spool", name: "單分子線纜線圈", rarity: "rare", effect: "firstAttackPierce", amount: 8, upgradedAmount: 12, text: "每回合第一張攻擊牌穿透護甲，並額外造成 8 點傷害。線纜細到只在切開後才被看見。", sourceId: "cyberpunk-equipment", sourceName: "夜城義體" },
+    { id: "guts-shotgun", name: "GUTS霰彈槍", rarity: "legendary", effect: "attackBonus", amount: 5, upgradedAmount: 8, text: "持有者存活時，所有攻擊牌傷害 +5。後座力像在提醒你別把夜城當遊樂場。", sourceId: "cyberpunk-equipment", sourceName: "夜城義體" },
+    { id: "cyberskeleton-frame", name: "賽博骨架框體", rarity: "legendary", effect: "turnBlock", amount: 7, upgradedAmount: 11, text: "回合開始全隊獲得 7 護甲。過重框架會替隊伍扛住火力，也會把使用者往邊緣推。", sourceId: "cyberpunk-equipment", sourceName: "夜城義體" }
+  );
+
+  bloodlines.push(
+    { characterId: "david-martinez", name: "邊緣行者適格", text: "沙德威斯坦超頻額外造成 12 群體穿甲傷害，並讓大衛再獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 15000, sideStoryCost: 6 }, effect: { extraDamageAll: 12, evadeOwner: 1 } },
+    { characterId: "lucy-kushinada", name: "月面深網夢", text: "月面線纜入侵額外抽 1 張牌，並使所有敵人再虛弱 4 點。", sideStoryCost: { rewardPointCost: 9800, sideStoryCost: 4 }, effect: { draw: 1, weakAll: 4 } },
+    { characterId: "rebecca-edgerunners", name: "霰彈狂心", text: "GUTS亂射額外造成 14 單體傷害，並燃燒所有敵人 5 點。", sideStoryCost: { rewardPointCost: 9000, sideStoryCost: 4 }, effect: { extraDamage: 14, burnAll: 5 } },
+    { characterId: "maine-edgerunners", name: "重鉻隊長", text: "腕炮壓制額外提供全隊 12 護甲，並造成 8 群體傷害。", sideStoryCost: { rewardPointCost: 9600, sideStoryCost: 4 }, effect: { blockAll: 12, extraDamageAll: 8 } },
+    { characterId: "dorio-edgerunners", name: "副隊防線", text: "近身封鎖額外提供全隊 10 護甲，並讓朵莉歐獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 8200, sideStoryCost: 3 }, effect: { blockAll: 10, evadeOwner: 1 } },
+    { characterId: "kiwi-edgerunners", name: "冷啟動後門", text: "破冰後門額外使所有敵人中毒 5 點，並抽 1 張牌。", sideStoryCost: { rewardPointCost: 8400, sideStoryCost: 3 }, effect: { poisonAll: 5, draw: 1 } },
+    { characterId: "falco-edgerunners", name: "最後撤離線", text: "極限撤離額外讓全隊獲得 8 護甲，並降低 4 壓力。", sideStoryCost: { rewardPointCost: 8000, sideStoryCost: 3 }, effect: { blockAll: 8, reduceStress: 4 } }
+  );
+
+  enemies.push(
+    { id: "genshin-inazuma-tenryou-samurai", name: "天領奉行武士", maxHp: 340, stressAura: 16, intents: [{ kind: "attack", label: "眼狩令突刺", amount: 56, targetMode: "front" }, { kind: "guard", label: "奉行陣列", amount: 46 }, { kind: "stress", label: "通緝布告", amount: 26, targetMode: "all" }] },
+    { id: "genshin-inazuma-kairagi-line", name: "海亂鬼雷火線", maxHp: 430, stressAura: 18, regen: 8, intents: [{ kind: "cleave", label: "雷火二連斬", amount: 34, targetMode: "all" }, { kind: "attack", label: "居合反撲", amount: 68, targetMode: "random" }, { kind: "regen", label: "惡鬼重整", amount: 36, block: 20 }] },
+    { id: "genshin-inazuma-shogunate-elite", name: "幕府奪眼精銳", maxHp: 580, stressAura: 22, intents: [{ kind: "attack", label: "封願雷槍", amount: 84, targetMode: "random" }, { kind: "cleave", label: "鎮壓齊射", amount: 40, targetMode: "all" }, { kind: "stress", label: "願望剝離", amount: 38, targetMode: "all" }] },
+    { id: "genshin-inazuma-signora-crimson-witch", name: "女士·熾烈魔女", maxHp: 760, stressAura: 28, regen: 10, intents: [{ kind: "cleave", label: "冰棺寒潮", amount: 46, targetMode: "all" }, { kind: "attack", label: "焚盡鞭火", amount: 92, targetMode: "front" }, { kind: "stress", label: "外交羞辱", amount: 44, targetMode: "all" }, { kind: "regen", label: "魔女燃燒", amount: 50, block: 28 }] },
+    { id: "genshin-inazuma-raiden-puppet", name: "雷電將軍·永恆人偶", maxHp: 1120, stressAura: 36, regen: 18, intents: [{ kind: "attack", label: "無想一刀", amount: 132, targetMode: "front" }, { kind: "cleave", label: "夢想雷暴", amount: 62, targetMode: "all" }, { kind: "stress", label: "一心淨土封鎖", amount: 62, targetMode: "all" }, { kind: "regen", label: "永恆機關", amount: 74, block: 42 }], phaseTwo: { name: "雷電影 一心淨土", maxHp: 900, stressAura: 42, regen: 24, intents: [{ kind: "attack", label: "願望匯聚斬", amount: 150, targetMode: "random" }, { kind: "cleave", label: "雷鳴寂滅", amount: 76, targetMode: "all" }, { kind: "stress", label: "永恆質問", amount: 70, targetMode: "all" }, { kind: "regen", label: "神格重構", amount: 88, block: 50 }] } }
+  );
+
+  encounters.push(
+    { id: "genshin-inazuma-ritou-decree", name: "離島·鎖國令盤查", tier: "normal", enemies: ["genshin-inazuma-tenryou-samurai", "genshin-inazuma-kairagi-line"], rewardPoints: 6600 },
+    { id: "genshin-inazuma-komore-teahouse", name: "木漏茶室·社奉行密談", tier: "normal", enemies: ["genshin-inazuma-tenryou-samurai", "genshin-inazuma-tenryou-samurai"], rewardPoints: 6800 },
+    { id: "genshin-inazuma-watatsumi-front", name: "海祇島·反抗軍前線", tier: "elite", enemies: ["genshin-inazuma-shogunate-elite", "genshin-inazuma-kairagi-line"], rewardPoints: 9600 },
+    { id: "genshin-inazuma-tenshukaku-signora", name: "天守閣·御前決鬥", tier: "miniboss", enemies: ["genshin-inazuma-signora-crimson-witch"], rewardPoints: 14800 },
+    { id: "genshin-inazuma-plane-euthymia", name: "一心淨土·永恆之戰", tier: "boss", enemies: ["genshin-inazuma-raiden-puppet"], rewardPoints: 25000 }
+  );
+
+  const genshinInazumaScenario = { id: "genshin-inazuma-vision-hunt", name: "原神·稻妻", subtitle: "眼狩令到一心淨土", intro: "白光落在離島碼頭時，鎖國令像鐵幕一樣罩住稻妻。神之眼被嵌進千手百眼神像，反抗軍在海祇島苦撐，天守閣內的御前決鬥正把一切推向雷電將軍的一刀。", recruitmentPool: ["kamisato-ayaka", "yoimiya", "sangonomiya-kokomi", "kaedehara-kazuha", "kujou-sara", "arataki-itto", "chu-xuan", "zhan-lan", "zero", "luo-yinglong"], normal: ["genshin-inazuma-ritou-decree", "genshin-inazuma-komore-teahouse"], elite: ["genshin-inazuma-watatsumi-front"], miniboss: "genshin-inazuma-tenshukaku-signora", boss: "genshin-inazuma-plane-euthymia", eventTitle: "眼狩令與永恆質問", eventText: "稻妻的願望被收進神像，八重神子等待有人把民眾的願望送進一心淨土。若中洲隊能讓雷電影聽見被奪走的聲音，永恆便不再只是停滯。", scenarioPowerName: "願望雷鳴", scenarioPowerText: "本次遠征第一回合額外獲得 1 能量，每回合全隊獲得 4 護甲。", scenarioPower: { id: "inazuma-wish-thunder", effect: "openingEnergy", amount: 1 }, hiddenProtagonistId: "raiden-ei", eventChoices: { stage1: [{ id: "inazuma-komore-network", title: "接入社奉行暗線", text: "跟隨神里綾華與托馬避開離島盤查，把眼狩令背後的願望名冊交給八重神子。" }, { id: "inazuma-watatsumi-counteroffensive", title: "支援海祇島反攻", text: "加入心海的反抗軍前線，用補給、誘敵與煙火信號拖住幕府軍。" }, { id: "inazuma-tenshukaku-duel", title: "直入天守閣御前", text: "以最快速度追上女士與雷電將軍，在御前決鬥和無想一刀前搶到決定權。" }], stage2: { "inazuma-komore-network": [{ id: "inazuma-yae-wish-plan", title: "交出願望名冊", text: "八重神子接過名冊，要求中洲隊把民眾願望帶進一心淨土，而不是只擊敗人偶。" }, { id: "inazuma-commission-infiltration", title: "潛入天領奉行", text: "讓楚軒與零點摸進奉行檔案庫，切斷眼狩令追捕名單。" }], "inazuma-watatsumi-counteroffensive": [{ id: "inazuma-kokomi-supply-web", title: "補全海祇補給線", text: "心海把每一次撤退都改寫成誘敵，讓反抗軍不是背景而是戰局槓桿。" }, { id: "inazuma-firework-uprising", title: "點燃煙火起義", text: "宵宮用長野原煙火把稻妻城的沉默炸開，讓被奪願望的人知道反抗還在。" }], "inazuma-tenshukaku-duel": [{ id: "inazuma-signora-trial", title: "御前擊敗女士", text: "在外交羞辱變成處決前，先把女士逼進熾烈魔女形態，讓愚人眾暗線暴露。" }, { id: "inazuma-kazuha-parry", title: "接住無想一刀", text: "讓萬葉帶著友人的願望站在刀前，替隊伍爭取進入一心淨土的一瞬。" }] }, stage3: { "inazuma-yae-wish-plan": [{ id: "inazuma-ei-wish-reached", title: "願望抵達一心淨土", text: "把千手百眼神像中回響的願望交給雷電影，讓她看見永恆之外仍有人活著前進。" }, { id: "inazuma-omamori-route", title: "收下神子御守", text: "不正面說服雷電影，先以八重神子的御守換取戰術增益與退路。" }], "inazuma-commission-infiltration": [{ id: "inazuma-decree-files-burned", title: "焚毀眼狩名冊", text: "天領奉行失去追捕清單，城內壓力下降，但雷電將軍的核心命令仍未動搖。" }, { id: "inazuma-ei-wish-reached", title: "以名冊作為願望證據", text: "把被剝奪的願望逐一擺到雷電影面前，逼永恆回答每一個名字。" }], "inazuma-kokomi-supply-web": [{ id: "inazuma-watatsumi-sustained", title: "反抗軍戰線續命", text: "海祇島撐過最危險的缺口，隊伍獲得恢復與支線判定。" }, { id: "inazuma-ei-wish-reached", title: "讓前線願望入淨土", text: "把海祇島士兵的求生、悔恨與勝利願望送進一心淨土。" }], "inazuma-firework-uprising": [{ id: "inazuma-firework-city-signal", title: "稻妻城煙火起義", text: "煙火成為全城信號，眼狩令的恐懼被短暫撕開。" }, { id: "inazuma-kazuha-parry-result", title: "煙火掩護萬葉突入", text: "宵宮的煙火替萬葉爭取一瞬，友人的神之眼再度亮起。" }], "inazuma-signora-trial": [{ id: "inazuma-signora-defeated", title: "御前決鬥勝出", text: "女士敗退，愚人眾對稻妻的干涉被迫轉入幕後。" }, { id: "inazuma-ei-wish-reached", title: "以御前勝負換取對話", text: "勝利不是終點，而是進入一心淨土的門票。" }], "inazuma-kazuha-parry": [{ id: "inazuma-kazuha-parry-result", title: "友人願望接刀", text: "萬葉用兩枚神之眼的光接住無想一刀，隊伍被推進一心淨土。" }, { id: "inazuma-ei-wish-reached", title: "趁刀光入淨土", text: "在無想一刀被接下的瞬間，中洲隊把願望推向雷電影本人。" }] } }, eventOutcomes: { "inazuma-ei-wish-reached": { title: "永恆開始流動", text: "雷電影聽見千手百眼神像中所有未熄滅的願望。她承認永恆不是停滯，並以隱藏角色身份加入中洲隊，觀察新的前進方式。", effects: [{ type: "recruit-hidden" }, { type: "side-story", amount: 2 }, { type: "run-power", id: "plane-euthymia-route", effect: "openingEnergy", amount: 1 }], rewards: ["隱藏角色：雷電影", "支線劇情 +2", "本次遠征第一回合能量 +1"], costs: ["稻妻將面對重新開國後的動盪，不再能把痛苦封進永恆。"], storyImpact: "眼狩令、鎖國令、反抗軍與一心淨土被串成一次願望回流，雷電影第一次不再只聽見自己的答案。", worldState: "眼狩令解除，稻妻城與海祇島停火，天領奉行必須清算被愚人眾利用的裂縫。" }, "inazuma-omamori-route": { title: "神子御守入手", text: "八重神子把御守塞進隊伍手裡，笑著說下次別把神明的心結拖到最後一秒。", effects: [{ type: "legendary-equipment" }, { type: "side-story", amount: 1 }], rewards: ["傳說裝備", "支線劇情 +1"], costs: ["雷電影仍未真正被說服，隱藏招募延後。"], storyImpact: "八重神子保留了談判餘地，但永恆的核心仍等著下一次被敲開。", worldState: "鳴神大社暗線延續，稻妻局勢暫時緩和。" }, "inazuma-decree-files-burned": { title: "眼狩名冊焚毀", text: "追捕名冊在火中化成灰，幕府軍失去精準鎖定目標的能力。", effects: [{ type: "run-power", id: "decree-file-burn", effect: "openingBlock", amount: 12 }, { type: "heal", amount: 0.12, stressRelief: 10 }], rewards: ["開場護甲 +12", "全隊恢復與壓力下降"], costs: ["沒有直接進入一心淨土，雷電影仍在遠處。"], storyImpact: "被奪願望的人得到喘息，但眼狩令的根源還沒有被說服。", worldState: "稻妻城內追捕暫停，社奉行暗線安全撤離。" }, "inazuma-watatsumi-sustained": { title: "海祇戰線續命", text: "心海的預案讓反抗軍撐過缺糧與圍剿，前線不再只是等待失敗。", effects: [{ type: "heal", amount: 0.18, stressRelief: 18 }, { type: "side-story", amount: 1 }], rewards: ["全隊恢復與壓力下降", "支線劇情 +1"], costs: ["天守閣核心對話被延後。"], storyImpact: "海祇島獲得真正的戰術縱深，反抗軍能把願望送到城門前。", worldState: "海祇島士氣回升，幕府軍推進受阻。" }, "inazuma-firework-city-signal": { title: "煙火照亮稻妻城", text: "長野原煙火在城中炸開，沉默的人群第一次同時抬頭。", effects: [{ type: "rare-card" }, { type: "run-power", id: "firework-uprising", effect: "attackBonus", amount: 4 }], rewards: ["稀有牌獎勵", "本次遠征攻擊 +4"], costs: ["煙火暴露了反抗暗線，下一場戰鬥壓力上升。"], storyImpact: "願望不再只藏在神之眼裡，也藏在每一個抬頭的人心裡。", worldState: "城內戒嚴升級，但恐懼已經不再完整。" }, "inazuma-signora-defeated": { title: "御前決鬥勝出", text: "女士在天守閣敗出，冰與火都沒能替愚人眾保住稻妻的暗線。", effects: [{ type: "run-power", id: "crimson-witch-break", effect: "attackBonus", amount: 6 }, { type: "reward-points", amount: 1200 }], rewards: ["本次遠征攻擊 +6", "獎勵點 +1200"], costs: ["無想一刀仍將落下，必須準備接刀。"], storyImpact: "愚人眾操盤被打斷，雷電將軍必須親自面對願望問題。", worldState: "天守閣的外交屏障崩裂，幕府內部開始動搖。" }, "inazuma-kazuha-parry-result": { title: "友人願望接刀", text: "萬葉接住無想一刀的瞬間，友人的神之眼再次亮起，所有人都聽見願望不是可以被沒收的東西。", effects: [{ type: "scenario-power" }, { type: "side-story", amount: 1 }], rewards: ["劇本增益：願望雷鳴", "支線劇情 +1"], costs: ["萬葉承受了刀勢餘波，全隊壓力 +12"], storyImpact: "無想一刀不再是不可逆的天威，稻妻看見凡人也能接住神明的停滯。", worldState: "一心淨土的門被打開，願望開始倒灌。" } } };
+  scenarioOpenings["genshin-inazuma-vision-hunt"] = {
+    title: "願望被釘入神像之夜",
+    premise: "白光消散時，離島碼頭正在盤查外來者。鎖國令封住海路，眼狩令把神之眼嵌進千手百眼神像；海祇島反抗軍疲於奔命，天守閣內則等待一場能把所有願望推進一心淨土的御前決鬥。",
+    dialogue: [
+      { speaker: "主神", line: "主線：突破鎖國令、阻止眼狩令、擊敗御前決鬥中的女士，並在一心淨土內說服雷電影。隱藏判定：讓願望抵達雷神。" },
+      { speaker: "神里綾華", line: "若只是逃出稻妻，眼狩令還會繼續。請幫我們把被奪走的願望帶回人群之中。" },
+      { speaker: "珊瑚宮心海", line: "反抗軍不是為勝利而戰，是為了讓每一個願望撐到明天。補給線由我負責，突破口交給你們。" },
+      { speaker: "楓原萬葉", line: "風裡有熟悉的聲音。若那一刀再次落下，我會帶著友人的願望站到它面前。" },
+      { speaker: "八重神子", line: "想敲開影的心門，靠蠻力可不夠。把那些願望帶進一心淨土，她才會真正聽見。" },
+      { speaker: "楚軒", line: "眼狩令是社會控制，一心淨土是心理閉環。打碎前者只能止血，說服雷電影才是通關條件。" }
+    ],
+    panels: [
+      { enemyId: "genshin-inazuma-tenryou-samurai", title: "離島鎖國盤查", text: "天領奉行的刀柄按在神之眼旁，外來者的每一步都被寫進通緝簿。" },
+      { enemyId: "genshin-inazuma-kairagi-line", title: "踏鞴砂雷火線", text: "海亂鬼在雷雨與爐火間伏擊，流浪武士的刀光像被眼狩令逼出的裂痕。" },
+      { enemyId: "genshin-inazuma-shogunate-elite", title: "海祇前線鎮壓", text: "幕府精銳壓向反抗軍營地，心海的預案必須比敵人的下一輪齊射更早落下。" },
+      { enemyId: "genshin-inazuma-signora-crimson-witch", title: "天守閣御前決鬥", text: "女士在冰與火之間褪去外交假面，御前決鬥的勝負將直接引來雷電將軍的刀。" },
+      { enemyId: "genshin-inazuma-raiden-puppet", title: "一心淨土永恆戰", text: "雷光切開意識空間，千手百眼神像中的願望像星火一樣湧向雷電影。" }
+    ]
+  };
+  genshinInazumaScenario.opening = scenarioOpenings["genshin-inazuma-vision-hunt"];
+  scenarios.push(genshinInazumaScenario);
+  hiddenProtagonistsByScenario["genshin-inazuma-vision-hunt"] = "raiden-ei";
+
+  enemies.push(
+    { id: "cyberpunk-maelstrom-scavs", name: "漩渦幫義體拆解隊", maxHp: 380, stressAura: 18, intents: [{ kind: "attack", label: "螳螂刀突襲", amount: 62, targetMode: "random" }, { kind: "stress", label: "義眼恐嚇", amount: 30, targetMode: "all" }, { kind: "guard", label: "廢件掩體", amount: 44 }] },
+    { id: "cyberpunk-militech-tac-squad", name: "軍用科技戰術小隊", maxHp: 520, stressAura: 20, intents: [{ kind: "cleave", label: "智能彈幕", amount: 38, targetMode: "all" }, { kind: "guard", label: "戰術盾牆", amount: 58 }, { kind: "attack", label: "穿甲點射", amount: 82, targetMode: "front" }] },
+    { id: "cyberpunk-arasaka-netrunner", name: "荒坂黑客獵犬", maxHp: 460, stressAura: 24, intents: [{ kind: "stress", label: "腦機灼燒", amount: 44, targetMode: "all" }, { kind: "attack", label: "黑冰反噬", amount: 76, targetMode: "random" }, { kind: "guard", label: "ICE防火牆", amount: 64 }] },
+    { id: "cyberpunk-cyberpsycho-exosuit", name: "賽博精神病外骨骼", maxHp: 760, stressAura: 32, regen: 14, intents: [{ kind: "attack", label: "義體暴走重擊", amount: 104, targetMode: "front" }, { kind: "cleave", label: "微型飛彈亂射", amount: 50, targetMode: "all" }, { kind: "stress", label: "精神崩壞噪音", amount: 48, targetMode: "all" }, { kind: "regen", label: "自動修復注射", amount: 54, block: 30 }] },
+    { id: "cyberpunk-adam-smasher", name: "亞當·碎骨", maxHp: 1180, stressAura: 42, regen: 20, intents: [{ kind: "attack", label: "傳奇殺戮重拳", amount: 146, targetMode: "front" }, { kind: "cleave", label: "火箭艙齊射", amount: 68, targetMode: "all" }, { kind: "stress", label: "夜城絕望宣告", amount: 72, targetMode: "all" }, { kind: "regen", label: "荒坂戰鬥義體重構", amount: 82, block: 46 }], phaseTwo: { name: "亞當·碎骨 塔頂殲滅模式", maxHp: 960, stressAura: 48, regen: 26, intents: [{ kind: "attack", label: "沙德威斯坦截殺", amount: 162, targetMode: "random" }, { kind: "cleave", label: "重火力清場", amount: 82, targetMode: "all" }, { kind: "stress", label: "傳奇終結", amount: 78, targetMode: "all" }, { kind: "regen", label: "義體冗餘啟動", amount: 94, block: 54 }] } }
+  );
+
+  encounters.push(
+    { id: "cyberpunk-santo-domingo-scavs", name: "聖多明哥·義體拆解巷", tier: "normal", enemies: ["cyberpunk-maelstrom-scavs", "cyberpunk-maelstrom-scavs"], rewardPoints: 7200 },
+    { id: "cyberpunk-militech-convoy", name: "軍用科技·運輸車劫案", tier: "normal", enemies: ["cyberpunk-militech-tac-squad", "cyberpunk-maelstrom-scavs"], rewardPoints: 7600 },
+    { id: "cyberpunk-arasaka-datafort", name: "荒坂數據堡壘·黑冰追獵", tier: "elite", enemies: ["cyberpunk-arasaka-netrunner", "cyberpunk-militech-tac-squad"], rewardPoints: 10800 },
+    { id: "cyberpunk-cyberpsycho-docks", name: "碼頭·賽博精神病暴走", tier: "miniboss", enemies: ["cyberpunk-cyberpsycho-exosuit"], rewardPoints: 15600 },
+    { id: "cyberpunk-arasaka-tower-smasher", name: "荒坂塔頂·亞當碎骨", tier: "boss", enemies: ["cyberpunk-adam-smasher"], rewardPoints: 26000 }
+  );
+
+  const cyberpunkEdgerunnersScenario = { id: "cyberpunk-edgerunners-night-city", name: "Cyberpunk: Edgerunners", subtitle: "夜城邊緣到荒坂塔頂", intro: "白光落進夜城公寓時，荒坂學院、漩渦幫交易、軍用科技運輸車與月面夢想已經把大衛推向沙德威斯坦。若中洲隊不改寫速度與義體的代價，塔頂只會剩下亞當·碎骨的最後一拳。", recruitmentPool: ["lucy-kushinada", "rebecca-edgerunners", "maine-edgerunners", "dorio-edgerunners", "kiwi-edgerunners", "falco-edgerunners", "chu-xuan", "zero", "zhao-yingkong", "leon-kennedy"], normal: ["cyberpunk-santo-domingo-scavs", "cyberpunk-militech-convoy"], elite: ["cyberpunk-arasaka-datafort"], miniboss: "cyberpunk-cyberpsycho-docks", boss: "cyberpunk-arasaka-tower-smasher", eventTitle: "沙德威斯坦與月面逃亡", eventText: "露西想把大衛帶離荒坂的黑網，曼恩小隊在義體代價裡逐步失速，蕾貝卡仍把槍口頂在夜城臉上。若能讓大衛在塔頂前停下超頻，月亮就不再只是死前願望。", scenarioPowerName: "夜城超頻", scenarioPowerText: "本次遠征第一回合額外獲得 1 能量，第一張攻擊牌穿透護甲，但回合開始全隊壓力 +1。", scenarioPower: { id: "night-city-overclock", effect: "openingEnergy", amount: 1 }, hiddenProtagonistId: "david-martinez", eventChoices: { stage1: [{ id: "cyberpunk-academy-sandevistan", title: "截下學院沙德威斯坦", text: "在荒坂學院與街頭衝突之間插手，讓大衛不是單獨把軍用植入件裝進脊椎。" }, { id: "cyberpunk-crew-heist-line", title: "加入曼恩小隊劫案", text: "跟著曼恩、朵莉歐與蕾貝卡進入軍用科技運輸線，把夜城任務改成可撤離的戰術圖。" }, { id: "cyberpunk-lucy-blackwall", title: "保護露西深網線", text: "陪露西追查荒坂黑網與月面資料，避免她被迫獨自把大衛推離真相。" }], stage2: { "cyberpunk-academy-sandevistan": [{ id: "cyberpunk-gloria-debt-cut", title: "切斷荒坂債務鉤子", text: "楚軒逆算保險、校方與醫療費，把大衛被逼進夜城底層的第一個鉤子拆掉。" }, { id: "cyberpunk-reflex-training", title: "建立超頻節制訓練", text: "用主神戰鬥回放訓練沙德威斯坦節奏，讓速度變成技能而不是自殺。" }], "cyberpunk-crew-heist-line": [{ id: "cyberpunk-maine-stabilized", title: "穩住曼恩義體崩壞", text: "朵莉歐與詹嵐聯手壓住曼恩的精神噪音，讓小隊不在第一個崩點散掉。" }, { id: "cyberpunk-rebecca-fireline", title: "讓蕾貝卡接管火力窗口", text: "蕾貝卡把追兵壓回掩體，法爾科提前規劃撤離線，隊伍不用靠犧牲換出口。" }], "cyberpunk-lucy-blackwall": [{ id: "cyberpunk-lucy-truth-shared", title: "把荒坂真相交給大衛", text: "露西不再獨自刪除大衛的實驗資料，而是讓中洲隊把真相變成共同決策。" }, { id: "cyberpunk-kiwi-double-cross-read", title: "提前讀出琦薇背刺", text: "用齊騰一和楚軒的雙重驗證，提早標記 Faraday 的交易鏈。" }] }, stage3: { "cyberpunk-gloria-debt-cut": [{ id: "cyberpunk-david-moon-route", title: "把月球票變成活路", text: "大衛不再把月亮當遺言，而是把露西的夢當成撤離座標。" }, { id: "cyberpunk-sandevistan-cache", title: "保留軍用植入件緩衝", text: "不直接招募大衛，改把沙德威斯坦節制資料轉成主神強化。" }], "cyberpunk-reflex-training": [{ id: "cyberpunk-david-moon-route", title: "讓大衛學會停下", text: "訓練不是為了更快，而是讓他能在碎骨出現前停下超頻。" }, { id: "cyberpunk-overclock-power", title: "把超頻壓成劇本增益", text: "保留速度優勢，但不把大衛拉進隊伍。" }], "cyberpunk-maine-stabilized": [{ id: "cyberpunk-maine-crew-survives", title: "曼恩小隊活過崩點", text: "小隊不再用隊長的失控換取經驗，夜城支線因此多出一條可用人脈。" }, { id: "cyberpunk-david-moon-route", title: "把曼恩的錯誤交給大衛", text: "讓大衛正面看見義體崩壞的結局，提前踩住煞車。" }], "cyberpunk-rebecca-fireline": [{ id: "cyberpunk-rebecca-cover-success", title: "蕾貝卡火力線成功撤離", text: "蕾貝卡沒有被塔頂落點吞掉，火力掩護變成隊伍牌組。" }, { id: "cyberpunk-david-moon-route", title: "讓蕾貝卡拖住碎骨", text: "火力不是為了殉爆，而是替大衛和露西爭一秒撤離。" }], "cyberpunk-lucy-truth-shared": [{ id: "cyberpunk-david-moon-route", title: "露西與大衛共同逃亡", text: "真相沒有被一個人背走，大衛終於知道自己正在被推向哪個實驗終點。" }, { id: "cyberpunk-lucy-moon-ticket", title: "保留月面逃亡票", text: "讓露西先脫離荒坂黑網，隊伍獲得支線與恢復。" }], "cyberpunk-kiwi-double-cross-read": [{ id: "cyberpunk-faraday-deal-burned", title: "燒掉 Faraday 交易鏈", text: "琦薇的背刺被提前拆出，Faraday 無法把小隊送進荒坂口袋。" }, { id: "cyberpunk-david-moon-route", title: "用背刺證據換塔頂撤離", text: "荒坂內線被反向利用，大衛有機會在塔頂前下車。" }] } }, eventOutcomes: { "cyberpunk-david-moon-route": { title: "月球不是遺言", text: "大衛在沙德威斯坦超頻到極限前被拉回來。露西的月面夢不再是獨自逃亡，他以隱藏角色身份加入中洲隊，帶著夜城速度學會活下去。", effects: [{ type: "recruit-hidden" }, { type: "side-story", amount: 2 }, { type: "run-power", id: "moon-route-overclock", effect: "openingEnergy", amount: 1 }], rewards: ["隱藏角色：大衛·馬丁尼茲", "支線劇情 +2", "本次遠征第一回合能量 +1"], costs: ["夜城不會因此變善良，荒坂仍會追索丟失的實驗樣本。"], storyImpact: "沙德威斯坦、月面夢、曼恩小隊崩點與荒坂塔頂被改寫成一次撤離，而不是一場傳奇死亡。", worldState: "露西脫離黑網追捕，蕾貝卡與法爾科保住撤離線，夜城多了一個活著的傳說。" }, "cyberpunk-sandevistan-cache": { title: "沙德威斯坦緩衝資料", text: "植入件沒有繼續推大衛上路，主神把節制資料轉成可購買義體強化。", effects: [{ type: "scenario-power" }, { type: "side-story", amount: 1 }], rewards: ["劇本增益：夜城超頻", "支線劇情 +1"], costs: ["大衛暫時沒有加入隊伍。"], storyImpact: "速度被重新定義為可控技術，而不是夜城拿來收割少年的燃料。", worldState: "荒坂遺失部分軍用義體測試資料，追捕強度上升。" }, "cyberpunk-overclock-power": { title: "超頻節奏穩定", text: "隊伍掌握一套可短暫加速的夜城戰術，但沒有完全改寫大衛的塔頂線。", effects: [{ type: "scenario-power" }, { type: "reward-points", amount: 1300 }], rewards: ["劇本增益：夜城超頻", "獎勵點 +1300"], costs: ["賽博精神病風險仍在大衛身上累積。"], storyImpact: "速度變成隊伍資源，但核心人物仍在危險邊緣。", worldState: "夜城傭兵圈開始流傳中洲隊的超頻打法。" }, "cyberpunk-maine-crew-survives": { title: "曼恩小隊活過崩點", text: "曼恩沒有在義體噪音中完全失控，朵莉歐把隊長拖回撤離車。", effects: [{ type: "heal", amount: 0.16, stressRelief: 18 }, { type: "side-story", amount: 1 }], rewards: ["全隊恢復與壓力下降", "支線劇情 +1"], costs: ["小隊仍欠夜城一筆很難還的債。"], storyImpact: "大衛看見前輩不是只能以死亡收場，義體代價被提前攤開。", worldState: "曼恩小隊保存戰力，Faraday 的掌控力下降。" }, "cyberpunk-rebecca-cover-success": { title: "火力線撤離成功", text: "蕾貝卡把追兵釘回街角，法爾科從槍火縫隙裡拉出撤離路線。", effects: [{ type: "rare-card" }, { type: "run-power", id: "rebecca-cover-line", effect: "attackBonus", amount: 5 }], rewards: ["稀有牌獎勵", "本次遠征攻擊 +5"], costs: ["高調槍戰讓荒坂追蹤更快。"], storyImpact: "火力不再只是陪葬，而是把小隊從夜城吞噬裡拽出來。", worldState: "NCPD與荒坂同時提高通緝等級。" }, "cyberpunk-lucy-moon-ticket": { title: "月面票保留", text: "露西拿回逃往月球的路線資料，並把其中一段安全節點交給隊伍。", effects: [{ type: "heal", amount: 0.12, stressRelief: 20 }, { type: "legendary-equipment" }], rewards: ["全隊恢復與壓力下降", "傳說裝備"], costs: ["露西仍需要時間完全脫離荒坂黑網。"], storyImpact: "月亮從幻覺變成實際撤離座標，大衛線獲得緩衝。", worldState: "荒坂黑網追蹤短暫失焦。" }, "cyberpunk-faraday-deal-burned": { title: "Faraday 交易鏈燒毀", text: "交易記錄被反向拋給荒坂競爭部門，Faraday 的出賣還沒收款就先爆炸。", effects: [{ type: "reward-points", amount: 1600 }, { type: "run-power", id: "burned-deal-route", effect: "openingBlock", amount: 12 }], rewards: ["獎勵點 +1600", "開場護甲 +12"], costs: ["琦薇與隊伍之間的信任無法完全修復。"], storyImpact: "背刺不再是定局，夜城交易規則被中洲隊反咬一口。", worldState: "Faraday 失去荒坂信任，軍用科技也開始追查資料流向。" } } };
+  scenarioOpenings["cyberpunk-edgerunners-night-city"] = {
+    title: "夜城把夢標成違禁品",
+    premise: "白光散去時，大衛的公寓窗外正在下夜城的霓虹雨。沙德威斯坦、荒坂黑網、曼恩小隊、月球票與亞當·碎骨都在同一條下坡路上；這次中洲隊要做的不是跑得更快，而是讓大衛在終點前停下來。",
+    dialogue: [
+      { speaker: "主神", line: "主線：介入沙德威斯坦植入、穩住曼恩小隊、切斷荒坂黑網，並在塔頂阻止亞當·碎骨收束結局。隱藏判定：讓大衛活著抵達月面路線。" },
+      { speaker: "大衛·馬丁尼茲", line: "我知道這東西會把人燒空。可如果我不跑快一點，夜城連她的夢都會搶走。" },
+      { speaker: "露西", line: "不要相信夜城給的出口。它只會把你送到另一個籠子裡。除非我們自己開門。" },
+      { speaker: "蕾貝卡", line: "講完了沒？有追兵就打追兵，有碎骨就先把路炸出來。誰都別在我面前裝成結局。" },
+      { speaker: "曼恩", line: "小子，重鉻不是勳章。它會先讓你像英雄，再讓你忘記自己還是人。" },
+      { speaker: "楚軒", line: "夜城的社會規則是消耗模型。大衛不是意外，他是荒坂、債務、義體市場與情感槓桿共同導出的結果。" }
+    ],
+    panels: [
+      { enemyId: "cyberpunk-maelstrom-scavs", title: "義體拆解巷", text: "漩渦幫的紅色義眼在巷口亮起，拆下來的義體被當成下一場交易的籌碼。" },
+      { enemyId: "cyberpunk-militech-tac-squad", title: "軍用科技運輸線", text: "戰術小隊封住高架路，智能彈道在霓虹雨裡自動尋找最脆弱的掩體。" },
+      { enemyId: "cyberpunk-arasaka-netrunner", title: "荒坂黑冰追獵", text: "露西的冰浴艙外警報跳紅，黑冰沿著連線反撲，試圖把月面夢燒成數據灰。" },
+      { enemyId: "cyberpunk-cyberpsycho-exosuit", title: "賽博精神病暴走", text: "外骨骼在碼頭拖出火花，義體噪音把人性壓到只剩命令與反射。" },
+      { enemyId: "cyberpunk-adam-smasher", title: "荒坂塔頂碎骨", text: "亞當·碎骨站在塔頂火光裡，像夜城親手做出的終點，等著把傳奇打成警示牌。" }
+    ]
+  };
+  cyberpunkEdgerunnersScenario.opening = scenarioOpenings["cyberpunk-edgerunners-night-city"];
+  scenarios.push(cyberpunkEdgerunnersScenario);
+  hiddenProtagonistsByScenario["cyberpunk-edgerunners-night-city"] = "david-martinez";
+
+  const niohCharacters = [
+    { id: "william-adams-nioh", name: "威廉·亞當斯", role: "金髮武士與守護靈契約者", faction: "仁王", factionId: "nioh", maxHp: 116, stress: 18, energyContribution: 0, passiveId: "opening-overdrive", passiveText: "隱藏人物。第一回合額外獲得 2 能量，但自身壓力 +8；九十九武器會把妖氣與精華壓成一瞬爆發。", signatureCardId: "william-living-weapon", unlock: "hidden-nioh-saoirse", hidden: true },
+    { id: "hattori-hanzo-nioh", name: "服部半藏", role: "伊賀忍者頭目", faction: "仁王", factionId: "nioh", maxHp: 86, stress: 9, energyContribution: 1, passiveId: "opening-draw", passiveText: "每場戰鬥第一回合額外抽 1 張牌。忍術會先替隊伍標出妖怪的破綻。", signatureCardId: "hanzo-kusarigama-ambush", unlock: "nioh-yokai-sengoku" },
+    { id: "okatsu-nioh", name: "阿勝", role: "德川密探", faction: "仁王", factionId: "nioh", maxHp: 82, stress: 10, energyContribution: 1, passiveId: "second-card-strike", passiveText: "每回合打出第二張牌時，追加 5 點傷害。她的短刃通常在敵人反應前已經收回。", signatureCardId: "okatsu-shadow-dance", unlock: "nioh-yokai-sengoku" },
+    { id: "tachibana-ginchiyo", name: "立花誾千代", role: "雷切女武者", faction: "仁王", factionId: "nioh", maxHp: 94, stress: 8, energyContribution: 0, passiveId: "first-attack-pierce", passiveText: "每回合第一張攻擊牌穿透護甲。雷切出鞘時，妖怪的護甲會先被雷聲撕開。", signatureCardId: "ginchiyo-raikiri-thunder", unlock: "nioh-yokai-sengoku" },
+    { id: "tachibana-muneshige", name: "立花宗茂", role: "西國無雙劍豪", faction: "仁王", factionId: "nioh", maxHp: 106, stress: 12, energyContribution: 0, passiveId: "first-heavy-attack", passiveText: "每回合第一張費用 2 以上攻擊牌傷害 +6。居合與雷犬會把決鬥壓成一刀。", signatureCardId: "muneshige-iai-duel", unlock: "nioh-yokai-sengoku" },
+    { id: "fuku-nioh", name: "福", role: "陰陽師", faction: "仁王", factionId: "nioh", maxHp: 70, stress: 7, energyContribution: 3, passiveId: "first-tactic-discount", passiveText: "每回合第一張戰術牌費用 -1，最低為 0。符咒先落下，戰場才開始計算。", signatureCardId: "fuku-onmyo-seal", unlock: "nioh-yokai-sengoku" },
+    { id: "yasuke-nioh", name: "彌助", role: "黑武士重甲護衛", faction: "仁王", factionId: "nioh", maxHp: 124, stress: 14, energyContribution: -1, passiveId: "front-guard", passiveText: "回合開始前排與生命最低隊員獲得 4 護甲。重甲會先替隊伍吃下妖鬼的第一擊。", signatureCardId: "yasuke-obsidian-guard", unlock: "nioh-yokai-sengoku" }
+  ];
+  characters.push(...niohCharacters);
+
+  customTags.push(
+    { id: "living-weapon-spirit", name: "九十九武器契約", family: "守護靈", tier: "A", cost: 8600, art: "./src/assets/generated/skill-william-living-weapon.png", text: "第一回合能量 +1；所有攻擊牌傷害 +2；回合開始全隊壓力 +1。", effects: { openingEnergy: 1, attackBonus: 2, turnStressAll: 1 } },
+    { id: "onmyo-talisman-craft", name: "陰陽符咒術", family: "陰陽術", tier: "B", cost: 3900, art: "./src/assets/generated/skill-fuku-onmyo-seal.png", text: "第一張戰術牌使所有敵人虛弱 4 點並抽 1 張牌。", effects: { firstTacticWeakAll: 4, firstTacticDraw: 1 } },
+    { id: "yokai-core-residue", name: "妖怪魂核殘滓", family: "妖怪", tier: "A", cost: 7900, art: "./src/assets/generated/enemy-nioh-yoki-brute.png", text: "攻擊牌傷害 +2；攻擊帶狀態敵人時傷害 +5。", effects: { attackBonus: 2, statusExploitBonus: 5 } }
+  );
+  customMutations.push(
+    { id: "living-weapon-super-soldier", name: "超兵九十九武器", requiredTags: ["living-weapon-spirit", "super-soldier-serum"], art: "./src/assets/generated/skill-william-living-weapon.png", text: "第一回合能量 +2；所有攻擊牌傷害 +4；回合開始全隊壓力 +1。", effects: { openingEnergy: 2, attackBonus: 4, turnStressAll: 1 } },
+    { id: "onmyo-sharingan-barrier", name: "陰陽寫輪結界", requiredTags: ["onmyo-talisman-craft", "sharingan-prediction"], art: "./src/assets/generated/skill-fuku-onmyo-seal.png", text: "開場閃避 +1；第一張戰術牌使所有敵人虛弱 6 點並抽 1 張。", effects: { openingEvade: 1, firstTacticWeakAll: 6, firstTacticDraw: 1 } },
+    { id: "yokai-blackfire-core", name: "妖核黑炎", requiredTags: ["yokai-core-residue", "black-flame-seed"], art: "./src/assets/generated/enemy-nioh-kelley-alchemist.png", text: "攻擊同時附加燃燒與中毒；攻擊帶狀態敵人時傷害 +7。", effects: { attackBurn: 3, attackPoison: 3, statusExploitBonus: 7 } }
+  );
+
+  cards.push(
+    { id: "william-living-weapon", name: "威廉·九十九武器解放", category: "signature", type: "attack", rarity: "signature", cost: 3, damageAll: 40, pierce: true, gainEnergy: 1, blockAll: 12, addStress: 5, text: "守護靈化成九十九武器，穿透護甲對所有敵人造成 40 傷害，獲得 1 能量，全隊獲得 12 護甲；壓力 +5。", upgrade: { damageAll: 58, blockAll: 20, addStress: 2 }, tags: ["威廉", "守護靈"] },
+    { id: "hanzo-kusarigama-ambush", name: "半藏·鎖鎌伏擊", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 34, pierce: true, draw: 1, weakTarget: 5, text: "鎖鎌從死角纏住妖怪，穿透護甲造成 34 傷害，使目標虛弱 5 點，抽 1 張牌。", upgrade: { damage: 48, weakTarget: 8, draw: 2 }, tags: ["半藏", "忍術"] },
+    { id: "okatsu-shadow-dance", name: "阿勝·影舞連斬", category: "signature", type: "attack", rarity: "signature", cost: 1, damage: 24, evadeOwner: 1, draw: 1, text: "短刃貼地連斬造成 24 傷害，阿勝獲得 1 次閃避，抽 1 張牌。", upgrade: { damage: 36, draw: 2 }, tags: ["阿勝", "密探"] },
+    { id: "ginchiyo-raikiri-thunder", name: "誾千代·雷切奔雷", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 36, damageAll: 12, pierce: true, weakAll: 4, text: "雷切拔刀，穿透護甲造成 36 單體傷害與 12 群體傷害，所有敵人虛弱 4 點。", upgrade: { damage: 52, damageAll: 20, weakAll: 7 }, tags: ["誾千代", "雷切"] },
+    { id: "muneshige-iai-duel", name: "宗茂·西國無雙居合", category: "signature", type: "attack", rarity: "signature", cost: 2, damage: 46, pierce: true, gainEnergy: 1, text: "宗茂以居合壓住決鬥節奏，穿透護甲造成 46 傷害，獲得 1 能量。", upgrade: { damage: 64 }, tags: ["宗茂", "居合"] },
+    { id: "fuku-onmyo-seal", name: "福·陰陽封魔符", category: "signature", type: "tactic", rarity: "signature", cost: 1, draw: 2, weakAll: 5, blockAll: 8, text: "陰陽符咒鎖住妖氣，抽 2 張牌，所有敵人虛弱 5 點，全隊獲得 8 護甲。", upgrade: { draw: 3, weakAll: 8, blockAll: 14 }, tags: ["福", "陰陽術"] },
+    { id: "yasuke-obsidian-guard", name: "彌助·黑武士護陣", category: "signature", type: "guard", rarity: "signature", cost: 2, damageAll: 16, blockAll: 28, counterDamage: 8, text: "黑武士重甲撞開妖群，對所有敵人造成 16 傷害，全隊獲得 28 護甲，下一次反擊更重。", upgrade: { damageAll: 24, blockAll: 42, counterDamage: 12 }, tags: ["彌助", "重甲"] },
+    { id: "nioh-living-weapon-flare", name: "九十九武器爆燃", category: "general", type: "attack", rarity: "rare", cost: 2, damageAll: 22, pierce: true, gainEnergy: 1, addStress: 3, text: "穿透護甲對所有敵人造成 22 傷害並獲得 1 能量；全隊壓力 +3。守護靈爆燃會把精華短暫點成刀光。", upgrade: { damageAll: 34, addStress: 1 }, tags: ["仁王", "九十九武器"], sourceId: "nioh", sourceName: "仁王" },
+    { id: "nioh-onmyo-slow-talisman", name: "遲鈍封魔符", category: "general", type: "tactic", rarity: "rare", cost: 1, draw: 1, weakAll: 5, poisonAll: 3, text: "抽 1 張牌，所有敵人虛弱 5 點並中毒 3 點。陰陽術會讓妖怪的殺意慢半拍。", upgrade: { draw: 2, weakAll: 8, poisonAll: 5 }, tags: ["仁王", "陰陽術"], sourceId: "nioh", sourceName: "仁王" },
+    { id: "nioh-ninja-kunai-storm", name: "忍術苦無雨", category: "general", type: "attack", rarity: "uncommon", cost: 1, damageAll: 12, weakAll: 3, draw: 1, text: "對所有敵人造成 12 傷害並虛弱 3 點，抽 1 張牌。苦無先落地，半藏的人才現身。", upgrade: { damageAll: 20, weakAll: 5, draw: 2 }, tags: ["仁王", "忍術"], sourceId: "nioh", sourceName: "仁王" },
+    { id: "nioh-guardian-spirit-ward", name: "守護靈結界", category: "general", type: "guard", rarity: "uncommon", cost: 1, blockAll: 18, reduceStress: 5, counterDamage: 5, text: "全隊獲得 18 護甲，壓力 -5，下一次反擊更重。守護靈繞場時，妖氣會被推回邊界。", upgrade: { blockAll: 28, reduceStress: 8, counterDamage: 8 }, tags: ["仁王", "守護靈"], sourceId: "nioh", sourceName: "仁王" }
+  );
+
+  equipment.push(
+    { id: "raikiri-katana", name: "雷切太刀", rarity: "legendary", effect: "firstAttackPierce", amount: 10, upgradedAmount: 15, text: "每回合第一張攻擊牌穿透護甲，並額外造成 10 點傷害。刀身仍殘留立花家的雷聲。", sourceId: "nioh-equipment", sourceName: "戰國神器" },
+    { id: "kusarigama-chainblade", name: "伊賀鎖鎌", rarity: "rare", effect: "openingDraw", amount: 2, upgradedAmount: 3, text: "每場戰鬥第一回合額外抽 2 張牌。鎖鎌會把遠處破綻拖到面前。", sourceId: "nioh-equipment", sourceName: "戰國神器" },
+    { id: "onmyo-talisman-case", name: "陰陽符匣", rarity: "rare", effect: "turnBlock", amount: 6, upgradedAmount: 9, text: "回合開始全隊獲得 6 護甲。符匣裡每一張紙都壓著一段妖氣。", sourceId: "nioh-equipment", sourceName: "戰國神器" },
+    { id: "guardian-spirit-amulet", name: "守護靈護符", rarity: "legendary", effect: "openingEnergy", amount: 1, upgradedAmount: 2, text: "第一回合額外獲得 1 能量。護符會在精華暴走前把力量拉回手中。", sourceId: "nioh-equipment", sourceName: "戰國神器" }
+  );
+
+  bloodlines.push(
+    { characterId: "william-adams-nioh", name: "守護靈九十九契約", text: "九十九武器解放額外造成 12 群體穿甲傷害，並讓全隊再獲得 10 護甲。", sideStoryCost: { rewardPointCost: 15000, sideStoryCost: 6 }, effect: { extraDamageAll: 12, blockAll: 10 } },
+    { characterId: "hattori-hanzo-nioh", name: "伊賀忍術傳承", text: "鎖鎌伏擊額外抽 1 張牌，並使目標再虛弱 4 點。", sideStoryCost: { rewardPointCost: 9000, sideStoryCost: 4 }, effect: { draw: 1, weakTarget: 4 } },
+    { characterId: "okatsu-nioh", name: "德川暗線步法", text: "影舞連斬額外造成 10 傷害，阿勝再獲得 1 次閃避。", sideStoryCost: { rewardPointCost: 8600, sideStoryCost: 3 }, effect: { extraDamage: 10, evadeOwner: 1 } },
+    { characterId: "tachibana-ginchiyo", name: "雷切女武神", text: "雷切奔雷額外造成 10 單體傷害，並使所有敵人再虛弱 4 點。", sideStoryCost: { rewardPointCost: 9400, sideStoryCost: 4 }, effect: { extraDamage: 10, weakAll: 4 } },
+    { characterId: "tachibana-muneshige", name: "西國無雙劍意", text: "西國無雙居合額外造成 14 傷害，並獲得 1 能量。", sideStoryCost: { rewardPointCost: 9600, sideStoryCost: 4 }, effect: { extraDamage: 14, gainEnergy: 1 } },
+    { characterId: "fuku-nioh", name: "陰陽封魔法印", text: "陰陽封魔符額外使所有敵人虛弱 4 點，並讓全隊獲得 8 護甲。", sideStoryCost: { rewardPointCost: 8800, sideStoryCost: 3 }, effect: { weakAll: 4, blockAll: 8 } },
+    { characterId: "yasuke-nioh", name: "黑武士不退甲", text: "黑武士護陣額外提供全隊 12 護甲，彌助獲得 10 護甲。", sideStoryCost: { rewardPointCost: 9200, sideStoryCost: 4 }, effect: { blockAll: 12, blockOwner: 10 } }
+  );
+
+  enemies.push(
+    { id: "nioh-yoki-brute", name: "妖鬼重兵", maxHp: 390, stressAura: 18, intents: [{ kind: "attack", label: "鐵棒碎甲", amount: 64, targetMode: "front" }, { kind: "cleave", label: "妖氣橫掃", amount: 32, targetMode: "all" }, { kind: "guard", label: "常世護身", amount: 48 }] },
+    { id: "nioh-onryoki-chains", name: "怨靈鬼鎖球", maxHp: 540, stressAura: 22, regen: 8, intents: [{ kind: "attack", label: "鎖球猛砸", amount: 86, targetMode: "front" }, { kind: "cleave", label: "鐵鏈旋風", amount: 40, targetMode: "all" }, { kind: "stress", label: "怨念怒吼", amount: 36, targetMode: "all" }, { kind: "regen", label: "常世回氣", amount: 38, block: 20 }] },
+    { id: "nioh-hino-enma", name: "飛緣魔", maxHp: 610, stressAura: 26, intents: [{ kind: "stress", label: "魅惑尖嘯", amount: 46, targetMode: "all" }, { kind: "attack", label: "傘刃俯衝", amount: 92, targetMode: "random" }, { kind: "guard", label: "妖翼回避", amount: 64 }] },
+    { id: "nioh-kelley-alchemist", name: "愛德華·凱瑞鍊金術師", maxHp: 820, stressAura: 32, regen: 14, intents: [{ kind: "stress", label: "精華操弄", amount: 52, targetMode: "all" }, { kind: "attack", label: "人造妖氣爆裂", amount: 104, targetMode: "random" }, { kind: "cleave", label: "複製咒陣", amount: 52, targetMode: "all" }, { kind: "regen", label: "賢者石修補", amount: 58, block: 32 }] },
+    { id: "nioh-yamata-no-orochi", name: "八岐大蛇·精華暴走", maxHp: 1200, stressAura: 44, regen: 22, intents: [{ kind: "cleave", label: "八首災焰", amount: 72, targetMode: "all" }, { kind: "attack", label: "妖蛇吞噬", amount: 150, targetMode: "front" }, { kind: "stress", label: "常世淹沒", amount: 76, targetMode: "all" }, { kind: "regen", label: "精華再生", amount: 86, block: 48 }], phaseTwo: { name: "大嶽丸幻影 常世核心", maxHp: 980, stressAura: 50, regen: 28, intents: [{ kind: "attack", label: "三明劍斬", amount: 168, targetMode: "random" }, { kind: "cleave", label: "常世崩落", amount: 86, targetMode: "all" }, { kind: "stress", label: "妖魔王威壓", amount: 82, targetMode: "all" }, { kind: "regen", label: "魂核重構", amount: 96, block: 56 }] } }
+  );
+
+  encounters.push(
+    { id: "nioh-london-tower-yokai", name: "倫敦塔·精華越獄", tier: "normal", enemies: ["nioh-yoki-brute", "nioh-yoki-brute"], rewardPoints: 7600 },
+    { id: "nioh-kyushu-onryoki", name: "九州海岸·怨靈鬼鎖球", tier: "normal", enemies: ["nioh-onryoki-chains", "nioh-yoki-brute"], rewardPoints: 8200 },
+    { id: "nioh-bathhouse-hinoenma", name: "常世溫泉·飛緣魔", tier: "elite", enemies: ["nioh-hino-enma", "nioh-yoki-brute"], rewardPoints: 11200 },
+    { id: "nioh-sekigahara-kelley", name: "關原戰場·凱瑞咒陣", tier: "miniboss", enemies: ["nioh-kelley-alchemist"], rewardPoints: 16200 },
+    { id: "nioh-azuchi-orochi", name: "安土城·八岐大蛇", tier: "boss", enemies: ["nioh-yamata-no-orochi"], rewardPoints: 27000 }
+  );
+
+  const niohScenario = { id: "nioh-yokai-sengoku", name: "仁王", subtitle: "倫敦塔到安土城妖禍", intro: "白光落進倫敦塔地牢時，威廉的守護靈瑟夏被凱瑞奪走，精華正被送往戰國日本。半藏在黑船陰影裡等待異國武士，關原的戰火與常世裂縫即將把安土城推成妖怪巢穴。", recruitmentPool: ["hattori-hanzo-nioh", "okatsu-nioh", "tachibana-ginchiyo", "tachibana-muneshige", "fuku-nioh", "yasuke-nioh", "chu-xuan", "zhao-yingkong", "qi-tengyi", "luo-yinglong"], normal: ["nioh-london-tower-yokai", "nioh-kyushu-onryoki"], elite: ["nioh-bathhouse-hinoenma"], miniboss: "nioh-sekigahara-kelley", boss: "nioh-azuchi-orochi", eventTitle: "守護靈與精華戰國", eventText: "凱瑞以精華把戰國亡魂餵成妖禍，威廉追著瑟夏與仇敵穿過九州、近江與關原。若中洲隊能把守護靈從主神獎勵之外救回來，妖怪戰場就不會只剩殺戮循環。", scenarioPowerName: "九十九武器共鳴", scenarioPowerText: "本次遠征第一回合額外獲得 1 能量，每回合第一張攻擊牌穿透護甲。", scenarioPower: { id: "nioh-living-weapon-resonance", effect: "openingEnergy", amount: 1 }, hiddenProtagonistId: "william-adams-nioh", eventChoices: { stage1: [{ id: "nioh-london-saoirse", title: "追上倫敦塔守護靈線", text: "在凱瑞帶走瑟夏前標記精華流向，讓威廉不是孤身被推進戰國。" }, { id: "nioh-hanzo-tokai-road", title: "跟半藏走東海道", text: "接入德川暗線，沿九州與近江的妖怪節點逐段追蹤凱瑞。" }, { id: "nioh-sekigahara-war", title: "直入關原戰場", text: "用中洲隊火力切進關原戰場，在精華咒陣完全啟動前撕開戰線。" }], stage2: { "nioh-london-saoirse": [{ id: "nioh-saoirse-anchor", title: "固定瑟夏定位", text: "讓詹嵐與福用精神鏈和陰陽符把守護靈定位固定在威廉身上。" }, { id: "nioh-amrita-ledger", title: "複寫精華帳簿", text: "齊騰一把精華流向抄進主神記錄，確認凱瑞要把戰爭變成妖氣鍊成陣。" }], "nioh-hanzo-tokai-road": [{ id: "nioh-ninja-yokai-map", title: "半藏妖怪路線圖", text: "半藏標出常世裂縫，阿勝負責把凱瑞的眼線從暗處拖出來。" }, { id: "nioh-ginchiyo-raikiri-line", title: "立花雷切破妖", text: "誾千代與宗茂以雷切和居合切開妖氣節點，讓隊伍取得武家支援。" }], "nioh-sekigahara-war": [{ id: "nioh-kelley-circle-break", title: "破壞凱瑞咒陣", text: "在關原亡魂被精華點燃前，楚軒逆算咒陣的供能節點。" }, { id: "nioh-yasuke-azuchi-gate", title: "黑武士守住安土城門", text: "彌助以重甲守住城門，替隊伍爭取衝向大蛇核心的時間。" }] }, stage3: { "nioh-saoirse-anchor": [{ id: "nioh-william-saoirse-returned", title: "瑟夏回到威廉身邊", text: "守護靈沒有被鍊成消耗，威廉的九十九武器重新亮起。" }, { id: "nioh-guardian-talisman-cache", title: "保留守護靈護符", text: "不直接招募威廉，先把守護靈殘響轉成裝備與劇本增益。" }], "nioh-amrita-ledger": [{ id: "nioh-amrita-ledger-sealed", title: "封存精華帳簿", text: "精華流向被主神承認，隊伍獲得支線與符咒強化。" }, { id: "nioh-william-saoirse-returned", title: "用帳簿反追凱瑞", text: "沿精華帳簿反向定位瑟夏，把威廉帶回核心路線。" }], "nioh-ninja-yokai-map": [{ id: "nioh-hanzo-network-secured", title: "忍者網封住常世裂縫", text: "半藏與阿勝把常世裂縫逐段釘住，妖怪潮不再從背後湧出。" }, { id: "nioh-william-saoirse-returned", title: "忍者暗線送回瑟夏", text: "暗線把守護靈送回威廉身邊，凱瑞失去最關鍵籌碼。" }], "nioh-ginchiyo-raikiri-line": [{ id: "nioh-raikiri-yokai-break", title: "雷切破妖成功", text: "雷切劈開妖氣結界，立花家的戰線替隊伍穩住關原側翼。" }, { id: "nioh-william-saoirse-returned", title: "雷切開出守護靈路", text: "雷光切穿常世，讓瑟夏能重新回到威廉身邊。" }], "nioh-kelley-circle-break": [{ id: "nioh-kelley-ritual-broken", title: "凱瑞咒陣崩壞", text: "精華鍊成陣反噬，凱瑞無法再把戰場亡魂餵給大蛇。" }, { id: "nioh-william-saoirse-returned", title: "以咒陣反噬救回威廉", text: "咒陣崩壞的一瞬，威廉奪回守護靈並斬向大蛇核心。" }], "nioh-yasuke-azuchi-gate": [{ id: "nioh-azuchi-gate-held", title: "安土城門守住", text: "彌助守住城門，隊伍獲得恢復與護甲路線。" }, { id: "nioh-william-saoirse-returned", title: "城門反攻接回守護靈", text: "城門穩住後，威廉終於能從常世核心抽回瑟夏。" }] } }, eventOutcomes: { "nioh-william-saoirse-returned": { title: "九十九武器不再失控", text: "瑟夏回到威廉身邊，九十九武器不再只是凱瑞精華鍊成的燃料。威廉以隱藏角色身份加入中洲隊，帶著守護靈把常世裂縫斬開。", effects: [{ type: "recruit-hidden" }, { type: "side-story", amount: 2 }, { type: "run-power", id: "saoirse-returned-route", effect: "openingEnergy", amount: 1 }], rewards: ["隱藏角色：威廉·亞當斯", "支線劇情 +2", "本次遠征第一回合能量 +1"], costs: ["精華戰爭不會立刻停下，戰國仍有更多常世裂縫需要封印。"], storyImpact: "倫敦塔、九州、關原與安土城被串成守護靈救援線，威廉不再只是追著仇敵前進。", worldState: "凱瑞失去最穩定的守護靈樣本，妖怪潮退回常世邊界。" }, "nioh-guardian-talisman-cache": { title: "守護靈護符入手", text: "瑟夏殘響被主神承認為護符，隊伍暫時取得九十九武器的安全啟動方式。", effects: [{ type: "legendary-equipment" }, { type: "scenario-power" }], rewards: ["傳說裝備", "劇本增益：九十九武器共鳴"], costs: ["威廉仍在追凱瑞，隱藏招募延後。"], storyImpact: "守護靈力量被保存，但核心人物還沒有真正脫離孤身追獵。", worldState: "精華流向被短暫干擾，妖怪潮減速。" }, "nioh-amrita-ledger-sealed": { title: "精華帳簿封存", text: "精華帳簿被收進主神記錄，凱瑞的供能鏈少了一截。", effects: [{ type: "side-story", amount: 1 }, { type: "reward-points", amount: 1400 }], rewards: ["支線劇情 +1", "獎勵點 +1400"], costs: ["沒有直接救回瑟夏。"], storyImpact: "精華戰爭變成可追蹤的資源流，不再只是妖怪突然出現。", worldState: "德川暗線取得凱瑞行蹤。" }, "nioh-hanzo-network-secured": { title: "忍者網封裂縫", text: "半藏與阿勝把常世裂縫逐段釘住，隊伍後路變得乾淨。", effects: [{ type: "run-power", id: "iga-yokai-map", effect: "openingBlock", amount: 12 }, { type: "rare-card" }], rewards: ["開場護甲 +12", "稀有牌獎勵"], costs: ["凱瑞本人仍往安土城深處撤退。"], storyImpact: "忍者暗線從輔助變成主戰場情報骨架。", worldState: "東海道妖怪潮被切成可處理的小段。" }, "nioh-raikiri-yokai-break": { title: "雷切破妖", text: "誾千代與宗茂的雷光切開常世結界，立花戰線沒有被妖氣吞掉。", effects: [{ type: "run-power", id: "raikiri-side-line", effect: "attackBonus", amount: 5 }, { type: "heal", amount: 0.12, stressRelief: 10 }], rewards: ["本次遠征攻擊 +5", "全隊恢復與壓力下降"], costs: ["雷切火線吸引了更強妖怪。"], storyImpact: "武家戰線不再只是背景，立花家的雷聲把妖禍壓回正面戰場。", worldState: "關原側翼穩定，德川軍可以撤出傷兵。" }, "nioh-kelley-ritual-broken": { title: "凱瑞咒陣反噬", text: "精華鍊成陣被楚軒逆算後反向崩壞，凱瑞第一次被自己的妖氣拖慢。", effects: [{ type: "scenario-power" }, { type: "reward-points", amount: 1600 }], rewards: ["劇本增益：九十九武器共鳴", "獎勵點 +1600"], costs: ["咒陣反噬會讓安土城提前異變。"], storyImpact: "凱瑞不再掌握完整節奏，威廉追擊線獲得窗口。", worldState: "關原亡魂沒有被完整餵入大蛇核心。" }, "nioh-azuchi-gate-held": { title: "安土城門守住", text: "彌助把城門守到最後一輪，妖怪潮沒有把隊伍後方吞掉。", effects: [{ type: "heal", amount: 0.18, stressRelief: 18 }, { type: "run-power", id: "obsidian-gate-line", effect: "openingBlock", amount: 14 }], rewards: ["全隊恢復與壓力下降", "開場護甲 +14"], costs: ["主力仍要面對安土城核心妖禍。"], storyImpact: "黑武士守住的不只是門，也是威廉能回頭救人的退路。", worldState: "安土城外圍沒有完全陷入常世。" } } };
+  scenarioOpenings["nioh-yokai-sengoku"] = {
+    title: "守護靈被奪走的戰國夜",
+    premise: "白光散開時，倫敦塔的鐵門正被精華光芒照亮。凱瑞奪走瑟夏，把威廉的追獵線一路拖進戰國日本；九州海岸、關原亡魂與安土城常世都在同一條妖氣供能鏈上。",
+    dialogue: [
+      { speaker: "主神", line: "主線：奪回守護靈瑟夏、追蹤精華流向、破壞凱瑞咒陣，並在安土城封住八岐大蛇與常世核心。隱藏判定：讓威廉帶著瑟夏活著加入隊伍。" },
+      { speaker: "威廉·亞當斯", line: "凱瑞帶走了瑟夏。只要她還在那條精華線上，我就會追到日本、追到地獄、追到常世盡頭。" },
+      { speaker: "服部半藏", line: "異國武士，你的仇敵已把戰火和妖氣綁在一起。若要追上他，就先學會在影子裡走路。" },
+      { speaker: "阿勝", line: "別把所有話都說給敵人聽。常世裡的東西會聽，人心裡的東西也會聽。" },
+      { speaker: "立花誾千代", line: "雷切不是裝飾。若妖怪擋路，我便用雷聲替你們開路。" },
+      { speaker: "楚軒", line: "精華是能源，守護靈是穩定器，戰國戰場是大規模採集場。凱瑞不是召妖，他在做供能工程。" }
+    ],
+    panels: [
+      { enemyId: "nioh-yoki-brute", title: "倫敦塔精華越獄", text: "地牢石壁滲出精華光，妖鬼從常世裂縫裡爬出，威廉第一次看見仇敵留下的門。" },
+      { enemyId: "nioh-onryoki-chains", title: "九州海岸怨靈鬼", text: "鐵球砸碎海岸木橋，怨靈鬼拖著鎖鏈把異國武士推進真正的妖怪戰場。" },
+      { enemyId: "nioh-hino-enma", title: "常世溫泉飛緣魔", text: "妖翼切開霧氣，魅惑尖嘯在溫泉廢墟裡回盪，所有退路都像被香氣拖慢。" },
+      { enemyId: "nioh-kelley-alchemist", title: "關原凱瑞咒陣", text: "關原亡魂被精華點亮，凱瑞的鍊金咒陣把戰爭、怨念與妖氣壓成同一個祭壇。" },
+      { enemyId: "nioh-yamata-no-orochi", title: "安土城八岐大蛇", text: "安土城頂裂開常世，八首災焰吞吐精華，瑟夏的光在妖氣核心裡忽明忽暗。" }
+    ]
+  };
+  niohScenario.opening = scenarioOpenings["nioh-yokai-sengoku"];
+  scenarios.push(niohScenario);
+  hiddenProtagonistsByScenario["nioh-yokai-sengoku"] = "william-adams-nioh";
+
   const eventBranchPoolById = Object.fromEntries(eventBranchPool.map((route) => [route.id, route]));
   const eventBranchCycle = eventBranchPool.map((route) => route.id);
 
@@ -1874,7 +2246,7 @@
     ]];
   }));
 
-  const legendaryRecruitmentPool = ["tanjiro-kamado", "giyu-tomioka", "naruto-uzumaki", "luffy-nika", "son-goku", "xiao-yan", "ichigo-kurosaki", "edward-elric", "eren-yeager", "mikasa-ackerman", "armin-arlert", "levi-ackerman", "gon-freecss", "kirito-kazuto"];
+  const legendaryRecruitmentPool = ["tanjiro-kamado", "giyu-tomioka", "naruto-uzumaki", "luffy-nika", "son-goku", "xiao-yan", "ichigo-kurosaki", "edward-elric", "eren-yeager", "mikasa-ackerman", "armin-arlert", "levi-ackerman", "gon-freecss", "kirito-kazuto", "david-martinez", "william-adams-nioh"];
 
   const characterSources = [
     { id: "main", name: "中洲隊", description: "主神空間的核心輪迴隊伍，涵蓋近戰、精神力、狙擊、戰術與支援。", heroFileName: "roster-hero-main.png", memberIds: ["player-avatar", "zheng-zha", "zhan-lan", "zero", "li-xiaoyi", "mou-gang", "li-shuaixi", "chu-xuan", "zhao-yingkong", "ba-wang", "xiao-honglu", "qi-tengyi", "zhang-heng", "ming-yanwei", "cheng-xiao", "wang-xia", "luo-gandao", "liu-yu", "lin-juntian", "imhotep"] },
@@ -2280,6 +2652,111 @@
     { id: "cross-reconstruction-martial-law", name: "重構武鬥戒律", crossWorld: true, members: ["scar-ishvalan", "izumi-curtis", "maki-zenin"], text: "斯卡、伊茲米與真希同時上陣。每回合第二張牌追加 7 點穿甲傷害；攻擊帶有狀態的敵人時傷害 +5。", effects: { secondCardDamage: 7, statusExploitBonus: 5 } },
     { id: "cross-philosopher-sage-circle", name: "賢者地脈推演", crossWorld: true, members: ["van-hohenheim", "qi-tengyi", "ranni-dark-moon"], text: "霍恩海姆、齊騰一與菈妮同時上陣。開場抽 1 張牌；回合開始全隊恢復 3 生命並獲得 3 護甲。", effects: { openingDraw: 1, turnHealAll: 3, turnBlockAll: 3 } }
   ];
+
+  characterSources.push({ id: "genshin-liyue", name: "原神·璃月", description: "岩王帝君、璃月七星、仙眾、南十字與萬民堂共同守住黃金屋和奧賽爾戰線。", heroFileName: "roster-hero-genshin-liyue.png", memberIds: ["zhongli-morax", "ningguang", "keqing", "ganyu", "xiao-genshin", "beidou", "xiangling"] });
+  cardSources.push({ id: "genshin-liyue", name: "原神·璃月", description: "璃月元素反應、仙眾槍法、璇璣屏與七星調度，偏護甲、穿甲、燃燒與抽牌。" });
+  equipmentSources.push({ id: "genshin-liyue-equipment", name: "璃月法器", description: "貫虹之槊、群玉閣玉符、仙家符籙與邪眼碎片，支援岩元素防線與黃金屋決戰。" });
+  shop.push(
+    { id: "shop-genshin-adeptus-spear", kind: "card", itemId: "genshin-adeptus-spear", rewardPointCost: 3000, sideStoryCost: 1, stock: 1 },
+    { id: "shop-genshin-jade-screen", kind: "card", itemId: "genshin-jade-screen", rewardPointCost: 1800, stock: 2 },
+    { id: "shop-genshin-elemental-reaction", kind: "card", itemId: "genshin-elemental-reaction", rewardPointCost: 2200, stock: 2 },
+    { id: "shop-genshin-qixing-command", kind: "card", itemId: "genshin-qixing-command", rewardPointCost: 2900, sideStoryCost: 1, stock: 1 },
+    { id: "shop-vortex-vanquisher", kind: "equipment", itemId: "vortex-vanquisher", rewardPointCost: 6800, sideStoryCost: 3, stock: 1 },
+    { id: "shop-jade-chamber-beacon", kind: "equipment", itemId: "jade-chamber-beacon", rewardPointCost: 5600, sideStoryCost: 2, stock: 1 },
+    { id: "shop-adeptus-talisman", kind: "equipment", itemId: "adeptus-talisman", rewardPointCost: 4200, sideStoryCost: 1, stock: 1 },
+    { id: "shop-delusion-shard", kind: "equipment", itemId: "delusion-shard", rewardPointCost: 6400, sideStoryCost: 3, stock: 1 }
+  );
+  economy.scenarioSideStoryRewards["genshin-liyue-childe"] = 13;
+  bonds.push(
+    { id: "genshin-liyue-qixing-line", name: "璃月七星決斷", members: ["ningguang", "keqing", "ganyu"], text: "凝光、刻晴與甘雨同時上陣。開場抽 2 張牌；回合開始全隊獲得 4 護甲。", effects: { openingDraw: 2, turnBlockAll: 4 } },
+    { id: "genshin-adepti-contract", name: "岩契仙眾", members: ["zhongli-morax", "xiao-genshin", "ganyu"], text: "鍾離、魈與甘雨同時上陣。開場護甲 +12；所有攻擊牌傷害 +4；回合開始全隊壓力 -1。", effects: { openingBlockAll: 12, attackBonus: 4, turnReduceStressAll: 1 } },
+    { id: "genshin-harbor-fireline", name: "璃月港煙火線", members: ["beidou", "xiangling", "keqing"], text: "北斗、香菱與刻晴同時上陣。第一張攻擊牌燃燒 +5；每回合第二張牌追加 7 點穿甲傷害。", effects: { firstAttackBurn: 5, secondCardDamage: 7 } },
+    { id: "cross-contract-calculation", name: "契約演算桌", crossWorld: true, members: ["zhongli-morax", "chu-xuan", "edward-elric"], text: "鍾離、楚軒與愛德華同時上陣。每回合第一張戰術牌費用 -1、抽 1 張牌；回合開始全隊獲得 4 護甲。", effects: { firstTacticCostReduction: 1, firstTacticDraw: 1, turnBlockAll: 4 } },
+    { id: "cross-harbor-sniper-command", name: "港口狙擊調度", crossWorld: true, members: ["ningguang", "zero", "riza-hawkeye"], text: "凝光、零點與莉莎同時上陣。開場抽 1 張牌；每回合第一張攻擊牌穿透護甲並額外造成 4 傷害。", effects: { openingDraw: 1, firstAttackPierce: 1, firstAttackBonus: 4 } },
+    { id: "cross-yaksha-black-flash", name: "夜叉黑閃突入", crossWorld: true, members: ["xiao-genshin", "yuji-itadori", "zhao-yingkong"], text: "魈、虎杖與趙櫻空同時上陣。所有攻擊牌傷害 +4；每回合第二張牌追加 8 點穿甲傷害。", effects: { attackBonus: 4, secondCardDamage: 8 } },
+    { id: "cross-wok-fire-rescue", name: "鍋巴醫療火線", crossWorld: true, members: ["xiangling", "cheng-xiao", "tanjiro-kamado"], text: "香菱、程嘯與炭治郎同時上陣。第一張攻擊牌燃燒 +6；回合開始全隊恢復 3 生命。", effects: { firstAttackBurn: 6, turnHealAll: 3 } },
+    { id: "cross-thunder-harbor-counter", name: "雷港反擊線", crossWorld: true, members: ["beidou", "keqing", "maki-zenin"], text: "北斗、刻晴與真希同時上陣。回合開始前排獲得 6 護甲；每回合第二張攻擊牌額外造成 9 點穿甲傷害。", effects: { turnBlockFront: 6, secondCardDamage: 9 } },
+    { id: "cross-frost-sniper-command", name: "霜華狙擊令", crossWorld: true, members: ["ganyu", "zero", "armin-arlert"], text: "甘雨、零點與阿爾敏同時上陣。開場抽 1 張牌；每回合第一張費用 2 以上攻擊牌額外造成 7 傷害。", effects: { openingDraw: 1, firstHeavyAttackBonus: 7 } }
+  );
+
+  characterSources.push({ id: "genshin-inazuma", name: "原神·稻妻", description: "雷電影、社奉行、海祇島、浪人、天領奉行與花見坂共同改寫眼狩令與永恆。", heroFileName: "roster-hero-genshin-inazuma.png", memberIds: ["raiden-ei", "kamisato-ayaka", "yoimiya", "sangonomiya-kokomi", "kaedehara-kazuha", "kujou-sara", "arataki-itto"] });
+  cardSources.push({ id: "genshin-inazuma", name: "原神·稻妻", description: "眼狩令、無想一刀、反抗軍戰術與煙火信號，偏穿甲、能量、燃燒、恢復與抽牌。" });
+  equipmentSources.push({ id: "genshin-inazuma-equipment", name: "稻妻神器", description: "霧切、飛雷、鳴神御守與神之眼空殼，支援雷元素爆發與一心淨土決戰。" });
+  shop.push(
+    { id: "shop-genshin-inazuma-iai", kind: "card", itemId: "genshin-inazuma-iai", rewardPointCost: 3100, sideStoryCost: 1, stock: 1 },
+    { id: "shop-genshin-inazuma-resistance-plan", kind: "card", itemId: "genshin-inazuma-resistance-plan", rewardPointCost: 2900, sideStoryCost: 1, stock: 1 },
+    { id: "shop-genshin-inazuma-firework-signal", kind: "card", itemId: "genshin-inazuma-firework-signal", rewardPointCost: 1900, stock: 2 },
+    { id: "shop-genshin-inazuma-vision-echo", kind: "card", itemId: "genshin-inazuma-vision-echo", rewardPointCost: 2100, stock: 2 },
+    { id: "shop-mistsplitter-reforged", kind: "equipment", itemId: "mistsplitter-reforged", rewardPointCost: 6800, sideStoryCost: 3, stock: 1 },
+    { id: "shop-thundering-pulse", kind: "equipment", itemId: "thundering-pulse", rewardPointCost: 6400, sideStoryCost: 3, stock: 1 },
+    { id: "shop-omamori-yae", kind: "equipment", itemId: "omamori-yae", rewardPointCost: 4600, sideStoryCost: 1, stock: 1 },
+    { id: "shop-vision-shell", kind: "equipment", itemId: "vision-shell", rewardPointCost: 6000, sideStoryCost: 2, stock: 1 }
+  );
+  economy.scenarioSideStoryRewards["genshin-inazuma-vision-hunt"] = 14;
+  bonds.push(
+    { id: "genshin-inazuma-tri-commission", name: "稻妻破局三線", members: ["kamisato-ayaka", "kujou-sara", "sangonomiya-kokomi"], text: "神里綾華、九條裟羅與心海同時上陣。開場抽 2 張牌；回合開始全隊獲得 3 護甲並恢復 2 生命。", effects: { openingDraw: 2, turnBlockAll: 3, turnHealAll: 2 } },
+    { id: "genshin-inazuma-wish-flame-wind", name: "願望風火線", members: ["kaedehara-kazuha", "yoimiya", "kamisato-ayaka"], text: "萬葉、宵宮與綾華同時上陣。第一張攻擊牌燃燒 +6；第一張戰術牌使所有敵人虛弱 4 點。", effects: { firstAttackBurn: 6, firstTacticWeakAll: 4 } },
+    { id: "genshin-inazuma-oni-eternity", name: "鬼王永恆質問", members: ["raiden-ei", "arataki-itto", "kujou-sara"], text: "雷電影、一斗與裟羅同時上陣。第一回合能量 +1；所有攻擊牌傷害 +4；回合開始前排獲得 5 護甲。", effects: { openingEnergy: 1, attackBonus: 4, turnBlockFront: 5 } },
+    { id: "cross-eternity-contract-table", name: "永恆契約桌", crossWorld: true, members: ["raiden-ei", "zhongli-morax", "chu-xuan"], text: "雷電影、鍾離與楚軒同時上陣。第一回合能量 +1；每回合第一張戰術牌費用 -1、抽 1 張牌。", effects: { openingEnergy: 1, firstTacticCostReduction: 1, firstTacticDraw: 1 } },
+    { id: "cross-frost-princess-line", name: "霜華白鷺線", crossWorld: true, members: ["kamisato-ayaka", "ganyu", "mikasa-ackerman"], text: "綾華、甘雨與米卡莎同時上陣。第一張費用 2 以上攻擊牌傷害 +8；所有攻擊牌傷害 +2。", effects: { firstHeavyAttackBonus: 8, attackBonus: 2 } },
+    { id: "cross-firework-sun-breath", name: "煙火日輪", crossWorld: true, members: ["yoimiya", "xiangling", "tanjiro-kamado"], text: "宵宮、香菱與炭治郎同時上陣。第一張攻擊牌燃燒 +10；攻擊帶狀態敵人時傷害 +4。", effects: { firstAttackBurn: 10, statusExploitBonus: 4 } },
+    { id: "cross-watatsumi-mental-link", name: "海祇精神鏈", crossWorld: true, members: ["sangonomiya-kokomi", "zhan-lan", "alphonse-elric"], text: "心海、詹嵐與阿爾馮斯同時上陣。回合開始全隊恢復 4 生命並獲得 4 護甲；開場抽 1 張牌。", effects: { turnHealAll: 4, turnBlockAll: 4, openingDraw: 1 } },
+    { id: "cross-kazuha-cutting-wind", name: "風切一線", crossWorld: true, members: ["kaedehara-kazuha", "song-tian", "levi-ackerman"], text: "萬葉、宋天與里維同時上陣。每回合第二張牌追加 9 點穿甲傷害；開場閃避 +1。", effects: { secondCardDamage: 9, openingEvade: 1 } },
+    { id: "cross-tengu-sniper-order", name: "天狗狙擊令", crossWorld: true, members: ["kujou-sara", "zero", "riza-hawkeye"], text: "裟羅、零點與霍克愛同時上陣。第一張攻擊牌穿透護甲並額外造成 5 傷害；開場抽 1 張牌。", effects: { firstAttackPierce: 1, firstAttackBonus: 5, openingDraw: 1 } },
+    { id: "cross-oni-black-flash", name: "鬼王黑閃", crossWorld: true, members: ["arataki-itto", "yuji-itadori", "alexander-warrior-jar"], text: "一斗、虎杖與壺哥同時上陣。所有攻擊牌傷害 +5；第 5 張牌對所有敵人造成 8 穿甲傷害。", effects: { attackBonus: 5, fifthCardDamageAll: 8 } }
+  );
+
+  characterSources.push({ id: "cyberpunk-edgerunners", name: "Cyberpunk: Edgerunners", description: "大衛、露西、蕾貝卡、曼恩小隊與夜城撤離線共同改寫荒坂塔頂的傳奇死亡。", heroFileName: "roster-hero-cyberpunk-edgerunners.png", memberIds: ["david-martinez", "lucy-kushinada", "rebecca-edgerunners", "maine-edgerunners", "dorio-edgerunners", "kiwi-edgerunners", "falco-edgerunners"] });
+  cardSources.push({ id: "cyberpunk-edgerunners", name: "Cyberpunk: Edgerunners", description: "沙德威斯坦、智能槍、黑冰入侵與小隊火力掩護，偏開場能量、穿甲、虛弱與壓力代價。" });
+  equipmentSources.push({ id: "cyberpunk-equipment", name: "夜城義體", description: "軍用級沙德威斯坦、單分子線纜、GUTS霰彈槍與賽博骨架，強化開場超頻與重火力。" });
+  shop.push(
+    { id: "shop-edgerunners-sandevistan-slash", kind: "card", itemId: "edgerunners-sandevistan-slash", rewardPointCost: 3200, sideStoryCost: 1, stock: 1 },
+    { id: "shop-edgerunners-smartgun-barrage", kind: "card", itemId: "edgerunners-smartgun-barrage", rewardPointCost: 2000, stock: 2 },
+    { id: "shop-edgerunners-icebath-breach", kind: "card", itemId: "edgerunners-icebath-breach", rewardPointCost: 3000, sideStoryCost: 1, stock: 1 },
+    { id: "shop-edgerunners-crew-cover", kind: "card", itemId: "edgerunners-crew-cover", rewardPointCost: 2100, stock: 2 },
+    { id: "shop-military-grade-sandevistan", kind: "equipment", itemId: "military-grade-sandevistan", rewardPointCost: 7000, sideStoryCost: 3, stock: 1 },
+    { id: "shop-monowire-spool", kind: "equipment", itemId: "monowire-spool", rewardPointCost: 5200, sideStoryCost: 2, stock: 1 },
+    { id: "shop-guts-shotgun", kind: "equipment", itemId: "guts-shotgun", rewardPointCost: 6400, sideStoryCost: 3, stock: 1 },
+    { id: "shop-cyberskeleton-frame", kind: "equipment", itemId: "cyberskeleton-frame", rewardPointCost: 7200, sideStoryCost: 3, stock: 1 }
+  );
+  economy.scenarioSideStoryRewards["cyberpunk-edgerunners-night-city"] = 15;
+  bonds.push(
+    { id: "edgerunners-moon-route", name: "月面逃亡線", members: ["david-martinez", "lucy-kushinada", "falco-edgerunners"], text: "大衛、露西與法爾科同時上陣。第一回合能量 +1；開場抽 1 張牌；回合開始全隊壓力 -1。", effects: { openingEnergy: 1, openingDraw: 1, turnReduceStressAll: 1 } },
+    { id: "edgerunners-heavy-fireteam", name: "夜城重火力小隊", members: ["rebecca-edgerunners", "maine-edgerunners", "dorio-edgerunners"], text: "蕾貝卡、曼恩與朵莉歐同時上陣。所有攻擊牌傷害 +4；回合開始全隊獲得 4 護甲。", effects: { attackBonus: 4, turnBlockAll: 4 } },
+    { id: "edgerunners-blackice-team", name: "黑冰撤離網", members: ["lucy-kushinada", "kiwi-edgerunners", "falco-edgerunners"], text: "露西、琦薇與法爾科同時上陣。第一張戰術牌使所有敵人虛弱 5 點；開場抽 2 張牌。", effects: { firstTacticWeakAll: 5, openingDraw: 2 } },
+    { id: "cross-sandevistan-gene-lock", name: "沙德威斯坦基因鎖", crossWorld: true, members: ["david-martinez", "zheng-zha", "nero-dmc5"], text: "大衛、鄭吒與尼祿同時上陣。第一回合能量 +1；所有攻擊牌傷害 +4；回合開始全隊壓力 +1。", effects: { openingEnergy: 1, attackBonus: 4, turnStressAll: 1 } },
+    { id: "cross-moonwire-command", name: "月線戰術桌", crossWorld: true, members: ["lucy-kushinada", "chu-xuan", "ranni-dark-moon"], text: "露西、楚軒與菈妮同時上陣。第一張戰術牌費用 -1、抽 1 張牌，並使所有敵人虛弱 4 點。", effects: { firstTacticCostReduction: 1, firstTacticDraw: 1, firstTacticWeakAll: 4 } },
+    { id: "cross-rebecca-bullet-storm", name: "蕾貝卡彈幕狂線", crossWorld: true, members: ["rebecca-edgerunners", "zero", "natasha-romanoff"], text: "蕾貝卡、零點與娜塔莎同時上陣。每回合第一張攻擊牌穿透護甲；攻擊牌傷害 +3。", effects: { firstAttackPierce: 1, attackBonus: 3 } },
+    { id: "cross-heavy-chrome-front", name: "重鉻前排防線", crossWorld: true, members: ["maine-edgerunners", "dorio-edgerunners", "mou-gang"], text: "曼恩、朵莉歐與牟剛同時上陣。回合開始前排獲得 8 護甲；所有防護牌額外 +4 護甲。", effects: { turnBlockFront: 8, guardBonus: 4 } },
+    { id: "cross-kiwi-cold-protocol", name: "冷接口反追蹤", crossWorld: true, members: ["kiwi-edgerunners", "ada-wong", "qi-tengyi"], text: "琦薇、艾達與齊騰一同時上陣。開場抽 1 張牌；攻擊帶狀態敵人時傷害 +6。", effects: { openingDraw: 1, statusExploitBonus: 6 } },
+    { id: "cross-falco-getaway-road", name: "撤離車荒原路", crossWorld: true, members: ["falco-edgerunners", "max-rockatansky", "imperator-furiosa"], text: "法爾科、麥斯與芙莉歐莎同時上陣。開場全隊獲得 10 護甲與 1 次閃避。", effects: { openingBlockAll: 10, openingEvade: 1 } }
+  );
+
+  characterSources.push({ id: "nioh", name: "仁王", description: "威廉、半藏、阿勝、立花家、福與彌助沿著精華、守護靈與常世裂縫追進安土城。", heroFileName: "roster-hero-nioh.png", memberIds: ["william-adams-nioh", "hattori-hanzo-nioh", "okatsu-nioh", "tachibana-ginchiyo", "tachibana-muneshige", "fuku-nioh", "yasuke-nioh"] });
+  cardSources.push({ id: "nioh", name: "仁王", description: "九十九武器、陰陽術、忍術、雷切居合與黑武士護陣，偏穿甲、虛弱、開場能量與壓力代價。" });
+  equipmentSources.push({ id: "nioh-equipment", name: "戰國神器", description: "雷切、伊賀鎖鎌、陰陽符匣與守護靈護符，強化開場抽牌、穿甲與九十九武器節奏。" });
+  shop.push(
+    { id: "shop-nioh-living-weapon-flare", kind: "card", itemId: "nioh-living-weapon-flare", rewardPointCost: 3300, sideStoryCost: 1, stock: 1 },
+    { id: "shop-nioh-onmyo-slow-talisman", kind: "card", itemId: "nioh-onmyo-slow-talisman", rewardPointCost: 2800, sideStoryCost: 1, stock: 1 },
+    { id: "shop-nioh-ninja-kunai-storm", kind: "card", itemId: "nioh-ninja-kunai-storm", rewardPointCost: 1900, stock: 2 },
+    { id: "shop-nioh-guardian-spirit-ward", kind: "card", itemId: "nioh-guardian-spirit-ward", rewardPointCost: 2300, stock: 2 },
+    { id: "shop-raikiri-katana", kind: "equipment", itemId: "raikiri-katana", rewardPointCost: 6900, sideStoryCost: 3, stock: 1 },
+    { id: "shop-kusarigama-chainblade", kind: "equipment", itemId: "kusarigama-chainblade", rewardPointCost: 5200, sideStoryCost: 2, stock: 1 },
+    { id: "shop-onmyo-talisman-case", kind: "equipment", itemId: "onmyo-talisman-case", rewardPointCost: 4700, sideStoryCost: 1, stock: 1 },
+    { id: "shop-guardian-spirit-amulet", kind: "equipment", itemId: "guardian-spirit-amulet", rewardPointCost: 7200, sideStoryCost: 3, stock: 1 }
+  );
+  economy.scenarioSideStoryRewards["nioh-yokai-sengoku"] = 16;
+  bonds.push(
+    { id: "nioh-guardian-spirit-line", name: "守護靈救援線", members: ["william-adams-nioh", "hattori-hanzo-nioh", "fuku-nioh"], text: "威廉、半藏與福同時上陣。第一回合能量 +1；第一張戰術牌費用 -1；回合開始全隊壓力 +1。", effects: { openingEnergy: 1, firstTacticCostReduction: 1, turnStressAll: 1 } },
+    { id: "nioh-tachibana-thunderline", name: "立花雷犬戰線", members: ["tachibana-ginchiyo", "tachibana-muneshige", "okatsu-nioh"], text: "誾千代、宗茂與阿勝同時上陣。每回合第一張攻擊牌穿透護甲；第二張牌追加 8 點穿甲傷害。", effects: { firstAttackPierce: 1, secondCardDamage: 8 } },
+    { id: "nioh-obsidian-front", name: "黑武士城門線", members: ["yasuke-nioh", "hattori-hanzo-nioh", "tachibana-ginchiyo"], text: "彌助、半藏與誾千代同時上陣。開場全隊獲得 12 護甲；回合開始前排獲得 6 護甲。", effects: { openingBlockAll: 12, turnBlockFront: 6 } },
+    { id: "cross-living-weapon-gene-lock", name: "九十九基因鎖", crossWorld: true, members: ["william-adams-nioh", "zheng-zha", "dante-dmc5"], text: "威廉、鄭吒與但丁同時上陣。第一回合能量 +1；所有攻擊牌傷害 +5；回合開始全隊壓力 +1。", effects: { openingEnergy: 1, attackBonus: 5, turnStressAll: 1 } },
+    { id: "cross-iga-shadow-step", name: "伊賀暗殺步", crossWorld: true, members: ["hattori-hanzo-nioh", "zhao-yingkong", "kiwi-edgerunners"], text: "半藏、趙櫻空與琦薇同時上陣。開場抽 1 張牌；第二張牌追加 7 點穿甲傷害；攻擊帶狀態敵人時傷害 +4。", effects: { openingDraw: 1, secondCardDamage: 7, statusExploitBonus: 4 } },
+    { id: "cross-okatsu-moonwire-infiltration", name: "月線密探潛入", crossWorld: true, members: ["okatsu-nioh", "ada-wong", "lucy-kushinada"], text: "阿勝、艾達與露西同時上陣。第一張戰術牌抽 1 張牌並使所有敵人虛弱 4 點；開場閃避 +1。", effects: { firstTacticDraw: 1, firstTacticWeakAll: 4, openingEvade: 1 } },
+    { id: "cross-raikiri-thunder-command", name: "雷切鳴神指揮", crossWorld: true, members: ["tachibana-ginchiyo", "tachibana-muneshige", "thor-odinson", "raiden-ei"], text: "誾千代、宗茂、索爾與雷電影同時上陣。第一張攻擊牌穿透護甲並燃燒 +6；所有攻擊牌傷害 +3。", effects: { firstAttackPierce: 1, firstAttackBurn: 6, attackBonus: 3 } },
+    { id: "cross-onmyo-truth-seal", name: "陰陽真理封印", crossWorld: true, members: ["fuku-nioh", "edward-elric", "ranni-dark-moon"], text: "福、愛德華與菈妮同時上陣。第一張戰術牌費用 -1、抽 1 張牌；回合開始全隊獲得 3 護甲。", effects: { firstTacticCostReduction: 1, firstTacticDraw: 1, turnBlockAll: 3 } },
+    { id: "cross-obsidian-shield-wall", name: "黑曜重甲盾牆", crossWorld: true, members: ["yasuke-nioh", "mou-gang", "steve-rogers"], text: "彌助、牟剛與史蒂夫同時上陣。開場全隊獲得 14 護甲；所有防護牌額外 +5 護甲。", effects: { openingBlockAll: 14, guardBonus: 5 } }
+  );
 
   global.MainGodData = {
     characters,

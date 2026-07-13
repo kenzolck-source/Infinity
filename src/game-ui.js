@@ -31,13 +31,26 @@
 
   function render() {
     const screenChanged = lastRenderedScreen !== state.screen;
+    const shouldMoveScreenFocus = screenChanged && lastRenderedScreen !== null;
     const header = state.screen === "onboarding" ? "" : renderHeader();
-    app.innerHTML = `<main class="shell screen-${state.screen}">${header}${renderScreen()}</main>`;
+    app.innerHTML = `<a class="skip-link" href="#game-main">跳至主要內容</a><main id="game-main" class="shell screen-${state.screen}" tabindex="-1">${header}${renderScreen()}</main><div id="game-tooltip" class="game-tooltip" role="tooltip" hidden></div>`;
     bindActions();
+    bindTooltips();
     audio?.syncMusic(state.screen);
-    if (screenChanged && typeof global.scrollTo === "function") {
+    if (screenChanged) {
       const defer = typeof global.requestAnimationFrame === "function" ? global.requestAnimationFrame : (callback) => setTimeout(callback, 0);
-      defer(() => global.scrollTo(0, 0));
+      defer(() => {
+        if (typeof global.scrollTo === "function") global.scrollTo(0, 0);
+        if (!shouldMoveScreenFocus || typeof app.querySelector !== "function") return;
+        const heading = app.querySelector("#game-main h2");
+        if (!heading || typeof heading.focus !== "function") return;
+        if (typeof heading.hasAttribute === "function" && !heading.hasAttribute("tabindex")) heading.setAttribute("tabindex", "-1");
+        try {
+          heading.focus({ preventScroll: true });
+        } catch {
+          heading.focus();
+        }
+      });
     }
     lastRenderedScreen = state.screen;
   }
@@ -414,8 +427,8 @@
   function renderMapNode(node, visible) {
     const available = visible && core.isNodeAvailable(state, node);
     const label = visible ? nodeTypeLabel(node.type) : "未知";
-    return `<button class="map-node type-${node.type} ${node.completed ? "completed" : ""}" data-action="map-node" data-node-id="${node.id}" ${available ? "" : "disabled"}>
-      <span class="node-icon">${nodeIcon(visible ? node.type : "fog")}</span><strong>${label}</strong>
+    return `<button class="map-node type-${visible ? node.type : "fog"} ${node.completed ? "completed" : ""}" data-action="map-node" data-node-id="${node.id}" ${available ? "" : "disabled"}>
+      <span class="node-icon" aria-hidden="true"></span><strong>${label}</strong>
     </button>`;
   }
 
@@ -440,13 +453,12 @@
           </div>
         </div>
         <div class="combat-stage">
-          <div class="encounter-title"><span class="eyebrow">上下雙排戰場</span><h2>${core.getActiveParty(state).length} 對 ${state.activeEnemies.filter((enemy) => enemy.hp > 0).length}</h2></div>
+          <div class="encounter-title"><span class="eyebrow">敵我戰術桌</span><h2>${core.getActiveParty(state).length} 對 ${state.activeEnemies.filter((enemy) => enemy.hp > 0).length}</h2></div>
           <div class="combat-columns">
             <div class="enemy-line">${state.activeEnemies.map(renderEnemy).join("")}</div>
             <div class="party-combat">${core.getActiveParty(state).map(renderCombatCharacter).join("")}</div>
           </div>
         </div>
-        ${renderCombatCommandRail()}
         <section class="hand-zone">
           <div class="hand-zone-head">
             <div><span class="eyebrow">戰術卡軌</span><h2>手牌 ${state.hand.length}</h2></div>
@@ -454,6 +466,7 @@
           </div>
           <div class="hand-card-grid">${state.hand.map(renderHandCard).join("")}</div>
         </section>
+        ${renderCombatCommandRail()}
       </section>
     `;
   }
@@ -636,6 +649,8 @@
     const stage = state.pending?.stage || 1;
     const choices = state.pending?.choices || [];
     const path = state.pending?.path || [];
+    const rescueMissions = scenario ? core.rescueMissionsForScenario?.(state, scenario.id) || [] : [];
+    const fate = scenario ? core.scenarioFateStatus?.(state, scenario.id) || null : null;
     const stageTitle = { 1: "介入", 2: "深入", 3: "定局" }[stage] || "奇遇";
     return `
       <section class="choice-screen">
@@ -645,11 +660,55 @@
           <p>${eventStageText(stage, scenario, candidate, hidden, path)}</p>
         </div>
         ${hidden ? `<div class="event-signal">${image(characterArt(hidden.id), `${escapeHtml(hidden.name)}插畫`, "event-signal-art")}<div><span class="eyebrow">劇本深層訊號</span><strong>${escapeHtml(hidden.name)}</strong><p>${escapeHtml(hidden.role)}的命運線正在附近偏移。</p></div></div>` : ""}
+        ${fate?.hasFate || fate?.fatePressure ? `<div class="event-signal">${image("./src/assets/generated/ui-main-god-nexus.png", "輪迴檔案", "event-signal-art")}<div><span class="eyebrow">輪迴檔案 · ${escapeHtml(fate.pressureLevel?.label || "穩定")}</span><strong>命運壓力 ${fate.fatePressure || 0}/100</strong><p>${escapeHtml(fate.bossPreview?.labels?.slice(0, 2).join("、") || fate.pressureLevel?.text || "本劇本暫無長期偏移。")}</p></div></div>` : ""}
+        ${rescueMissions.length ? `<div class="event-signal rescue-signal">${image("./src/assets/generated/ui-main-god-nexus.png", "主神救援訊號", "event-signal-art")}<div><span class="eyebrow">失敗救援線</span><strong>${rescueMissions.map((mission) => core.charactersById[mission.characterId]?.name).filter(Boolean).map(escapeHtml).join("、")}</strong><p>本劇本殘留待救援座標，完成固定救援線可讓角色回歸。</p></div></div>` : ""}
+        ${renderScenarioRestScene(scenario, "奇遇前休整")}
         <div class="choice-grid">
-          ${choices.map((choice) => `<button class="choice-card" data-action="event" data-option-id="${choice.id}"><strong>${escapeHtml(choice.title)}</strong><p>${escapeHtml(choice.text)}</p></button>`).join("")}
+          ${choices.map(renderEventChoice).join("")}
         </div>
       </section>
     `;
+  }
+
+  function renderEventChoice(choice) {
+    const choiceArt = choice.imageFile ? image(`./src/assets/generated/${choice.imageFile}`, "", "choice-art") : "";
+    const routeChip = choice.routeType ? `<span class="route-chip">${escapeHtml(choice.routeType)}</span>` : "";
+    return `<button class="choice-card event-choice" data-action="event" data-option-id="${choice.id}">${choiceArt}${routeChip}<strong>${escapeHtml(choice.title)}</strong><p>${escapeHtml(choice.text)}</p></button>`;
+  }
+
+  function renderScenarioRestScene(scenario, label = "戰術桌") {
+    const scene = scenarioRestScene(scenario);
+    if (!scene) return "";
+    const scenarioName = scenario?.name || "未知副本";
+    return `
+      <section class="tactical-rest-scene">
+        ${image(`./src/assets/generated/${scene.fileName}`, `${scenarioName}休整戰術桌`, "tactical-rest-art")}
+        <div class="tactical-rest-copy">
+          <span class="eyebrow">${escapeHtml(label)} · ${escapeHtml(scenarioName)}</span>
+          <strong>${escapeHtml(scene.title || "隊伍復盤")}</strong>
+          <p>${escapeHtml(scene.text || "隊伍把敵人、補給、撤離口與主神提示攤在桌面，重新拆解下一步行動。")}</p>
+        </div>
+      </section>
+    `;
+  }
+
+  function scenarioRestScene(scenario) {
+    if (!scenario) return null;
+    const dedicated = data.systemEncounterRestScenesByScenario?.[scenario.id];
+    if (dedicated) return dedicated;
+    const fallbackScenes = data.systemEncounterRestFallbackScenes || [];
+    if (!fallbackScenes.length) return null;
+    const fallback = fallbackScenes[stableIndex(scenario.id, fallbackScenes.length)];
+    return {
+      ...fallback,
+      title: `${scenario.name}臨時戰術桌`,
+      text: `${fallback.text} ${scenario.name}的劇情線索被暫時併入這張休整桌，等待下一次更深的改命路線。`
+    };
+  }
+
+  function stableIndex(value, size) {
+    if (!size) return 0;
+    return String(value || "").split("").reduce((sum, char) => sum + char.charCodeAt(0), 0) % size;
   }
 
   function eventStageText(stage, scenario, candidate, hidden, path) {
@@ -664,6 +723,11 @@
     const rewards = result.rewards || [];
     const costs = result.costs || [];
     const storyImpact = result.storyImpact || "命運線已經偏移。";
+    const worldState = result.worldState || "";
+    const teamStance = result.teamStance || null;
+    const dialogue = result.dialogue || [];
+    const pressureText = Number.isFinite(Number(result.fatePressure)) ? `命運壓力 ${result.fatePressure}/100 · ${result.pressureLevel?.label || "穩定"}` : "";
+    const resultArt = eventResultArt(result);
     return `
       <section class="choice-screen event-result-screen">
         <div class="screen-title">
@@ -671,10 +735,15 @@
           <h2>${escapeHtml(result.title || "劇本偏移完成")}</h2>
           <p>${escapeHtml(result.text || "主神記錄了這次選擇，遠征路線重新穩定。")}</p>
         </div>
+        ${resultArt ? image(resultArt, "奇遇結局劇情圖", "event-result-art") : ""}
         <div class="choice-grid">
           <article class="choice-card"><strong>獎勵</strong>${renderResultList(rewards)}</article>
           <article class="choice-card danger"><strong>代價</strong>${renderResultList(costs)}</article>
           <article class="choice-card"><strong>劇情影響</strong><p>${escapeHtml(storyImpact)}</p></article>
+          ${worldState ? `<article class="choice-card"><strong>世界狀態</strong><p>${escapeHtml(worldState)}</p></article>` : ""}
+          ${pressureText ? `<article class="choice-card"><strong>輪迴壓力</strong><p>${escapeHtml(pressureText)}</p></article>` : ""}
+          ${dialogue.length ? `<article class="choice-card event-dialogue-card"><strong>對話劇本</strong>${renderDialogueLines(dialogue)}</article>` : ""}
+          ${teamStance ? `<article class="choice-card"><strong>隊友立場</strong><p>${escapeHtml(teamStance.summary)}</p>${renderResultList(teamStance.reactions || [])}</article>` : ""}
         </div>
         <button class="primary-action" data-action="continue-event-result">確認後果，返回路線圖</button>
       </section>
@@ -685,13 +754,37 @@
     return items.length ? `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>` : "<p>無</p>";
   }
 
+  function eventResultArt(result) {
+    if (result?.imageFile) return `./src/assets/generated/${result.imageFile}`;
+    const joined = [
+      result?.title,
+      result?.text,
+      result?.routeType,
+      result?.storyImpact,
+      result?.worldState,
+      ...(result?.rewards || []),
+      ...(result?.costs || [])
+    ].filter(Boolean).join(" ");
+    if (/黑化|失散|變強歸來|hardened|dark/i.test(joined)) return "./src/assets/generated/story-fate-dark-return.png";
+    if (/救援|救回|復活|重傷|復健|rescue|revival/i.test(joined)) return "./src/assets/generated/story-fate-rescue-mission.png";
+    if (/高代價|詛咒|半血|命運壓力|Boss|高壓|risk|curse|blood/i.test(joined)) return "./src/assets/generated/story-fate-pressure-boss.png";
+    if (result?.teamStance) return "./src/assets/generated/story-fate-team-stance.png";
+    return "./src/assets/generated/story-fate-pressure-boss.png";
+  }
+
+  function renderDialogueLines(lines) {
+    return `<div class="event-dialogue-lines">${lines.map((line) => `<p><strong>${escapeHtml(line.speaker || "隊伍")}</strong><span>${escapeHtml(line.line || "")}</span></p>`).join("")}</div>`;
+  }
+
   function renderCamp() {
+    const scenario = state.run?.scenarioId ? core.scenariosById[state.run.scenarioId] : null;
     const unupgradedCards = state.deck.filter((entry) => core.cardsById[entry.cardId].category === "general" && !entry.upgraded);
     const unupgradedSignatures = state.party.filter((member) => member.active && !state.permanentUpgrades.signatures.includes(member.id));
     const unupgradedEquipment = state.equipmentInventory.filter((entry) => !entry.upgraded);
     return `
       <section class="camp-layout">
         <div class="screen-title"><span class="eyebrow">整頓</span><h2>小王戰後的喘息</h2><p>可調整裝備，然後選擇恢復全隊或升級一項。</p></div>
+        ${renderScenarioRestScene(scenario, "整頓戰術桌")}
         <button class="choice-card heal-choice" data-action="camp" data-camp-action="heal"><strong>主神急救</strong><p>全體出戰角色恢復 30% 最大生命並降低 15 壓力。</p></button>
         <section class="panel"><h3>升級一般牌</h3><div class="compact-grid">${unupgradedCards.map((entry) => `<button class="compact-choice" data-action="camp" data-camp-action="upgrade-deck" data-target-id="${entry.instanceId}">${core.cardsById[entry.cardId].name} → ${core.cardsById[entry.cardId].name}+</button>`).join("") || "<p>沒有可升級的一般牌。</p>"}</div></section>
         <section class="panel"><h3>升級專屬牌或裝備</h3><div class="compact-grid">${unupgradedSignatures.map((member) => `<button class="compact-choice" data-action="camp" data-camp-action="upgrade-signature" data-target-id="${member.id}">${escapeHtml(member.name)} · ${escapeHtml(core.cardsById[member.signatureCardId].name)}+</button>`).join("")}${unupgradedEquipment.map((entry) => `<button class="compact-choice" data-action="camp" data-camp-action="upgrade-equipment" data-target-id="${entry.instanceId}">${escapeHtml(core.equipmentById[entry.equipmentId].name)}+</button>`).join("")}</div></section>
@@ -728,7 +821,7 @@
           ${renderHubTab("growth", "自創強化", "六維、標籤與變異", tab)}
           ${renderHubTab("shop", "強化商店", "永久強化與兌換", tab)}
         </nav>
-        <section class="hub-workspace">${tab === "roster" ? renderRosterHub() : tab === "growth" ? renderGrowthHub() : tab === "shop" ? renderShopHub() : renderDeploymentHub()}</section>
+        <section id="hub-workspace" class="hub-workspace" role="tabpanel" aria-labelledby="hub-tab-${tab}" tabindex="0">${tab === "roster" ? renderRosterHub() : tab === "growth" ? renderGrowthHub() : tab === "shop" ? renderShopHub() : renderDeploymentHub()}</section>
         <details class="hub-detail-drawer">
           <summary>作戰中樞與加成來源</summary>
           ${renderEffectMatrix("hub")}
@@ -738,7 +831,8 @@
   }
 
   function renderHubTab(id, title, subtitle, activeTab) {
-    return `<button class="hub-tab ${activeTab === id ? "active" : ""}" role="tab" aria-selected="${activeTab === id}" data-action="hub-tab" data-tab-id="${id}"><strong>${title}</strong><span>${subtitle}</span></button>`;
+    const active = activeTab === id;
+    return `<button id="hub-tab-${id}" class="hub-tab ${active ? "active" : ""}" role="tab" aria-selected="${active}" aria-controls="hub-workspace" tabindex="${active ? "0" : "-1"}" data-action="hub-tab" data-tab-id="${id}"><strong>${title}</strong><span>${subtitle}</span></button>`;
   }
 
   function renderGrowthHub() {
@@ -920,7 +1014,7 @@
       <button class="support-pick-card empty ${activeInstanceId ? "" : "selected"}" data-action="set-custom-support-equipment" data-slot-index="${slotIndex}" data-equipment-instance-id="">
         <span class="support-pick-art placeholder">空</span><strong>未配置支援裝備</strong><p>不掛載額外裝備。</p>
       </button>
-      ${state.equipmentInventory.map((entry) => {
+      ${sortEquipmentEntriesForVisibility(state.equipmentInventory, activeInstanceId).map((entry) => {
         const item = core.equipmentById[entry.equipmentId];
         const selected = entry.instanceId === activeInstanceId;
         const duplicate = supportEquipmentIds.includes(entry.instanceId) && !selected;
@@ -1007,17 +1101,19 @@
   function renderShopHub() {
     const cardEntries = data.shop.filter((entry) => entry.kind === "card");
     const equipmentEntries = data.shop.filter((entry) => entry.kind === "equipment");
+    const shopDiscount = core.shopFateDiscountRate?.(state) || 0;
+    const shopDiscountText = shopDiscount ? ` · 輪迴補給折扣 ${Math.round(shopDiscount * 100)}%` : "";
     return `
       <section class="panel">
         <div class="section-heading"><div><span class="eyebrow">支線劇情</span><h2>永久強化</h2></div><p>${state.sideStories} 支線 · ${state.upgradeTokens} 強化券</p></div>
         <div class="upgrade-grid">${data.permanentUpgrades.map(renderPermanentUpgrade).join("")}</div>
       </section>
       <section class="panel">
-        <div class="section-heading"><div><span class="eyebrow">主神兌換</span><h2>共用攻擊卡牌</h2></div><p>${state.rewardPoints} 獎勵點 · 按分類展開</p></div>
+        <div class="section-heading"><div><span class="eyebrow">主神兌換</span><h2>共用攻擊卡牌</h2></div><p>${state.rewardPoints} 獎勵點 · 按分類展開${shopDiscountText}</p></div>
         ${renderCardShopSections(cardEntries)}
       </section>
       <section class="panel">
-        <div class="section-heading"><div><span class="eyebrow">主神兌換</span><h2>裝備與神器</h2></div><p>${equipmentEntries.length} 件唯一裝備 · 按分類展開</p></div>
+        <div class="section-heading"><div><span class="eyebrow">主神兌換</span><h2>裝備與神器</h2></div><p>${equipmentEntries.length} 件唯一裝備 · 按分類展開${shopDiscountText}</p></div>
         <div class="shop-source-list">${renderEquipmentShopSections(equipmentEntries)}</div>
       </section>
       <section class="panel">
@@ -1082,43 +1178,97 @@
   function renderScenarioButton(id) {
     const scenario = core.scenariosById[id];
     const complete = state.campaign.completedScenarios.includes(id);
+    const fate = core.scenarioFateStatus?.(state, id) || null;
     const bossEnemyId = scenario.boss ? core.encountersById[scenario.boss]?.enemies?.[0] : null;
     const artSrc = scenarioArt(id) || (bossEnemyId ? enemyArt(bossEnemyId) : "");
     const superHard = core.isSuperHardScenario?.(scenario);
-    return `<button class="scenario-card ${superHard ? "super-hard" : ""}" data-action="begin-scenario" data-scenario-id="${id}">${artSrc ? image(artSrc, "", "scenario-art") : ""}<span class="eyebrow">${superHard ? "超困難劇本" : complete ? "已通關 · 可重玩" : "主線劇本"}</span><strong>${scenario.name}</strong><p>${scenario.subtitle}</p></button>`;
+    const band = scenario.difficultyBand || (superHard ? "super-hard" : "standard");
+    const label = superHard ? "超困難劇本" : complete ? `已通關 · ${core.scenarioDifficultyLabel(scenario)}` : core.scenarioDifficultyLabel(scenario);
+    const fateChips = [
+      fate?.hiddenRescued ? "已改命" : fate?.hasFate ? "有檔案" : "",
+      fate?.hasFate || fate?.fatePressure ? `命壓 ${fate.fatePressure || 0} · ${fate.pressureLevel?.label || "穩定"}` : "",
+      fate?.bossPreview?.affectsBoss ? "Boss 已改寫" : "",
+      fate?.shopDiscountRate ? `補給 -${Math.round(fate.shopDiscountRate * 100)}%` : "",
+      fate?.activeRescueCount ? `待救援 ${fate.activeRescueCount}` : "",
+      fate?.lastRouteType ? fate.lastRouteType : "",
+      fate?.completedRouteCount ? `路線 ${fate.completedRouteCount}` : ""
+    ].filter(Boolean);
+    return `<button class="scenario-card scenario-band-${escapeHtml(band)} ${superHard ? "super-hard" : ""}" data-action="begin-scenario" data-scenario-id="${id}">${artSrc ? image(artSrc, "", "scenario-art") : ""}<span class="eyebrow">${escapeHtml(label)}</span><strong>${escapeHtml(scenario.name)}</strong><p>${escapeHtml(scenario.subtitle)}</p>${fateChips.length ? `<div class="fate-chip-row">${fateChips.map((chip) => `<span>${escapeHtml(chip)}</span>`).join("")}</div>` : ""}</button>`;
   }
 
   function renderRandomScenarioButton() {
     const pool = core.randomNormalScenarioPool(state);
     const preview = core.dynamicDifficultyPreview(state);
+    const progression = core.scenarioProgressionStatus(state);
+    const nextFixed = progression.nextFixedId ? core.scenariosById[progression.nextFixedId] : null;
     const recentNames = (preview.recent || []).map((id) => core.scenariosById[id]?.name).filter(Boolean);
     const sample = pool.slice(0, 4).map((scenario) => scenario.name).join(" / ");
     return `
-      <button class="scenario-card random-normal" data-action="begin-scenario" data-scenario-id="random-normal" ${pool.length ? "" : "disabled"}>
+      <button class="scenario-card random-normal ${nextFixed ? "opening-track" : ""}" data-action="begin-scenario" data-scenario-id="random-normal" ${pool.length ? "" : "disabled"}>
         ${image("./src/assets/generated/ui-main-god-nexus.png", "", "scenario-art")}
-        <span class="eyebrow">普通劇本 · 隨機抽取</span>
-        <strong>下一場隨機劇本</strong>
-        <p>${pool.length ? `抽選池 ${pool.length} 場${sample ? ` · ${sample}` : ""}` : "尚未開放普通劇本"}</p>
+        <span class="eyebrow">${nextFixed ? "原劇情 · 下一場固定劇本" : "普通劇本 · 主神亂序抽取"}</span>
+        <strong>${nextFixed ? escapeHtml(nextFixed.name) : "下一場隨機劇本"}</strong>
+        <p>${nextFixed ? "完成前四個原劇情後，後續普通劇本會按難度池打亂投放。" : pool.length ? `抽選池 ${pool.length} 場${sample ? ` · ${escapeHtml(sample)}` : ""}` : "尚未開放普通劇本"}</p>
         <div class="scenario-meta-grid">
           <span>預估 ${formatMultiplier(preview.multiplier)}x</span>
-          <span>${recentNames.length ? `避開 ${recentNames.join("、")}` : "無最近排除"}</span>
+          <span>${nextFixed ? `原劇情進度 ${progression.fixedOpening.filter((item) => item.complete).length}/${progression.fixedOpening.length}` : recentNames.length ? `避開 ${escapeHtml(recentNames.join("、"))}` : "無最近排除"}</span>
         </div>
       </button>
     `;
   }
 
+  function renderScenarioProgressionOverview(progression) {
+    const fixedDone = progression.fixedOpening.filter((item) => item.complete).length;
+    const nextFixedName = progression.nextFixedId ? core.scenariosById[progression.nextFixedId]?.name : "已轉入亂序池";
+    const tierText = progression.openTierNames.length ? progression.openTierNames.join("、") : "尚未開池";
+    return `
+      <div class="scenario-overview-grid">
+        <article><span>原劇情前段</span><strong>${fixedDone}<small>/${progression.fixedOpening.length}</small></strong><p>下一場：${escapeHtml(nextFixedName)}</p></article>
+        <article><span>亂序普通池</span><strong>${progression.randomUnlockedCount}</strong><p>${escapeHtml(tierText)}</p></article>
+        <article><span>無限遠征</span><strong>${state.campaign.infiniteUnlocked ? "開放" : `${progression.completedNormalCount}/${progression.infiniteUnlockClearCount}`}</strong><p>${state.campaign.infiniteUnlocked ? `第 ${state.campaign.infiniteTier} 層` : "按正常通關數開放"}</p></article>
+      </div>
+    `;
+  }
+
+  function renderScenarioPoolGroups(progression) {
+    if (!progression.groups.length) {
+      return `<div class="scenario-pool-empty"><strong>亂序池尚未開放</strong><span>完成前四個原劇情後會按難度逐步加入劇本。</span></div>`;
+    }
+    return `
+      <div class="scenario-pool-list">
+        ${progression.groups.map((group, index) => `
+          <details class="scenario-pool-group" ${index < 2 ? "open" : ""}>
+            <summary><span><strong>${escapeHtml(group.name)}</strong><small>${group.scenarioIds.length} 場 · 已通關 ${group.completedCount}</small></span><em>${escapeHtml(group.hint || "")}</em></summary>
+            <div class="scenario-chip-list">
+              ${group.scenarioIds.map((id) => renderScenarioChip(id)).join("")}
+            </div>
+          </details>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function renderScenarioChip(id) {
+    const scenario = core.scenariosById[id];
+    const complete = state.campaign.completedScenarios.includes(id);
+    return `<span class="scenario-chip ${complete ? "complete" : ""}">${escapeHtml(scenario?.name || id)}</span>`;
+  }
+
   function renderDeploymentHub() {
     const active = core.getActiveParty(state);
     const reserve = combatMembers().filter((member) => !member.active);
+    const progression = core.scenarioProgressionStatus(state);
     const superHardScenarios = state.campaign.unlockedScenarios.filter((id) => core.isSuperHardScenario?.(core.scenariosById[id]));
     return `
       <section class="scenario-panel deployment-scenarios">
-        <div class="section-heading"><div><span class="eyebrow">劇本出擊</span><h2>整備後隨機投放</h2></div><p>普通劇本由主神抽取；超困難與無限遠征保留手動入口。</p></div>
+        <div class="section-heading"><div><span class="eyebrow">劇本出擊</span><h2>原劇情後亂序投放</h2></div><p>前四場保留固定體驗；之後按難度池打亂抽選，超困難與無限遠征保留手動入口。</p></div>
+        ${renderScenarioProgressionOverview(progression)}
         <div class="scenario-grid">
           ${renderRandomScenarioButton()}
           ${superHardScenarios.map((id) => renderScenarioButton(id)).join("")}
           ${state.campaign.infiniteUnlocked ? `<button class="scenario-card infinite" data-action="begin-scenario" data-scenario-id="infinite"><span class="eyebrow">無限模式 · 第 ${state.campaign.infiniteTier} 層</span><strong>無限恐怖</strong><p>連續推進隨機劇本，獎勵與壓力同步提高。</p></button>` : ""}
         </div>
+        ${renderScenarioPoolGroups(progression)}
       </section>
       <section class="main-god-console deployment-console">
         <section class="panel squad-column">
@@ -1201,16 +1351,36 @@
     const loadout = getMemberLoadout(member);
     const factionLabel = mode === "roster" && rosterSource ? rosterSource.name : memberFactionName(member);
     const sourceSuffix = mode === "roster" && rosterSource && member.faction && member.faction !== factionLabel && (member.factionId || "main") !== "main" ? ` · ${escapeHtml(member.faction)}` : "";
+    const recoveryStatus = core.memberRecoveryStatus?.(member) || member.recoveryStatus || null;
+    const unavailable = Boolean(recoveryStatus);
+    const recovery = recoveryMeta(recoveryStatus);
+    const rescueMissions = activeRescueMissionsForCharacter(member.id);
+    const recoveryCost = core.defeatRecoveryCosts?.[recoveryStatus] || data.defeatRecoveryCosts?.[recoveryStatus] || { rewardPointCost: 0, sideStoryCost: 0 };
+    const canRecover = recoveryStatus && canAffordResourceCost(recoveryCost);
+    const recoveryCostText = recoveryStatus ? formatUpgradeCost(recoveryCost) : "";
+    const returnMeta = fateReturnMeta(member.fateReturnMode);
+    const rosterActions = recoveryStatus ? `<div class="inline-actions roster-actions recovery-actions">
+            <button class="recovery-action fate-${escapeHtml(recovery.tone || recoveryStatus)}" data-action="recover-character" data-character-id="${member.id}" ${canRecover ? "" : "disabled"}>${recoveryActionLabel(recoveryStatus)} · ${recoveryCostText}</button>
+          </div>` : `<div class="inline-actions roster-actions">
+            <button data-action="upgrade-character" data-character-id="${member.id}" ${level >= 3 || !canAffordUpgradeCost(data.economy?.characterUpgradeCost || { rewardPointCost: 500, sideStoryCost: 1 }) ? "disabled" : ""}>生命 +8</button>
+            <button data-action="upgrade-signature" data-character-id="${member.id}" ${signatureUpgraded || !canAffordUpgradeCost(data.economy?.signatureUpgradeCost || { rewardPointCost: 1000, sideStoryCost: 1 }) ? "disabled" : ""}>專屬牌+</button>
+            <button class="bloodline-action" data-action="upgrade-bloodline" data-character-id="${member.id}" ${bloodlineUnlocked || !canUpgradeBloodline ? "disabled" : ""}>${bloodlineUnlocked ? "血統已解放" : state.upgradeTokens > 0 ? "用免費強化解放血統" : `血統解放 · ${formatUpgradeCost(bloodline || { sideStoryCost: 2 })}`}</button>
+          </div>`;
+    const deploymentDisabled = unavailable || (!member.active && core.getActiveParty(state).length >= 6);
+    const deploymentLabel = unavailable ? "不可出戰" : member.active ? "移至候補" : "加入出戰";
     return `
-      <article class="mini-character-card faction-${member.factionId || "main"} ${member.active ? "active-member" : "reserve-member"}">
+      <article class="mini-character-card faction-${member.factionId || "main"} ${member.active && !unavailable ? "active-member" : "reserve-member"} ${unavailable ? `recovery-member recovery-${escapeHtml(recoveryStatus)}` : ""}">
         ${image(characterArt(member.id), `${escapeHtml(member.name)}`, "mini-character-art")}
         <div class="mini-character-copy">
           <div class="mini-character-head">
             <div><span class="faction-inline faction-${member.factionId || "main"}">${escapeHtml(factionLabel)}</span><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.role)}${sourceSuffix}</p></div>
             <span class="energy-badge">${formatEnergy(energy)}</span>
           </div>
-          <div class="mini-stat-row"><span>HP ${member.hp}/${member.maxHp}</span><span>壓力 ${member.stress}</span><span>Lv.${level}</span></div>
+          <div class="mini-stat-row"><span>HP ${member.hp}/${member.maxHp}</span><span>壓力 ${member.stress}</span><span>Lv.${level}</span>${recoveryStatus ? `<span class="recovery-chip fate-${escapeHtml(recovery.tone || recoveryStatus)}">${escapeHtml(recoveryStatusText(member))}</span>` : ""}${returnMeta ? `<span class="recovery-chip fate-${escapeHtml(returnMeta.tone)}">${escapeHtml(returnMeta.label)}</span>` : ""}</div>
           <div class="loadout-chip">${loadout.item ? `${loadout.item.name}${loadout.entry.upgraded ? "+" : ""}` : "未裝備"}</div>
+          ${recoveryStatus ? `<p class="recovery-note">${escapeHtml(recovery.text || "需要處理後才能重新出戰。")}</p>` : ""}
+          ${returnMeta ? `<p class="recovery-note rescue-note">${escapeHtml(returnMeta.text)}${member.fateReturnNote ? `：${escapeHtml(member.fateReturnNote)}` : ""}</p>` : ""}
+          ${rescueMissions.length ? `<p class="recovery-note rescue-note">救援線：${rescueMissions.map((mission) => escapeHtml(core.scenariosById[mission.scenarioId]?.name || mission.scenarioId)).join("、")}</p>` : ""}
           ${renderModifierChips("character", { member, loadout, signature, bloodline, bloodlineUnlocked })}
           ${renderSignaturePreview(member, signatureUpgraded, bloodline, bloodlineUnlocked)}
           <details class="mini-details">
@@ -1218,11 +1388,7 @@
             <p>${escapeHtml(member.passiveText)}</p>
             ${bloodline ? `<p class="${bloodlineUnlocked ? "unlocked" : ""}">血統：${bloodline.name} · ${bloodline.text}</p>` : ""}
           </details>
-          ${mode === "roster" ? `<div class="inline-actions roster-actions">
-            <button data-action="upgrade-character" data-character-id="${member.id}" ${level >= 3 || !canAffordUpgradeCost(data.economy?.characterUpgradeCost || { rewardPointCost: 500, sideStoryCost: 1 }) ? "disabled" : ""}>生命 +8</button>
-            <button data-action="upgrade-signature" data-character-id="${member.id}" ${signatureUpgraded || !canAffordUpgradeCost(data.economy?.signatureUpgradeCost || { rewardPointCost: 1000, sideStoryCost: 1 }) ? "disabled" : ""}>專屬牌+</button>
-            <button class="bloodline-action" data-action="upgrade-bloodline" data-character-id="${member.id}" ${bloodlineUnlocked || !canUpgradeBloodline ? "disabled" : ""}>${bloodlineUnlocked ? "血統已解放" : state.upgradeTokens > 0 ? "用免費強化解放血統" : `血統解放 · ${formatUpgradeCost(bloodline || { sideStoryCost: 2 })}`}</button>
-          </div>` : `<div class="inline-actions deployment-actions"><button data-action="toggle-active" data-character-id="${member.id}" ${!member.active && core.getActiveParty(state).length >= 6 ? "disabled" : ""}>${member.active ? "移至候補" : "加入出戰"}</button></div>`}
+          ${mode === "roster" ? rosterActions : `<div class="inline-actions deployment-actions"><button data-action="toggle-active" data-character-id="${member.id}" ${deploymentDisabled ? "disabled" : ""}>${deploymentLabel}</button></div>`}
         </div>
       </article>
     `;
@@ -1339,8 +1505,9 @@
     const holder = getEquipmentHolder(entry.instanceId);
     const supportSlot = getSupportEquipmentSlot(entry.instanceId);
     const holderText = holder ? holder.name : supportSlot >= 0 ? `第7人支援槽 ${supportSlot + 1}` : "未裝備";
+    const equipped = holder || supportSlot >= 0;
     return `
-      <article class="armory-item rarity-${item.rarity || "common"}">
+      <article class="armory-item rarity-${item.rarity || "common"} ${equipped ? "equipped" : ""}">
         ${image(equipmentArt(item.id), "", "armory-art")}
         <div class="armory-copy">
           <div class="armory-head"><strong>${item.name}${entry.upgraded ? "+" : ""}</strong><span>${rarityLabel(item.rarity)}${item.weaponClass === "firearm" ? " · 槍械" : ""}${supportSlot >= 0 ? ` · 第7人支援${supportSlot + 1}` : ""}</span></div>
@@ -1376,6 +1543,20 @@
 
   function getSupportEquipmentSlot(instanceId) {
     return (state.playerGrowth?.supportEquipmentIds || []).findIndex((id) => id === instanceId);
+  }
+
+  function equipmentVisibilityRank(entry, activeInstanceId = "") {
+    if (entry.instanceId === activeInstanceId) return 0;
+    if (getSupportEquipmentSlot(entry.instanceId) >= 0) return 1;
+    if (getEquipmentHolder(entry.instanceId)) return 2;
+    return 3;
+  }
+
+  function sortEquipmentEntriesForVisibility(entries, activeInstanceId = "") {
+    return entries
+      .map((entry, index) => ({ entry, index, rank: equipmentVisibilityRank(entry, activeInstanceId) }))
+      .sort((left, right) => left.rank - right.rank || left.index - right.index)
+      .map((row) => row.entry);
   }
 
   function renderEffectMatrix(mode = "hub") {
@@ -1430,8 +1611,12 @@
     const chips = buildModifierChips(kind, context).filter((chip) => chip && chip.value !== "");
     if (!chips.length) return "";
     return `<div class="modifier-chip-row ${kind}-chips">${chips.map((chip) => `
-      <span class="modifier-chip tone-${escapeHtml(chip.tone || "neutral")}"><b>${escapeHtml(chip.label)}</b><em>${escapeHtml(chip.value)}</em></span>
+      <span class="modifier-chip tone-${escapeHtml(chip.tone || "neutral")}"${modifierChipTooltipAttrs(chip)}><b>${escapeHtml(chip.label)}</b><em>${escapeHtml(chip.value)}</em></span>
     `).join("")}</div>`;
+  }
+
+  function modifierChipTooltipAttrs(chip) {
+    return chip.tooltip ? ` data-tooltip="${escapeHtml(chip.tooltip)}"` : "";
   }
 
   function buildModifierChips(kind, context) {
@@ -1451,10 +1636,10 @@
       { label: "費用", value: card.unplayable ? "不可打出" : String(cost), tone: cost > state.energy ? "danger" : "signal" },
       { label: "類型", value: cardTypeLabel(card), tone: card.type },
       owner ? { label: "擁有者", value: owner.name, tone: "owner" } : null,
-      bloodlineUnlocked && bloodline ? { label: "血統", value: bloodline.name, tone: "support" } : null,
-      bonds.length ? { label: "羈絆", value: `${bonds.length} 條`, tone: "bond" } : null,
-      equipmentRows.length ? { label: "裝備", value: equipmentRows.slice(0, 2).map((row) => row.name).join(" / "), tone: "equipment" } : null,
-      supportRows.length ? { label: "自創支援", value: `${supportRows.length} 項`, tone: "support" } : null
+      bloodlineUnlocked && bloodline ? { label: "血統", value: bloodline.name, tone: "support", tooltip: joinTooltipLines([bloodline.name, bloodline.text]) } : null,
+      bonds.length ? { label: "羈絆", value: `${bonds.length} 條`, tone: "bond", tooltip: buildRowsTooltip("已啟用羈絆", bonds) } : null,
+      equipmentRows.length ? { label: "裝備", value: equipmentRows.slice(0, 2).map((row) => row.name).join(" / "), tone: "equipment", tooltip: buildRowsTooltip("會影響這張牌的裝備", equipmentRows) } : null,
+      supportRows.length ? { label: "自創支援", value: `${supportRows.length} 項`, tone: "support", tooltip: buildRowsTooltip("第 7 人支援與血統", supportRows) } : null
     ];
     return chips;
   }
@@ -1465,9 +1650,9 @@
       { label: "職能", value: member.role, tone: member.active ? "signal" : "neutral" },
       { label: "能量", value: formatEnergy(member.energyContribution), tone: "signal" },
       signature ? { label: "專屬牌", value: signature.name, tone: "owner" } : null,
-      loadout?.item ? { label: "裝備", value: `${loadout.item.name}${loadout.entry?.upgraded ? "+" : ""}`, tone: "equipment" } : { label: "裝備", value: "未裝備", tone: "neutral" },
-      bloodlineUnlocked && bloodline ? { label: "血統", value: bloodline.name, tone: "support" } : null,
-      memberBonds.length ? { label: "羈絆", value: `${memberBonds.length} 條`, tone: "bond" } : null
+      loadout?.item ? { label: "裝備", value: `${loadout.item.name}${loadout.entry?.upgraded ? "+" : ""}`, tone: "equipment", tooltip: buildEquipmentTooltip(loadout.item, loadout.entry, member.name) } : { label: "裝備", value: "未裝備", tone: "neutral" },
+      bloodlineUnlocked && bloodline ? { label: "血統", value: bloodline.name, tone: "support", tooltip: joinTooltipLines([bloodline.name, bloodline.text]) } : null,
+      memberBonds.length ? { label: "羈絆", value: `${memberBonds.length} 條`, tone: "bond", tooltip: buildRowsTooltip(`${member.name} 的羈絆`, memberBonds) } : null
     ];
   }
 
@@ -1560,9 +1745,39 @@
     if (!member) return [];
     return core.getActiveBonds(state).filter((bond) => {
       if (Array.isArray(bond.members) && bond.members.includes(member.id)) return true;
+      if (Array.isArray(bond.sourceMembers) && bond.sourceMembers.includes(member.id)) return true;
       if (bond.faction && (bond.faction === member.factionId || bond.faction === member.faction)) return true;
       return false;
     });
+  }
+
+  function buildEquipmentTooltip(item, entry, holderName = "") {
+    return joinTooltipLines([
+      `${item.name}${entry?.upgraded ? "+" : ""}`,
+      holderName ? `持有人：${holderName}` : "",
+      `效果：${equipmentEffectLabel(item, entry)}`,
+      item.text ? `說明：${item.text}` : ""
+    ]);
+  }
+
+  function buildRowsTooltip(title, rows, limit = 6) {
+    const visibleRows = rows.slice(0, limit).map((row) => {
+      const name = row.name || row.label || "效果";
+      const text = row.text || summarizeEffectsForTooltip(row.effects);
+      const label = row.label && row.label !== name ? `${row.label} · ` : "";
+      return `${label}${name}${text ? `：${text}` : ""}`;
+    });
+    const remaining = rows.length > limit ? `另有 ${rows.length - limit} 項，完整資料可在右側抽屜查看。` : "";
+    return joinTooltipLines([title, ...visibleRows, remaining]);
+  }
+
+  function summarizeEffectsForTooltip(effects) {
+    const parts = Object.entries(effects || {}).slice(0, 5).map(([effect, value]) => `${effectLabel(effect)} ${formatEffectValue(value)}`);
+    return parts.join(" / ");
+  }
+
+  function joinTooltipLines(lines) {
+    return lines.map((line) => String(line || "").trim()).filter(Boolean).join("\n");
   }
 
   function equipmentEffectLabel(item, entry) {
@@ -1653,7 +1868,7 @@
       if (!groups.has(id)) groups.set(id, { id, name: memberFactionName(member), members: [], activeCount: 0, energy: 0 });
       const group = groups.get(id);
       group.members.push(member);
-      if (member.active) group.activeCount += 1;
+      if (member.active && !core.isMemberUnavailable?.(member)) group.activeCount += 1;
       group.energy += Number(member.energyContribution || 0);
     });
     return [...groups.values()].sort((a, b) => Number(b.activeCount) - Number(a.activeCount) || a.name.localeCompare(b.name, "zh-Hant"));
@@ -1676,7 +1891,7 @@
   }
 
   function makeRosterSourceGroup(source, members) {
-    const activeCount = members.filter((member) => member.active).length;
+    const activeCount = members.filter((member) => member.active && !core.isMemberUnavailable?.(member)).length;
     const energy = members.reduce((sum, member) => sum + Number(member.energyContribution || 0), 0);
     const factionId = members.find((member) => member.factionId)?.factionId || source.id;
     return { ...source, name: source.id === "main" ? state.teamName || "中洲隊" : source.name, members, activeCount, energy, factionId };
@@ -1692,7 +1907,13 @@
       if (!groups.has(id)) groups.set(id, { ...source, entries: [] });
       groups.get(id).entries.push(entry);
     });
-    return [...groups.values()];
+    return [...groups.values()]
+      .map((group, index) => ({ ...group, index, entries: sortEquipmentEntriesForVisibility(group.entries) }))
+      .sort((left, right) => {
+        const leftRank = Math.min(...left.entries.map((entry) => equipmentVisibilityRank(entry)));
+        const rightRank = Math.min(...right.entries.map((entry) => equipmentVisibilityRank(entry)));
+        return leftRank - rightRank || left.index - right.index;
+      });
   }
 
   function renderBondPanel(mode) {
@@ -1724,6 +1945,42 @@
     ].filter(Boolean).join(" / ") || "免費";
   }
 
+  function canAffordResourceCost(cost) {
+    const normalized = effectiveUpgradeCost(cost);
+    return state.rewardPoints >= normalized.rewardPointCost && state.sideStories >= normalized.sideStoryCost;
+  }
+
+  function recoveryMeta(status) {
+    return core.defeatFates?.[status] || data.defeatFates?.[status] || { label: "不可出戰", text: "需要處理後才能重新上場。", tone: status || "lost" };
+  }
+
+  function activeRescueMissionsForCharacter(characterId) {
+    return (state.campaign?.rescueMissions || []).filter((mission) => mission.status === "active" && mission.characterId === characterId);
+  }
+
+  function recoveryActionLabel(status) {
+    if (status === "dead") return "復活";
+    if (status === "lost") return "追蹤重逢";
+    if (status === "injured") return "主神治療";
+    return "處理後果";
+  }
+
+  function recoveryStatusText(member) {
+    const status = core.memberRecoveryStatus?.(member) || member.recoveryStatus || null;
+    if (!status) return "";
+    const remaining = Number(member.recoveryRunsRemaining || 0);
+    if (status === "dead") return recoveryMeta(status).label;
+    return remaining > 0 ? `${recoveryMeta(status).label} · ${remaining} 場` : recoveryMeta(status).label;
+  }
+
+  function fateReturnMeta(mode) {
+    if (mode === "costly-revival") return { label: "復活代價", tone: "fatal", text: "這名角色是透過救援奇遇付出代價回歸。" };
+    if (mode === "field-rehab") return { label: "復健回歸", tone: "injury", text: "這名角色的重傷被改寫成可完成的復健線。" };
+    if (mode === "hardened-return") return { label: "黑化歸來", tone: "lost", text: "這名角色從失散裂縫裡變強回來。" };
+    if (mode === "paid-recovery") return { label: "主神修復", tone: "escape", text: "這名角色由主神付費修復回歸。" };
+    return null;
+  }
+
   function renderPermanentUpgrade(upgrade) {
     const owned = state.permanentUpgrades.team.includes(upgrade.id);
     const canBuy = canAffordUpgradeCost(upgrade);
@@ -1732,20 +1989,23 @@
 
   function renderShopItem(entry) {
     const item = entry.kind === "card" ? core.cardsById[entry.itemId] : core.equipmentById[entry.itemId];
+    if (!item) return "";
     const bought = state.purchased[entry.id] || 0;
     const ownedEquipment = entry.kind === "equipment" && state.equipmentInventory.some((value) => value.equipmentId === entry.itemId);
-    const canAfford = state.rewardPoints >= entry.rewardPointCost && state.sideStories >= Number(entry.sideStoryCost || 0);
+    const rewardPointCost = core.discountedShopRewardPointCost?.(state, entry.rewardPointCost) ?? entry.rewardPointCost;
+    const canAfford = state.rewardPoints >= rewardPointCost && state.sideStories >= Number(entry.sideStoryCost || 0);
     const label = entry.kind === "card" ? (item.sourceName || "主神基礎") : (item.sourceName || "主神裝備");
-    const costText = `${entry.rewardPointCost} 點${entry.sideStoryCost ? ` / ${entry.sideStoryCost} 支線` : ""}`;
+    const discountLabel = rewardPointCost < entry.rewardPointCost ? ` <em>原 ${entry.rewardPointCost}</em>` : "";
+    const costText = `${rewardPointCost} 點${entry.sideStoryCost ? ` / ${entry.sideStoryCost} 支線` : ""}`;
     if (entry.kind === "card") {
       const ownership = cardOwnershipState(item.id);
       const stockLocked = ownership.repeatable && bought >= entry.stock;
       const disabled = ownership.status === "max" || stockLocked || !canAfford;
       const buttonLabel = ownership.status === "max" ? "已擁有最高級技能" : ownership.status === "upgrade" ? `強化+ · ${costText}` : stockLocked ? "已達購買上限" : `購買 · ${costText}`;
-      return `<article class="shop-item shop-card-item rarity-${cardRarityTier(item)} ownership-${ownership.status}">${renderCardArtFrame(item, "shop-art")}<span class="eyebrow">${label} · ${cardRarityLabel(item)}</span><h3>${item.name}${ownership.entry?.upgraded ? "+" : ""}</h3><div class="shop-status-row"><span class="ownership-chip ${ownership.status}">${ownership.label}</span><span>${costText}</span></div><p>${item.text}</p><button data-action="buy-shop" data-shop-id="${entry.id}" ${disabled ? "disabled" : ""}>${buttonLabel}</button></article>`;
+      return `<article class="shop-item shop-card-item rarity-${cardRarityTier(item)} ownership-${ownership.status}">${renderCardArtFrame(item, "shop-art")}<span class="eyebrow">${label} · ${cardRarityLabel(item)}</span><h3>${item.name}${ownership.entry?.upgraded ? "+" : ""}</h3><div class="shop-status-row"><span class="ownership-chip ${ownership.status}">${ownership.label}</span><span>${costText}${discountLabel}</span></div><p>${item.text}</p><button data-action="buy-shop" data-shop-id="${entry.id}" ${disabled ? "disabled" : ""}>${buttonLabel}</button></article>`;
     }
     const disabled = bought >= entry.stock || ownedEquipment || !canAfford;
-    return `<article class="shop-item">${image(equipmentArt(item.id), "", "shop-art")}<span class="eyebrow">${label} · ${rarityLabel(item.rarity)}</span><h3>${item.name}</h3><div class="shop-status-row"><span class="ownership-chip ${ownedEquipment ? "max" : "new"}">${ownedEquipment ? "已擁有" : "未持有"}</span><span>${costText}</span></div><p>${item.text}</p><button data-action="buy-shop" data-shop-id="${entry.id}" ${disabled ? "disabled" : ""}>${ownedEquipment ? "已擁有" : `購買 · ${costText}`}</button></article>`;
+    return `<article class="shop-item">${image(equipmentArt(item.id), "", "shop-art")}<span class="eyebrow">${label} · ${rarityLabel(item.rarity)}</span><h3>${item.name}</h3><div class="shop-status-row"><span class="ownership-chip ${ownedEquipment ? "max" : "new"}">${ownedEquipment ? "已擁有" : "未持有"}</span><span>${costText}${discountLabel}</span></div><p>${item.text}</p><button data-action="buy-shop" data-shop-id="${entry.id}" ${disabled ? "disabled" : ""}>${ownedEquipment ? "已擁有" : `購買 · ${costText}`}</button></article>`;
   }
 
   function renderDeckEntry(entry) {
@@ -1767,16 +2027,39 @@
   }
 
   function renderDefeat() {
-    return `<section class="defeat-layout"><span class="eyebrow">遠征失敗</span><h2>全隊失去戰鬥能力</h2><p>本次取得的一般卡牌、裝備與暫時強化將失去；招募角色、詛咒與支線劇情會保留。</p><button class="primary-action" data-action="return-after-defeat">返回主神空間</button>${renderLog()}</section>`;
+    const report = state.pending?.report || state.lastDefeatReport || null;
+    const fates = report?.fates || [];
+    return `
+      <section class="defeat-layout">
+        <div class="defeat-report">
+          ${image(defeatArt(report?.imageFile), "", "defeat-art")}
+          <div class="defeat-report-copy">
+            <span class="eyebrow">${escapeHtml(report?.scenarioName || "遠征失敗")}${report?.superHard ? " · 超困難副本" : ""}</span>
+            <h2>${escapeHtml(report?.title || "全隊失去戰鬥能力")}</h2>
+            <p>${escapeHtml(report?.subtitle || "本次取得的一般卡牌、裝備與暫時強化將失去；招募角色、詛咒與支線劇情會保留。")}</p>
+            <blockquote>${escapeHtml(report?.line || "主神沒有解釋，只有結算。")}</blockquote>
+          </div>
+        </div>
+        <section class="defeat-fate-panel">
+          <div class="section-heading"><div><span class="eyebrow">角色後果</span><h2>${fates.length ? `${fates.length} 名出戰者結算` : "後果未明"}</h2></div><p>死亡、重傷與失散會留下後續路線；可直接付費處理，也可重進劇本救回或讓角色變強歸來。</p></div>
+          <div class="defeat-fate-grid">
+            ${fates.map((fate) => `<article class="defeat-fate fate-${escapeHtml(fate.tone || fate.fate)}"><strong>${escapeHtml(fate.name)}</strong><span>${escapeHtml(fate.label)}</span><p>${escapeHtml(fate.text)}</p></article>`).join("") || "<p class=\"empty-state\">沒有可結算的出戰者。</p>"}
+          </div>
+        </section>
+        <button class="primary-action" data-action="return-after-defeat">承受後果，返回主神空間</button>
+        ${renderLog()}
+      </section>
+    `;
   }
 
   function renderLog() {
-    return `<div class="log-panel">${state.log.map((line) => `<p>${line}</p>`).join("")}</div>`;
+    return `<div class="log-panel" role="log" aria-live="polite" aria-relevant="additions text">${state.log.map((line) => `<p>${line}</p>`).join("")}</div>`;
   }
 
   function renderMeter(label, value, max, type) {
     const ratio = Math.max(0, Math.min(100, (value / max) * 100));
-    return `<div class="meter ${type}"><div class="meter-label"><span>${label}</span><strong>${value}/${max}</strong></div><span class="meter-track"><span style="width:${ratio}%"></span></span></div>`;
+    const ariaNow = Math.max(0, Math.min(max, value));
+    return `<div class="meter ${type}" role="progressbar" aria-label="${escapeHtml(label)}" aria-valuemin="0" aria-valuemax="${max}" aria-valuenow="${ariaNow}"><div class="meter-label"><span>${label}</span><strong>${value}/${max}</strong></div><span class="meter-track"><span style="width:${ratio}%"></span></span></div>`;
   }
 
   function handleAudioTransition(previous, next, meta) {
@@ -1921,6 +2204,30 @@
         element.addEventListener(element.tagName === "SELECT" ? "change" : "click", applyCustomSupportEquipment);
         return;
       }
+      if (action === "hub-tab") {
+        const activateTab = (tabId) => {
+          audio?.unlock?.();
+          dispatch(core.setHubTab(state, tabId), { action, tabId });
+          if (typeof app.querySelectorAll !== "function") return;
+          const activeTab = Array.from(app.querySelectorAll('[data-action="hub-tab"]')).find((tab) => tab.dataset.tabId === tabId);
+          activeTab?.focus?.();
+        };
+        element.addEventListener("click", () => activateTab(element.dataset.tabId));
+        element.addEventListener("keydown", (event) => {
+          if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+          const tabs = Array.from(app.querySelectorAll('[data-action="hub-tab"]'));
+          const currentIndex = tabs.indexOf(element);
+          if (currentIndex < 0 || !tabs.length) return;
+          event.preventDefault();
+          const nextIndex = event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? tabs.length - 1
+              : (currentIndex + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+          activateTab(tabs[nextIndex].dataset.tabId);
+        });
+        return;
+      }
       element.addEventListener("click", () => {
         audio?.unlock?.();
         if (action === "main-god-invite") dispatch(core.answerMainGodInvite(state, element.dataset.answer), { action, answer: element.dataset.answer });
@@ -1947,8 +2254,8 @@
         if (action === "continue-event-result") dispatch(core.continueEventResult(state), { action });
         if (action === "camp") dispatch(core.campAction(state, element.dataset.campAction, element.dataset.targetId), { action, campAction: element.dataset.campAction, targetId: element.dataset.targetId });
         if (action === "return-after-defeat") dispatch(core.returnAfterDefeat(state), { action });
-        if (action === "hub-tab") dispatch(core.setHubTab(state, element.dataset.tabId), { action, tabId: element.dataset.tabId });
         if (action === "toggle-active") dispatch(core.toggleActive(state, element.dataset.characterId), { action, characterId: element.dataset.characterId });
+        if (action === "recover-character") dispatch(core.recoverCharacter(state, element.dataset.characterId), { action, characterId: element.dataset.characterId });
         if (action === "buy-shop") dispatch(core.buyShopItem(state, element.dataset.shopId), { action, shopId: element.dataset.shopId });
         if (action === "buy-permanent") dispatch(core.buyPermanentUpgrade(state, element.dataset.upgradeId), { action, upgradeId: element.dataset.upgradeId });
         if (action === "upgrade-character") dispatch(core.upgradeCharacter(state, element.dataset.characterId), { action, characterId: element.dataset.characterId });
@@ -1961,6 +2268,57 @@
         if (action === "remove-deck-card") dispatch(core.removeDeckCard(state, element.dataset.deckId), { action, deckId: element.dataset.deckId });
       });
     });
+  }
+
+  function bindTooltips() {
+    if (typeof app.querySelector !== "function" || typeof app.querySelectorAll !== "function") return;
+    const tooltip = app.querySelector(".game-tooltip");
+    if (!tooltip) return;
+    app.querySelectorAll("[data-tooltip]").forEach((element) => {
+      const show = (event) => {
+        tooltip.textContent = element.dataset.tooltip || "";
+        tooltip.hidden = !tooltip.textContent;
+        positionTooltip(event, tooltip, element);
+      };
+      const hide = () => {
+        tooltip.hidden = true;
+        tooltip.textContent = "";
+      };
+      const tagName = String(element.tagName || "").toLowerCase();
+      const naturallyFocusable = ["button", "input", "select", "textarea", "summary"].includes(tagName)
+        || (tagName === "a" && element.hasAttribute?.("href"));
+      const insideInteractiveControl = element.parentElement?.closest?.("button, a[href], input, select, textarea, summary, label");
+      if (!naturallyFocusable && !insideInteractiveControl && !element.hasAttribute?.("tabindex")) element.setAttribute?.("tabindex", "0");
+      element.addEventListener("mouseenter", show);
+      element.addEventListener("mouseover", show);
+      element.addEventListener("pointerenter", show);
+      element.addEventListener("focus", show);
+      element.addEventListener("mousemove", (event) => positionTooltip(event, tooltip, element));
+      element.addEventListener("pointermove", (event) => positionTooltip(event, tooltip, element));
+      element.addEventListener("click", (event) => {
+        event.stopPropagation();
+        show(event);
+      });
+      element.addEventListener("mouseleave", hide);
+      element.addEventListener("pointerleave", hide);
+      element.addEventListener("blur", hide);
+    });
+  }
+
+  function positionTooltip(event, tooltip, anchor) {
+    if (tooltip.hidden) return;
+    const offset = 14;
+    const viewportWidth = Number(global.innerWidth || 1280);
+    const viewportHeight = Number(global.innerHeight || 720);
+    const width = Number(tooltip.offsetWidth || 300);
+    const height = Number(tooltip.offsetHeight || 120);
+    const pointerX = Number(event?.clientX);
+    const pointerY = Number(event?.clientY);
+    const anchorRect = !Number.isFinite(pointerX) || !Number.isFinite(pointerY) ? anchor?.getBoundingClientRect?.() : null;
+    const left = Number.isFinite(pointerX) ? pointerX + offset : Number(anchorRect?.left || 8);
+    const top = Number.isFinite(pointerY) ? pointerY + offset : Number(anchorRect?.bottom || 8) + offset;
+    tooltip.style.left = `${Math.max(8, Math.min(left, viewportWidth - width - 8))}px`;
+    tooltip.style.top = `${Math.max(8, Math.min(top, viewportHeight - height - 8))}px`;
   }
 
   function image(src, alt, className) {
@@ -2027,9 +2385,13 @@
       "resident-evil-6-c-virus": "./src/assets/generated/scenario-resident-evil-6-c-virus.png",
       "elden-ring-hell-run": "./src/assets/generated/scenario-elden-ring-hell-run.png",
       "jujutsu-kaisen-shibuya": "./src/assets/generated/scenario-jujutsu-kaisen-shibuya.png",
-      "fullmetal-alchemist-finale": "./src/assets/generated/scenario-fullmetal-alchemist-finale.png"
+      "fullmetal-alchemist-finale": "./src/assets/generated/scenario-fullmetal-alchemist-finale.png",
+      "genshin-liyue-childe": "./src/assets/generated/scenario-genshin-liyue-childe.png",
+      "genshin-inazuma-vision-hunt": "./src/assets/generated/scenario-genshin-inazuma-vision-hunt.png",
+      "cyberpunk-edgerunners-night-city": "./src/assets/generated/scenario-cyberpunk-edgerunners-night-city.png",
+      "nioh-yokai-sengoku": "./src/assets/generated/scenario-nioh-yokai-sengoku.png"
     };
-    return art[id] || "";
+    return art[id] || `./src/assets/generated/scenario-${id}.png`;
   }
 
   function characterArt(id) {
@@ -2069,6 +2431,10 @@
 
   function enemyArt(id) {
     return `./src/assets/generated/enemy-${id}.png`;
+  }
+
+  function defeatArt(fileName) {
+    return `./src/assets/generated/${fileName || "ui-main-god-nexus.png"}`;
   }
 
   function cardTypeLabel(card) {
@@ -2111,10 +2477,6 @@
 
   function nodeTypeLabel(type) {
     return { battle: "戰鬥", elite: "精英", event: "奇遇", treasure: "寶箱", miniboss: "小王", camp: "整頓", boss: "Boss" }[type] || type;
-  }
-
-  function nodeIcon(type) {
-    return { battle: "⚔", elite: "!", event: "?", treasure: "◇", miniboss: "◆", camp: "+", boss: "★", fog: "…" }[type];
   }
 
   function powerName(power) {

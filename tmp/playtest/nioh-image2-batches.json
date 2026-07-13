@@ -1,0 +1,80 @@
+[
+  {
+    "index": 1,
+    "grid": 2,
+    "assets": [
+      { "fileName": "character-william-adams-nioh.png", "label": "William Adams, blond western samurai, blue guardian spirit light, living weapon stance, dark Sengoku battlefield, no text" },
+      { "fileName": "character-hattori-hanzo-nioh.png", "label": "Hattori Hanzo, masked Iga ninja commander, kusarigama chain blade, moonlit castle roof, no text" },
+      { "fileName": "character-okatsu-nioh.png", "label": "Okatsu, stealthy female Tokugawa spy, short blades, shadow dance in foggy corridor, no text" },
+      { "fileName": "character-tachibana-ginchiyo.png", "label": "Tachibana Ginchiyo, armored female samurai, lightning katana Raikiri, storm-lit battlefield, no text" }
+    ]
+  },
+  {
+    "index": 2,
+    "grid": 2,
+    "assets": [
+      { "fileName": "character-tachibana-muneshige.png", "label": "Tachibana Muneshige, noble samurai duelist, iai draw stance, thunder dog spirit silhouette, no text" },
+      { "fileName": "character-fuku-nioh.png", "label": "Fuku, onmyo mage, talisman papers circling, warm lantern light against yokai mist, no text" },
+      { "fileName": "character-yasuke-nioh.png", "label": "Yasuke, black samurai in heavy obsidian armor, guarding Azuchi castle gate, no text" },
+      { "fileName": "scenario-nioh-yokai-sengoku.png", "label": "Nioh Sengoku yokai war scenario hero art, Azuchi castle split by yokai realm, guardian spirit blue light fighting eight-headed serpent, no text" }
+    ]
+  },
+  {
+    "index": 3,
+    "grid": 2,
+    "assets": [
+      { "fileName": "enemy-nioh-yoki-brute.png", "label": "Yoki brute yokai heavy infantry with iron club, horned demon in dark armor, amrita sparks, no text" },
+      { "fileName": "enemy-nioh-onryoki-chains.png", "label": "Onryoki chained ogre with iron balls, stormy Kyushu shore, shattered dock, no text" },
+      { "fileName": "enemy-nioh-hino-enma.png", "label": "Hino-enma winged yokai woman, parasol blade dive, haunted bathhouse fog, no text" },
+      { "fileName": "enemy-nioh-kelley-alchemist.png", "label": "Edward Kelley dark alchemist villain, amrita ritual circle, battlefield souls rising, no text" }
+    ]
+  },
+  {
+    "index": 4,
+    "grid": 2,
+    "assets": [
+      { "fileName": "enemy-nioh-yamata-no-orochi.png", "label": "Yamata-no-Orochi eight-headed serpent made of amrita and fire, Azuchi castle roof collapsing, no text" },
+      { "fileName": "skill-william-living-weapon.png", "label": "Living weapon release, blue guardian spirit wrapping a katana slash through yokai mist, no text" },
+      { "fileName": "skill-hanzo-kusarigama-ambush.png", "label": "Kusarigama ambush, chain sickle cutting from moonlit shadow, ninja smoke, no text" },
+      { "fileName": "skill-okatsu-shadow-dance.png", "label": "Shadow dance blade combo, graceful spy silhouette leaving afterimages, no text" }
+    ]
+  },
+  {
+    "index": 5,
+    "grid": 2,
+    "assets": [
+      { "fileName": "skill-ginchiyo-raikiri-thunder.png", "label": "Raikiri thunder cut, female samurai lightning katana split yokai armor, no text" },
+      { "fileName": "skill-muneshige-iai-duel.png", "label": "Iai duel, noble samurai single draw slash across rain-dark battlefield, no text" },
+      { "fileName": "skill-fuku-onmyo-seal.png", "label": "Onmyo sealing talismans, paper charms forming golden circle over yokai smoke, no text" },
+      { "fileName": "skill-yasuke-obsidian-guard.png", "label": "Obsidian guard, heavy armored samurai shield stance at castle gate, sparks and arrows, no text" }
+    ]
+  },
+  {
+    "index": 6,
+    "grid": 2,
+    "assets": [
+      { "fileName": "skill-nioh-living-weapon-flare.png", "label": "Living weapon flare, blue flame spirit explosion from katana, amrita embers, no text" },
+      { "fileName": "skill-nioh-onmyo-slow-talisman.png", "label": "Slow talisman spell, paper charm freezing a charging yokai in golden rings, no text" },
+      { "fileName": "skill-nioh-ninja-kunai-storm.png", "label": "Kunai storm, many throwing knives from smoke against demon silhouettes, no text" },
+      { "fileName": "skill-nioh-guardian-spirit-ward.png", "label": "Guardian spirit ward, translucent blue spirit barrier protecting a squad, no text" }
+    ]
+  },
+  {
+    "index": 7,
+    "grid": 2,
+    "assets": [
+      { "fileName": "equipment-raikiri-katana.png", "label": "Raikiri katana relic, lightning running along polished blade on black silk, no text" },
+      { "fileName": "equipment-kusarigama-chainblade.png", "label": "Iga kusarigama chain blade relic, sickle and weighted chain on tatami, no text" },
+      { "fileName": "equipment-onmyo-talisman-case.png", "label": "Onmyo talisman case relic, lacquer box with glowing paper charms, no text" },
+      { "fileName": "equipment-guardian-spirit-amulet.png", "label": "Guardian spirit amulet relic, blue spirit light inside small charm, no text" }
+    ]
+  },
+  {
+    "index": 8,
+    "grid": 2,
+    "assets": [
+      { "fileName": "source-cover-nioh.png", "label": "Source cover for dark Sengoku yokai action, samurai silhouettes, castle, guardian spirit blue fire, no text" },
+      { "fileName": "roster-hero-nioh.png", "label": "Roster hero group shot, seven Nioh inspired warriors facing yokai mist at Azuchi castle, no text" }
+    ]
+  }
+]

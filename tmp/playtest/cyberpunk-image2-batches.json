@@ -1,0 +1,80 @@
+[
+  {
+    "index": 1,
+    "grid": 2,
+    "assets": [
+      { "fileName": "character-david-martinez.png", "name": "David Martinez" },
+      { "fileName": "character-lucy-kushinada.png", "name": "Lucy" },
+      { "fileName": "character-rebecca-edgerunners.png", "name": "Rebecca" },
+      { "fileName": "character-maine-edgerunners.png", "name": "Maine" }
+    ]
+  },
+  {
+    "index": 2,
+    "grid": 2,
+    "assets": [
+      { "fileName": "character-dorio-edgerunners.png", "name": "Dorio" },
+      { "fileName": "character-kiwi-edgerunners.png", "name": "Kiwi" },
+      { "fileName": "character-falco-edgerunners.png", "name": "Falco" },
+      { "fileName": "scenario-cyberpunk-edgerunners-night-city.png", "name": "Night City scenario" }
+    ]
+  },
+  {
+    "index": 3,
+    "grid": 2,
+    "assets": [
+      { "fileName": "enemy-cyberpunk-maelstrom-scavs.png", "name": "Maelstrom scavengers" },
+      { "fileName": "enemy-cyberpunk-militech-tac-squad.png", "name": "Militech tactical squad" },
+      { "fileName": "enemy-cyberpunk-arasaka-netrunner.png", "name": "Arasaka netrunner" },
+      { "fileName": "enemy-cyberpunk-cyberpsycho-exosuit.png", "name": "Cyberpsycho exosuit" }
+    ]
+  },
+  {
+    "index": 4,
+    "grid": 2,
+    "assets": [
+      { "fileName": "enemy-cyberpunk-adam-smasher.png", "name": "Adam Smasher" },
+      { "fileName": "skill-david-sandevistan-overdrive.png", "name": "David Sandevistan overdrive" },
+      { "fileName": "skill-lucy-moonwire-breach.png", "name": "Lucy moonwire breach" },
+      { "fileName": "skill-rebecca-guts-barrage.png", "name": "Rebecca GUTS barrage" }
+    ]
+  },
+  {
+    "index": 5,
+    "grid": 2,
+    "assets": [
+      { "fileName": "skill-maine-projectile-launcher.png", "name": "Maine projectile launcher" },
+      { "fileName": "skill-dorio-bodyguard-lock.png", "name": "Dorio bodyguard lock" },
+      { "fileName": "skill-kiwi-icebreaker.png", "name": "Kiwi icebreaker" },
+      { "fileName": "skill-falco-getaway-drive.png", "name": "Falco getaway drive" }
+    ]
+  },
+  {
+    "index": 6,
+    "grid": 2,
+    "assets": [
+      { "fileName": "skill-edgerunners-sandevistan-slash.png", "name": "Sandevistan afterimage slash" },
+      { "fileName": "skill-edgerunners-smartgun-barrage.png", "name": "Smartgun barrage" },
+      { "fileName": "skill-edgerunners-icebath-breach.png", "name": "Icebath breach" },
+      { "fileName": "skill-edgerunners-crew-cover.png", "name": "Crew cover fire" }
+    ]
+  },
+  {
+    "index": 7,
+    "grid": 2,
+    "assets": [
+      { "fileName": "equipment-military-grade-sandevistan.png", "name": "Military grade Sandevistan" },
+      { "fileName": "equipment-monowire-spool.png", "name": "Monowire spool" },
+      { "fileName": "equipment-guts-shotgun.png", "name": "GUTS shotgun" },
+      { "fileName": "equipment-cyberskeleton-frame.png", "name": "Cyberskeleton frame" }
+    ]
+  },
+  {
+    "index": 8,
+    "grid": 2,
+    "assets": [
+      { "fileName": "source-cover-cyberpunk-edgerunners.png", "name": "Cyberpunk card source cover" },
+      { "fileName": "roster-hero-cyberpunk-edgerunners.png", "name": "Cyberpunk roster hero" }
+    ]
+  }
+]

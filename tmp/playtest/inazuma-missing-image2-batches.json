@@ -1,0 +1,12 @@
+[
+  {
+    "index": 1,
+    "grid": 2,
+    "assets": [
+      { "fileName": "skill-genshin-inazuma-iai.png", "name": "Raiden iai slash" },
+      { "fileName": "skill-genshin-inazuma-resistance-plan.png", "name": "Watatsumi resistance plan" },
+      { "fileName": "skill-genshin-inazuma-firework-signal.png", "name": "Naganohara firework signal" },
+      { "fileName": "skill-genshin-inazuma-vision-echo.png", "name": "Vision echo" }
+    ]
+  }
+]

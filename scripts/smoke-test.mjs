@@ -1,4 +1,16 @@
 import "../src/game-data.js";
+import "../src/latest-battle-anime-data.js";
+import "../src/more-battle-anime-data.js";
+import "../src/hk-battle-anime-data.js";
+import "../src/black-myth-wukong-data.js";
+import "../src/scenario-progression-rework.js";
+import "../src/bond-deepening-pack.js";
+import "../src/thematic-bond-pack.js";
+import "../src/failure-outcome-data.js";
+import "../src/opening-fate-routes.js";
+import "../src/scenario-fate-deepening-pack.js";
+import "../src/system-encounter-deepening-pack.js";
+import "../src/scenario-rest-scenes-pack.js";
 import "../src/game-core.js";
 import "../src/audio-manifest.js";
 import { createHash } from "node:crypto";
@@ -35,6 +47,10 @@ function assertAudioAsset(fileName) {
   const buffer = readFileSync(url);
   assert(buffer.length > 2048, `Audio asset should not be empty: ${fileName}`);
   assert(isSupportedAudio(buffer), `Audio asset should use WAV or MP3 format: ${fileName}`);
+}
+
+function rewardSourceId(card) {
+  return card?.sourceId || "main-god";
 }
 
 function isSupportedAudio(buffer) {
@@ -212,7 +228,7 @@ Object.values(audioManifest.music).forEach((entry) => {
   assert(playlist.length === 6, "Every BGM event should use the six-track shared playlist.");
   playlist.forEach((src) => assertAudioAsset(String(src).split("/").pop()));
 });
-assert(state.version === 7 && state.screen === "onboarding" && state.onboarding.stage === "invite", "New saves must start at the Windows 98 invitation popup.");
+assert(state.version === 8 && state.screen === "onboarding" && state.onboarding.stage === "invite", "New saves must start at the Windows 98 invitation popup.");
 assert(state.campaign.dynamicDifficulty.failureRelief === 0 && Array.isArray(state.campaign.dynamicDifficulty.randomHistory), "New saves should initialize transparent dynamic difficulty state.");
 const noInviteState = core.answerMainGodInvite(state, "no");
 assert(noInviteState.onboarding.stage === "ordinary-ending", "Choosing No should enter the ordinary person ending.");
@@ -287,11 +303,12 @@ legacySupportState.equipmentInventory.push({ instanceId: "legacy-support-equip",
 legacySupportState.equipped["player-avatar"] = "legacy-support-equip";
 legacySupportState.party.find((member) => member.id === "player-avatar").active = true;
 const migratedSupportState = core.normalizeState(legacySupportState);
-assert(migratedSupportState.version === 7 && !core.getActiveParty(migratedSupportState).some((member) => member.id === "player-avatar"), "Version 5 saves should migrate to seventh-support version 7 without activating the custom protagonist.");
+assert(migratedSupportState.version === 8 && !core.getActiveParty(migratedSupportState).some((member) => member.id === "player-avatar"), "Version 5 saves should migrate to seventh-support version 8 without activating the custom protagonist.");
+assert(migratedSupportState.campaign.fateArchive && Array.isArray(migratedSupportState.campaign.rescueMissions), "Legacy saves should initialize fate archive and rescue mission containers.");
 assert(migratedSupportState.playerGrowth.activeMutationId === "blood-virus-core" && migratedSupportState.playerGrowth.activeTagIds.length === 2, "Migrated saves should choose the latest unlocked mutation and two normal bloodlines.");
 assert(migratedSupportState.playerGrowth.supportEquipmentIds.includes("legacy-support-equip") && !migratedSupportState.equipped["player-avatar"], "Equipment formerly held by the custom protagonist should migrate into support equipment slots.");
 state = createCreatedPlayerState();
-assert(data.characters.length === 118, "The roster should include the custom protagonist plus the existing DMC5 cast, fourteen legendary final-battle characters, the Gintama group, the movie battle casts, the Resident Evil 6 taskforce, the Elden Ring hell roster, the Jujutsu Kaisen cast, and the Fullmetal Alchemist final-battle team.");
+assert(data.characters.length === 218, "The roster should include the custom protagonist plus the existing crossover casts, Jujutsu Kaisen, Fullmetal Alchemist, Genshin, Cyberpunk, Nioh, latest battle anime teams, and Black Myth: Wukong.");
 const signatureIds = data.characters.map((character) => character.signatureCardId);
 assert(new Set(signatureIds).size === data.characters.length, "Every character must own one unique signature card.");
 assert(signatureIds.every((cardId) => core.cardsById[cardId]?.category === "signature"), "Every character signature must resolve to a signature card.");
@@ -300,7 +317,7 @@ assert(core.getCharacterQuoteLines("zheng-zha").some((line) => line.includes("�
 assert(data.characters.every((character) => existsSync(new URL(`../src/assets/generated/character-${character.id}.png`, import.meta.url))), "Every character must have portrait art.");
 assert(signatureIds.every((cardId) => existsSync(new URL(`../src/assets/generated/skill-${cardId}.png`, import.meta.url))), "Every signature card must have skill art.");
 assert(data.enemies.every((enemy) => existsSync(new URL(`../src/assets/generated/enemy-${enemy.id}.png`, import.meta.url))), "Every enemy should have direct IMAGE2 scene art.");
-assert(data.characters.filter((character) => character.factionId && character.factionId !== "main").length === 97, "Ninety-seven characters should carry rival or crossover faction identities.");
+assert(data.characters.filter((character) => character.factionId && character.factionId !== "main").length === 197, "One hundred and ninety-seven characters should carry rival or crossover faction identities.");
 assert(["shiva-gangtian", "lamia", "arot", "richard", "elena", "kevin", "amon", "naya", "victor", "sarah"].every((id) => data.characters.some((character) => character.id === id)), "The ten new rival and other-team characters should be registered.");
 assert(["tanjiro-kamado", "naruto-uzumaki", "luffy-nika", "son-goku", "xiao-yan"].every((id) => data.characters.some((character) => character.id === id)), "The five legendary anime and novel protagonists should be registered.");
 assert(["ichigo-kurosaki", "edward-elric", "eren-yeager", "gon-freecss", "kirito-kazuto"].every((id) => data.characters.some((character) => character.id === id)), "The second wave of five legendary anime protagonists should be registered.");
@@ -316,25 +333,174 @@ const jujutsuKaisenCharacterIds = ["yuji-itadori", "megumi-fushiguro", "nobara-k
 assert(jujutsuKaisenCharacterIds.every((id) => data.characters.some((character) => character.id === id)), "The Jujutsu Kaisen character group should be registered.");
 const fullmetalAlchemistCharacterIds = ["alphonse-elric", "roy-mustang", "riza-hawkeye", "scar-ishvalan", "izumi-curtis", "van-hohenheim"];
 assert(fullmetalAlchemistCharacterIds.every((id) => data.characters.some((character) => character.id === id)), "The Fullmetal Alchemist final-battle character group should be registered.");
+const genshinLiyueCharacterIds = ["zhongli-morax", "ningguang", "keqing", "ganyu", "xiao-genshin", "beidou", "xiangling"];
+assert(genshinLiyueCharacterIds.every((id) => data.characters.some((character) => character.id === id)), "The Genshin Liyue character group should be registered.");
+const genshinInazumaCharacterIds = ["raiden-ei", "kamisato-ayaka", "yoimiya", "sangonomiya-kokomi", "kaedehara-kazuha", "kujou-sara", "arataki-itto"];
+assert(genshinInazumaCharacterIds.every((id) => data.characters.some((character) => character.id === id)), "The Genshin Inazuma character group should be registered.");
+const cyberpunkEdgerunnersCharacterIds = ["david-martinez", "lucy-kushinada", "rebecca-edgerunners", "maine-edgerunners", "dorio-edgerunners", "kiwi-edgerunners", "falco-edgerunners"];
+assert(cyberpunkEdgerunnersCharacterIds.every((id) => data.characters.some((character) => character.id === id)), "The Cyberpunk: Edgerunners character group should be registered.");
+const niohCharacterIds = ["william-adams-nioh", "hattori-hanzo-nioh", "okatsu-nioh", "tachibana-ginchiyo", "tachibana-muneshige", "fuku-nioh", "yasuke-nioh"];
+assert(niohCharacterIds.every((id) => data.characters.some((character) => character.id === id)), "The Nioh character group should be registered.");
+const blackMythWukongCharacterIds = ["bmw-destined-one", "bmw-true-great-sage", "bmw-zhu-bajie", "bmw-erlang-shen", "bmw-bodhisattva-lingji", "bmw-kangjin-star", "bmw-black-wind-king", "bmw-yellow-wind-sage", "bmw-tiger-vanguard", "bmw-fourth-sister", "bmw-red-boy", "bmw-yaksha-king"];
+assert(blackMythWukongCharacterIds.every((id) => data.characters.some((character) => character.id === id)), "The Black Myth: Wukong long-scenario character group should be registered.");
+const latestBattleAnimeCharacterIds = ["denji-chainsaw", "reze-bomb-devil", "aki-hayakawa", "kafka-hibino", "mina-ashiro", "kikoru-shinomiya", "rudo-gachiakuta", "enjin-gachiakuta", "riyoh-gachiakuta", "taro-sakamoto", "shin-asakura", "lu-shaotang"];
+assert(latestBattleAnimeCharacterIds.every((id) => data.characters.some((character) => character.id === id)), "The latest battle anime character groups should be registered.");
+const moreBattleAnimeCharacterIds = ["okarun-turbo", "momo-ayase", "jiji-evil-eye", "sung-jinwoo", "cha-hae-in", "igris-shadow", "izuku-midoriya", "katsuki-bakugo", "shoto-todoroki", "shinra-kusakabe", "arthur-boyle", "maki-oze", "gabimaru-hollow", "yamada-asaemon-sagiri", "yuzuriha-kunoichi", "haruka-sakura", "hajime-umemiya", "hayato-suo"];
+assert(moreBattleAnimeCharacterIds.every((id) => data.characters.some((character) => character.id === id)), "The second latest battle anime character wave should be registered.");
+const hkBattleAnimeCharacterIds = ["asta-anti-magic", "yuno-spirit-dive", "noelle-valkyrie", "sunraku-lycagon-mark", "psyger-zero", "arthur-pencilgon", "rimuru-tempest", "benimaru-kijin", "shion-ogre", "mash-burnedead", "lance-crown", "dot-barrett", "frieren-mage", "fern-apprentice", "stark-warrior", "rin-okumura", "yukio-okumura", "shiemi-moriyama", "natsu-dragneel", "lucy-heartfilia", "erza-scarlet", "percival-hope", "lancelot-fairy", "tristan-holy-demon", "ainz-ooal-gown", "albedo-guardian", "shalltear-valkyrie", "naofumi-shield", "raphtalia-katana", "filo-queen"];
+assert(hkBattleAnimeCharacterIds.every((id) => data.characters.some((character) => character.id === id)), "The Hong Kong translated battle anime character wave should be registered.");
 const gojo = core.charactersById["satoru-gojo"];
+const zhongli = core.charactersById["zhongli-morax"];
+const raidenEi = core.charactersById["raiden-ei"];
 const jujutsuScenario = core.scenariosById["jujutsu-kaisen-shibuya"];
 const fullmetalAlchemistScenario = core.scenariosById["fullmetal-alchemist-finale"];
+const genshinLiyueScenario = core.scenariosById["genshin-liyue-childe"];
+const genshinInazumaScenario = core.scenariosById["genshin-inazuma-vision-hunt"];
+const cyberpunkEdgerunnersScenario = core.scenariosById["cyberpunk-edgerunners-night-city"];
+const niohScenario = core.scenariosById["nioh-yokai-sengoku"];
+const blackMythWukongScenario = core.scenariosById["black-myth-wukong-relics"];
+const chainsawManScenario = core.scenariosById["chainsaw-man-reze-arc"];
+const kaijuNo8Scenario = core.scenariosById["kaiju-no-8-defense-force"];
+const gachiakutaScenario = core.scenariosById["gachiakuta-pit-cleaners"];
+const sakamotoDaysScenario = core.scenariosById["sakamoto-days-assassin-order"];
+const dandadanScenario = core.scenariosById["dandadan-evil-eye"];
+const soloLevelingScenario = core.scenariosById["solo-leveling-jeju-raid"];
+const myHeroScenario = core.scenariosById["my-hero-final-war"];
+const fireForceScenario = core.scenariosById["fire-force-final-pillar"];
+const hellsParadiseScenario = core.scenariosById["hells-paradise-shinsenkyo"];
+const windBreakerScenario = core.scenariosById["wind-breaker-keel-brawl"];
+const blackCloverScenario = core.scenariosById["black-clover-spade-raid"];
+const shangriLaScenario = core.scenariosById["shangri-la-frontier-lycagon"];
+const slimeScenario = core.scenariosById["slime-walpurgis-clash"];
+const mashleScenario = core.scenariosById["mashle-divine-visionary"];
+const frierenScenario = core.scenariosById["frieren-aura-exam"];
+const blueExorcistScenario = core.scenariosById["blue-exorcist-blue-night"];
+const fairyTailScenario = core.scenariosById["fairy-tail-100-years-quest"];
+const fourKnightsScenario = core.scenariosById["four-knights-apocalypse-camelot"];
+const overlordScenario = core.scenariosById["overlord-holy-kingdom"];
+const shieldHeroScenario = core.scenariosById["shield-hero-qten-lo"];
 assert(gojo.hidden && gojo.unlock === "hidden-prison-realm", "Satoru Gojo should be flagged as a hidden Prison Realm unlock.");
+assert(zhongli.hidden && zhongli.unlock === "hidden-liyue-contract", "Zhongli should be flagged as a hidden Liyue contract unlock.");
+assert(raidenEi.hidden && raidenEi.unlock === "hidden-inazuma-eternity", "Raiden Ei should be flagged as a hidden Inazuma eternity unlock.");
+assert(core.charactersById["david-martinez"].hidden && core.charactersById["david-martinez"].unlock === "hidden-night-city-moon", "David Martinez should be flagged as a hidden Night City moon-route unlock.");
+assert(core.charactersById["william-adams-nioh"].hidden && core.charactersById["william-adams-nioh"].unlock === "hidden-nioh-saoirse", "William Adams should be flagged as a hidden Saoirse-route unlock.");
+assert(core.charactersById["bmw-destined-one"].hidden && core.charactersById["bmw-destined-one"].unlock === "hidden-bmw-destined-one", "The Destined One should be flagged as the normal hidden Black Myth route unlock.");
+assert(core.charactersById["bmw-true-great-sage"].hidden && core.charactersById["bmw-true-great-sage"].unlock === "hidden-bmw-true-great-sage", "True Great Sage should be flagged as the harder Black Myth route unlock.");
+assert(core.charactersById["denji-chainsaw"].hidden && core.charactersById["denji-chainsaw"].unlock === "hidden-chainsaw-reze", "Denji should be flagged as a hidden Reze-rain route unlock.");
+assert(core.charactersById["kafka-hibino"].hidden && core.charactersById["kafka-hibino"].unlock === "hidden-kaiju-no-8-core", "Kafka should be flagged as a hidden Kaiju No. 8 core-route unlock.");
+assert(core.charactersById["rudo-gachiakuta"].hidden && core.charactersById["rudo-gachiakuta"].unlock === "hidden-gachiakuta-jinki", "Rudo should be flagged as a hidden Jinki route unlock.");
+assert(core.charactersById["taro-sakamoto"].hidden && core.charactersById["taro-sakamoto"].unlock === "hidden-sakamoto-family", "Sakamoto should be flagged as a hidden family-counter route unlock.");
+assert(core.charactersById["okarun-turbo"].hidden && core.charactersById["okarun-turbo"].unlock === "hidden-dandadan-evil-eye", "Okarun should be flagged as a hidden Evil Eye route unlock.");
+assert(core.charactersById["sung-jinwoo"].hidden && core.charactersById["sung-jinwoo"].unlock === "hidden-solo-leveling-shadow", "Sung Jinwoo should be flagged as a hidden shadow route unlock.");
+assert(core.charactersById["izuku-midoriya"].hidden && core.charactersById["izuku-midoriya"].unlock === "hidden-mha-ofa", "Deku should be flagged as a hidden One For All route unlock.");
+assert(core.charactersById["shinra-kusakabe"].hidden && core.charactersById["shinra-kusakabe"].unlock === "hidden-fire-force-adolla", "Shinra should be flagged as a hidden Adolla route unlock.");
+assert(core.charactersById["gabimaru-hollow"].hidden && core.charactersById["gabimaru-hollow"].unlock === "hidden-hells-paradise-tanden", "Gabimaru should be flagged as a hidden Tanden route unlock.");
+assert(core.charactersById["haruka-sakura"].hidden && core.charactersById["haruka-sakura"].unlock === "hidden-wind-breaker-bofurin", "Sakura should be flagged as a hidden Bofurin route unlock.");
+assert(core.charactersById["asta-anti-magic"].hidden && core.charactersById["asta-anti-magic"].unlock === "hidden-black-clover-anti-magic", "Asta should be flagged as a hidden anti-magic route unlock.");
+assert(core.charactersById["sunraku-lycagon-mark"].hidden && core.charactersById["sunraku-lycagon-mark"].unlock === "hidden-shangri-la-frontier-lycagon", "Sunraku should be flagged as a hidden Lycagon route unlock.");
+assert(core.charactersById["rimuru-tempest"].hidden && core.charactersById["rimuru-tempest"].unlock === "hidden-slime-walpurgis", "Rimuru should be flagged as a hidden Walpurgis route unlock.");
+assert(core.charactersById["mash-burnedead"].hidden && core.charactersById["mash-burnedead"].unlock === "hidden-mashle-muscle", "Mash should be flagged as a hidden muscle route unlock.");
+assert(core.charactersById["frieren-mage"].hidden && core.charactersById["frieren-mage"].unlock === "hidden-frieren-aura", "Frieren should be flagged as a hidden Aura route unlock.");
+assert(core.charactersById["rin-okumura"].hidden && core.charactersById["rin-okumura"].unlock === "hidden-blue-exorcist-flame", "Rin should be flagged as a hidden blue flame route unlock.");
+assert(core.charactersById["natsu-dragneel"].hidden && core.charactersById["natsu-dragneel"].unlock === "hidden-fairy-tail-dragon", "Natsu should be flagged as a hidden dragon route unlock.");
+assert(core.charactersById["percival-hope"].hidden && core.charactersById["percival-hope"].unlock === "hidden-four-knights-hope", "Percival should be flagged as a hidden hope route unlock.");
+assert(core.charactersById["ainz-ooal-gown"].hidden && core.charactersById["ainz-ooal-gown"].unlock === "hidden-overlord-nazarick", "Ainz should be flagged as a hidden Nazarick route unlock.");
+assert(core.charactersById["naofumi-shield"].hidden && core.charactersById["naofumi-shield"].unlock === "hidden-shield-hero-defence", "Naofumi should be flagged as a hidden Shield Hero route unlock.");
 assert(jujutsuScenario.hiddenProtagonistId === "satoru-gojo" && !jujutsuScenario.recruitmentPool.includes("satoru-gojo"), "Gojo should only be obtainable through the Prison Realm hidden event, not the normal recruitment pool.");
 assert(fullmetalAlchemistScenario.hiddenProtagonistId === "edward-elric" && !fullmetalAlchemistScenario.recruitmentPool.includes("edward-elric"), "Edward should only be obtainable through the Fullmetal Alchemist equivalent-exchange event, not the normal recruitment pool.");
-assert(data.legendaryRecruitmentPool.length === 14 && data.legendaryRecruitmentPool.every((id) => data.characters.some((character) => character.id === id)), "Legendary protagonists should be listed in a dedicated hard-to-obtain pool.");
+assert(genshinLiyueScenario.hiddenProtagonistId === "zhongli-morax" && !genshinLiyueScenario.recruitmentPool.includes("zhongli-morax"), "Zhongli should only be obtainable through the Liyue contract hidden event, not the normal recruitment pool.");
+assert(genshinInazumaScenario.hiddenProtagonistId === "raiden-ei" && !genshinInazumaScenario.recruitmentPool.includes("raiden-ei"), "Raiden Ei should only be obtainable through the Inazuma hidden event, not the normal recruitment pool.");
+assert(cyberpunkEdgerunnersScenario.hiddenProtagonistId === "david-martinez" && !cyberpunkEdgerunnersScenario.recruitmentPool.includes("david-martinez"), "David should only be obtainable through the Night City moon-route hidden event, not the normal recruitment pool.");
+assert(niohScenario.hiddenProtagonistId === "william-adams-nioh" && !niohScenario.recruitmentPool.includes("william-adams-nioh"), "William should only be obtainable through the Nioh Saoirse route hidden event, not the normal recruitment pool.");
+assert(blackMythWukongScenario.hiddenProtagonistId === "bmw-destined-one" && !blackMythWukongScenario.recruitmentPool.includes("bmw-destined-one") && !blackMythWukongScenario.recruitmentPool.includes("bmw-true-great-sage"), "The Destined One and True Great Sage should not appear in the normal Black Myth recruitment pool.");
+assert(chainsawManScenario.hiddenProtagonistId === "denji-chainsaw" && !chainsawManScenario.recruitmentPool.includes("denji-chainsaw"), "Denji should only be obtainable through the Reze-rain hidden event, not the normal recruitment pool.");
+assert(kaijuNo8Scenario.hiddenProtagonistId === "kafka-hibino" && !kaijuNo8Scenario.recruitmentPool.includes("kafka-hibino"), "Kafka should only be obtainable through the Kaiju No. 8 hidden event, not the normal recruitment pool.");
+assert(gachiakutaScenario.hiddenProtagonistId === "rudo-gachiakuta" && !gachiakutaScenario.recruitmentPool.includes("rudo-gachiakuta"), "Rudo should only be obtainable through the Jinki hidden event, not the normal recruitment pool.");
+assert(sakamotoDaysScenario.hiddenProtagonistId === "taro-sakamoto" && !sakamotoDaysScenario.recruitmentPool.includes("taro-sakamoto"), "Sakamoto should only be obtainable through the family-counter hidden event, not the normal recruitment pool.");
+assert(dandadanScenario.hiddenProtagonistId === "okarun-turbo" && !dandadanScenario.recruitmentPool.includes("okarun-turbo"), "Okarun should only be obtainable through the Evil Eye hidden event, not the normal recruitment pool.");
+assert(soloLevelingScenario.hiddenProtagonistId === "sung-jinwoo" && !soloLevelingScenario.recruitmentPool.includes("sung-jinwoo"), "Sung Jinwoo should only be obtainable through the shadow hidden event, not the normal recruitment pool.");
+assert(myHeroScenario.hiddenProtagonistId === "izuku-midoriya" && !myHeroScenario.recruitmentPool.includes("izuku-midoriya"), "Deku should only be obtainable through the One For All hidden event, not the normal recruitment pool.");
+assert(fireForceScenario.hiddenProtagonistId === "shinra-kusakabe" && !fireForceScenario.recruitmentPool.includes("shinra-kusakabe"), "Shinra should only be obtainable through the Adolla hidden event, not the normal recruitment pool.");
+assert(hellsParadiseScenario.hiddenProtagonistId === "gabimaru-hollow" && !hellsParadiseScenario.recruitmentPool.includes("gabimaru-hollow"), "Gabimaru should only be obtainable through the Tanden hidden event, not the normal recruitment pool.");
+assert(windBreakerScenario.hiddenProtagonistId === "haruka-sakura" && !windBreakerScenario.recruitmentPool.includes("haruka-sakura"), "Sakura should only be obtainable through the Bofurin hidden event, not the normal recruitment pool.");
+assert(blackCloverScenario.hiddenProtagonistId === "asta-anti-magic" && !blackCloverScenario.recruitmentPool.includes("asta-anti-magic"), "Asta should only be obtainable through the anti-magic hidden event, not the normal recruitment pool.");
+assert(shangriLaScenario.hiddenProtagonistId === "sunraku-lycagon-mark" && !shangriLaScenario.recruitmentPool.includes("sunraku-lycagon-mark"), "Sunraku should only be obtainable through the Lycagon hidden event, not the normal recruitment pool.");
+assert(slimeScenario.hiddenProtagonistId === "rimuru-tempest" && !slimeScenario.recruitmentPool.includes("rimuru-tempest"), "Rimuru should only be obtainable through the Walpurgis hidden event, not the normal recruitment pool.");
+assert(mashleScenario.hiddenProtagonistId === "mash-burnedead" && !mashleScenario.recruitmentPool.includes("mash-burnedead"), "Mash should only be obtainable through the muscle hidden event, not the normal recruitment pool.");
+assert(frierenScenario.hiddenProtagonistId === "frieren-mage" && !frierenScenario.recruitmentPool.includes("frieren-mage"), "Frieren should only be obtainable through the Aura hidden event, not the normal recruitment pool.");
+assert(blueExorcistScenario.hiddenProtagonistId === "rin-okumura" && !blueExorcistScenario.recruitmentPool.includes("rin-okumura"), "Rin should only be obtainable through the blue flame hidden event, not the normal recruitment pool.");
+assert(fairyTailScenario.hiddenProtagonistId === "natsu-dragneel" && !fairyTailScenario.recruitmentPool.includes("natsu-dragneel"), "Natsu should only be obtainable through the dragon hidden event, not the normal recruitment pool.");
+assert(fourKnightsScenario.hiddenProtagonistId === "percival-hope" && !fourKnightsScenario.recruitmentPool.includes("percival-hope"), "Percival should only be obtainable through the hope hidden event, not the normal recruitment pool.");
+assert(overlordScenario.hiddenProtagonistId === "ainz-ooal-gown" && !overlordScenario.recruitmentPool.includes("ainz-ooal-gown"), "Ainz should only be obtainable through the Nazarick hidden event, not the normal recruitment pool.");
+assert(shieldHeroScenario.hiddenProtagonistId === "naofumi-shield" && !shieldHeroScenario.recruitmentPool.includes("naofumi-shield"), "Naofumi should only be obtainable through the shield hidden event, not the normal recruitment pool.");
+assert(data.legendaryRecruitmentPool.length === 38 && data.legendaryRecruitmentPool.every((id) => data.characters.some((character) => character.id === id)), "Legendary protagonists should be listed in a dedicated hard-to-obtain pool.");
 assert(data.scenarios.every((scenario) => !scenario.recruitmentPool.some((id) => data.legendaryRecruitmentPool.includes(id))), "Legendary protagonists should not appear in normal scenario recruitment pools.");
 const formalScenarios = data.scenarios.filter((scenario) => scenario.id !== "tutorial");
+assert(data.scenarios[0].id === "tutorial" && data.scenarios[1].id !== "alien", "Scenario display order should keep tutorial first while shuffling formal scenarios.");
 assert(formalScenarios.every((scenario) => scenario.opening?.dialogue?.length >= 3 && scenario.opening?.panels?.length >= 3), "Every formal scenario should have a story opening with dialogue and illustration beats.");
-for (const scenarioId of ["alien", "jujutsu-kaisen-shibuya", "fullmetal-alchemist-finale", "elden-ring-hell-run"]) {
+const openingFateScenarioIds = ["alien", "juon", "mummy-curse", "jurassic-island"];
+openingFateScenarioIds.forEach((scenarioId) => {
+  const scenario = core.scenariosById[scenarioId];
+  const stage1Count = scenario.eventChoices?.stage1?.length || 0;
+  const stage2Count = Object.values(scenario.eventChoices?.stage2 || {}).flat().length;
+  const stage3Count = Object.values(scenario.eventChoices?.stage3 || {}).flat().length;
+  assert(stage1Count === 3 && stage2Count === 9 && stage3Count === 27, `${scenarioId} should define a full 3 -> 9 -> 27 fate route tree.`);
+  assert(Object.keys(scenario.eventOutcomes || {}).filter((id) => id.startsWith(`${scenarioId}-`) && scenario.eventOutcomes[id].effects?.some((effect) => effect.type === "record-fate")).length >= 27, `${scenarioId} should record fate outcomes for the opening vertical slice.`);
+});
+assert(data.deepenedFateScenarioIds.includes("jujutsu-kaisen-shibuya") && data.deepenedFateScenarioIds.includes("chainsaw-man-reze-arc"), "The fate deepening pack should upgrade both hand-authored and generated scenario routes.");
+["jujutsu-kaisen-shibuya", "fullmetal-alchemist-finale", "chainsaw-man-reze-arc", "black-clover-spade-raid"].forEach((scenarioId) => {
+  const scenario = core.scenariosById[scenarioId];
+  const stage1Count = scenario.eventChoices?.stage1?.length || 0;
+  const stage2Count = Object.values(scenario.eventChoices?.stage2 || {}).flat().length;
+  const stage3Count = Object.values(scenario.eventChoices?.stage3 || {}).flat().length;
+  const recordCount = Object.values(scenario.eventOutcomes || {}).filter((outcome) => outcome.effects?.some((effect) => effect.type === "record-fate")).length;
+  assert(stage1Count === 3 && stage2Count === 9 && stage3Count === 27 && recordCount >= 27, `${scenarioId} should be deepened into a recorded 3 -> 9 -> 27 fate route tree.`);
+});
+assert(core.systemEncounterRouteCount === 768, "The system encounter pack should add 768 randomized scenario branches.");
+[
+  "jujutsu-kaisen-shibuya",
+  "fullmetal-alchemist-finale",
+  "genshin-liyue-childe",
+  "cyberpunk-edgerunners-night-city",
+  "black-myth-wukong-relics",
+  "genshin-inazuma-vision-hunt",
+  "chainsaw-man-reze-arc",
+  "solo-leveling-jeju-raid",
+  "elden-ring-hell-run",
+  "nioh-yokai-sengoku",
+  "rumbling-finale",
+  "infinity-castle",
+  "naruto-final-valley",
+  "bleach-false-karakura",
+  "gintama-final-war",
+  "avengers-new-york"
+].forEach((scenarioId) => {
+  const routes = data.systemEncounterRoutes[scenarioId] || [];
+  const restScene = data.systemEncounterRestScenesByScenario?.[scenarioId];
+  assert(routes.length === 48, `${scenarioId} should receive 48 system encounter branches.`);
+  assert(routes.every((route) => route.systemEncounter && route.outcome?.imageFile && route.outcome?.dialogue?.length >= 5), `${scenarioId} system routes should carry art and dialogue scripts.`);
+  assert(routes.every((route) => route.stage1?.imageFile && route.stage2?.imageFile && route.final?.imageFile), `${scenarioId} system route choices should carry IMAGE2 choice art.`);
+  assert(routes.some((route) => JSON.stringify(route.outcome.dialogue).includes("凡人的智慧啊")), `${scenarioId} system routes should include Chu Xuan's signature wisdom line.`);
+  assert(restScene?.fileName?.startsWith("system-rest-"), `${scenarioId} should have a dedicated tactical-rest IMAGE2 scene.`);
+  assert(routes.filter((route) => ["楚軒布局局", "世界改寫局"].includes(route.routeType)).every((route) => route.imageFile === restScene.fileName), `${scenarioId} analysis-style system routes should use the scenario tactical-rest table.`);
+});
+["rumbling-finale", "infinity-castle", "naruto-final-valley", "bleach-false-karakura", "genshin-liyue-childe", "nioh-yokai-sengoku", "gintama-final-war", "avengers-new-york"].forEach((scenarioId) => {
+  const routes = data.systemEncounterRoutes[scenarioId] || [];
+  assert(routes.some((route) => JSON.stringify(route.outcome.dialogue).includes("跨宇宙通訊")), `${scenarioId} system routes should include crossover universe dialogue.`);
+  assert(routes.some((route) => JSON.stringify(route.outcome.dialogue).includes("彩蛋訊號") && route.outcome.rewards?.some((reward) => reward.startsWith("彩蛋："))), `${scenarioId} system routes should include easter egg signals and rewards.`);
+  assert(routes.some((route) => route.stage1.text.includes("原作") || route.outcome.storyImpact.includes("原作節點")), `${scenarioId} system routes should preserve original plot interactions.`);
+});
+for (const scenarioId of ["alien", "jujutsu-kaisen-shibuya", "fullmetal-alchemist-finale", "genshin-liyue-childe", "genshin-inazuma-vision-hunt", "cyberpunk-edgerunners-night-city", "nioh-yokai-sengoku", "black-myth-wukong-relics", "chainsaw-man-reze-arc", "kaiju-no-8-defense-force", "gachiakuta-pit-cleaners", "sakamoto-days-assassin-order", "dandadan-evil-eye", "solo-leveling-jeju-raid", "my-hero-final-war", "fire-force-final-pillar", "hells-paradise-shinsenkyo", "wind-breaker-keel-brawl", "black-clover-spade-raid", "shangri-la-frontier-lycagon", "slime-walpurgis-clash", "mashle-divine-visionary", "frieren-aura-exam", "blue-exorcist-blue-night", "fairy-tail-100-years-quest", "four-knights-apocalypse-camelot", "overlord-holy-kingdom", "shield-hero-qten-lo", "elden-ring-hell-run"]) {
   let openingProbeState = createCompletedTutorialState();
   fillOwnedRoster(openingProbeState);
   openingProbeState.campaign.unlockedScenarios = [...new Set([...openingProbeState.campaign.unlockedScenarios, scenarioId])];
   openingProbeState = core.beginScenario(openingProbeState, scenarioId);
   if (openingProbeState.screen === "recruit") openingProbeState = core.chooseRecruit(openingProbeState, openingProbeState.pending.candidates[0]);
   const openingText = openingProbeState.run.openingDiscussion.map((line) => line.line).join(" ");
+  const sceneMarker = ["場景", "空間", "舞台"].some((marker) => openingText.includes(marker));
+  const storyMarker = ["人物", "故事", "支線", "大衛", "露西", "夜城", "月面", "威廉", "半藏", "守護靈", "天命人", "真大聖", "二郎神", "淀治", "蕾塞", "卡夫卡", "米娜", "路德", "恩金", "坂本", "朝倉", "厄卡倫", "成振宇", "綠谷", "森羅", "畫眉丸", "櫻遙", "阿斯塔", "桑樂", "利姆路", "馬修", "芙莉蓮", "奧村燐", "納茲", "柏西瓦爾", "安茲", "尚文"].some((marker) => openingText.includes(marker));
   assert(openingProbeState.run.openingDiscussion.length >= 8, `${scenarioId} should generate expanded random opening discussion.`);
-  assert(openingText.includes("場景") && (openingText.includes("人物") || openingText.includes("故事") || openingText.includes("支線")) && openingText.includes("敵") && openingText.includes("主神"), `${scenarioId} opening discussion should analyze scene, story/people, enemies, and include commentary.`);
+  assert(sceneMarker && storyMarker && openingText.includes("敵") && openingText.includes("主神"), `${scenarioId} opening discussion should analyze scene, story/people, enemies, and include commentary.`);
 }
 const formalScenarioAssetNames = formalScenarios.map((scenario) => `scenario-${scenario.id}.png`);
 assert(formalScenarioAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Every formal scenario should have dedicated IMAGE2 hero art.");
@@ -347,7 +513,7 @@ const movieScenarioIds = ["avengers-new-york", "batman-v-superman", "pacific-rim
 assert(movieScenarioIds.every((id) => data.scenarios.some((scenario) => scenario.id === id)), "The movie crossover scenarios should be registered.");
 const newScenarioIds = ["final-destination", "jinyong-heroic-peak"];
 assert(newScenarioIds.every((id) => data.scenarios.some((scenario) => scenario.id === id)), "The two newest playable scenarios should be registered.");
-const gameScenarioIds = ["devil-may-cry-5", "resident-evil-6-c-virus", "elden-ring-hell-run", "jujutsu-kaisen-shibuya"];
+const gameScenarioIds = ["devil-may-cry-5", "resident-evil-6-c-virus", "elden-ring-hell-run", "jujutsu-kaisen-shibuya", "genshin-liyue-childe", "genshin-inazuma-vision-hunt", "cyberpunk-edgerunners-night-city", "nioh-yokai-sengoku", "black-myth-wukong-relics"];
 assert(gameScenarioIds.every((id) => data.scenarios.some((scenario) => scenario.id === id)), "The game crossover scenarios should be registered.");
 assert(core.enemiesById["colossal-titan"].maxHp >= 400, "The Colossal Titan should be a notably high-HP enemy.");
 assert(core.enemiesById["muzan-kibutsuji"].regen > 0 && core.enemiesById["muzan-kibutsuji"].phaseTwo?.maxHp > 0, "Muzan should regenerate and carry a second phase.");
@@ -364,6 +530,13 @@ assert(core.enemiesById["er-malenia-blade-miquella"].regen > 0 && core.enemiesBy
 assert(core.enemiesById["er-radagon-elden-beast"].regen > 0 && core.enemiesById["er-radagon-elden-beast"].phaseTwo?.maxHp > 0, "Radagon and the Elden Beast should regenerate and carry a second phase.");
 assert(core.enemiesById["jjk-sukuna-shinjuku"].regen > 0 && core.enemiesById["jjk-sukuna-shinjuku"].phaseTwo?.maxHp > 0, "Shinjuku Sukuna should regenerate and carry a second phase.");
 assert(core.enemiesById["fma-father-eclipse"].regen > 0 && core.enemiesById["fma-father-eclipse"].phaseTwo?.maxHp > 0, "Father should regenerate and carry a second phase.");
+assert(core.enemiesById["genshin-osial-vortex"].regen > 0 && core.enemiesById["genshin-osial-vortex"].phaseTwo?.maxHp > 0, "Osial should regenerate and carry a second phase.");
+assert(core.enemiesById["genshin-inazuma-raiden-puppet"].regen > 0 && core.enemiesById["genshin-inazuma-raiden-puppet"].phaseTwo?.maxHp > 0, "The Raiden puppet should regenerate and carry a second phase.");
+assert(core.enemiesById["cyberpunk-adam-smasher"].regen > 0 && core.enemiesById["cyberpunk-adam-smasher"].phaseTwo?.maxHp > 0, "Adam Smasher should regenerate and carry a second phase.");
+assert(core.enemiesById["nioh-yamata-no-orochi"].regen > 0 && core.enemiesById["nioh-yamata-no-orochi"].phaseTwo?.maxHp > 0, "Yamata-no-Orochi should regenerate and carry a second phase.");
+assert(core.enemiesById["bmw-yellow-wind-sage-enemy"].regen > 0 && core.enemiesById["bmw-yellow-wind-sage-enemy"].phaseTwo?.maxHp > 0, "Yellow Wind Sage should regenerate and carry a second phase.");
+assert(core.enemiesById["bmw-erlang-shen-enemy"].regen > 0 && core.enemiesById["bmw-erlang-shen-enemy"].phaseTwo?.maxHp > 0, "Erlang Shen should regenerate and carry a second phase.");
+assert(core.enemiesById["bmw-great-sage-broken-shell"].regen > 0 && core.enemiesById["bmw-great-sage-broken-shell"].phaseTwo?.maxHp > 0, "The Great Sage's Broken Shell should regenerate and carry a second phase.");
 const animeFinalScenarioAssetNames = animeFinalScenarioIds.map((id) => `scenario-${id}.png`);
 assert(animeFinalScenarioAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Anime climax scenarios should have dedicated hero art.");
 assertUniqueAssets(animeFinalScenarioAssetNames, "Anime climax hero art should be unique.");
@@ -455,6 +628,65 @@ const fullmetalAlchemistAssetNames = [
 ];
 assert(fullmetalAlchemistAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Fullmetal Alchemist should have dedicated IMAGE2 scenario and enemy art assets.");
 assertUniqueAssets(fullmetalAlchemistAssetNames, "Fullmetal Alchemist IMAGE2 scenario and enemy art should be unique.");
+const genshinLiyueAssetNames = [
+  "scenario-genshin-liyue-childe.png",
+  "enemy-genshin-fatui-skirmishers.png",
+  "enemy-genshin-ruin-guard-line.png",
+  "enemy-genshin-adepti-trial.png",
+  "enemy-genshin-childe-foul-legacy.png",
+  "enemy-genshin-osial-vortex.png"
+];
+assert(genshinLiyueAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Genshin Liyue should have dedicated IMAGE2 scenario and enemy art assets.");
+assertUniqueAssets(genshinLiyueAssetNames, "Genshin Liyue IMAGE2 scenario and enemy art should be unique.");
+const genshinInazumaAssetNames = [
+  "scenario-genshin-inazuma-vision-hunt.png",
+  "enemy-genshin-inazuma-tenryou-samurai.png",
+  "enemy-genshin-inazuma-kairagi-line.png",
+  "enemy-genshin-inazuma-shogunate-elite.png",
+  "enemy-genshin-inazuma-signora-crimson-witch.png",
+  "enemy-genshin-inazuma-raiden-puppet.png"
+];
+assert(genshinInazumaAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Genshin Inazuma should have dedicated IMAGE2 scenario and enemy art assets.");
+assertUniqueAssets(genshinInazumaAssetNames, "Genshin Inazuma IMAGE2 scenario and enemy art should be unique.");
+const cyberpunkEdgerunnersAssetNames = [
+  "scenario-cyberpunk-edgerunners-night-city.png",
+  "enemy-cyberpunk-maelstrom-scavs.png",
+  "enemy-cyberpunk-militech-tac-squad.png",
+  "enemy-cyberpunk-arasaka-netrunner.png",
+  "enemy-cyberpunk-cyberpsycho-exosuit.png",
+  "enemy-cyberpunk-adam-smasher.png"
+];
+assert(cyberpunkEdgerunnersAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Cyberpunk: Edgerunners should have dedicated IMAGE2 scenario and enemy art assets.");
+assertUniqueAssets(cyberpunkEdgerunnersAssetNames, "Cyberpunk: Edgerunners IMAGE2 scenario and enemy art should be unique.");
+const niohAssetNames = [
+  "scenario-nioh-yokai-sengoku.png",
+  "enemy-nioh-yoki-brute.png",
+  "enemy-nioh-onryoki-chains.png",
+  "enemy-nioh-hino-enma.png",
+  "enemy-nioh-kelley-alchemist.png",
+  "enemy-nioh-yamata-no-orochi.png"
+];
+assert(niohAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Nioh should have dedicated IMAGE2 scenario and enemy art assets.");
+assertUniqueAssets(niohAssetNames, "Nioh IMAGE2 scenario and enemy art should be unique.");
+const blackMythWukongAssetNames = [
+  "scenario-black-myth-wukong-relics.png",
+  "enemy-bmw-wolf-scouts.png",
+  "enemy-bmw-black-wind-king-enemy.png",
+  "enemy-bmw-tiger-vanguard-enemy.png",
+  "enemy-bmw-stone-vanguard.png",
+  "enemy-bmw-yellow-wind-sage-enemy.png",
+  "enemy-bmw-kangjin-dragon-enemy.png",
+  "enemy-bmw-yellowbrow-false-buddha.png",
+  "enemy-bmw-violet-spider-enemy.png",
+  "enemy-bmw-hundred-eyed-daoist.png",
+  "enemy-bmw-red-boy-enemy.png",
+  "enemy-bmw-yaksha-king-enemy.png",
+  "enemy-bmw-erlang-shen-enemy.png",
+  "enemy-bmw-stone-monkey-shell.png",
+  "enemy-bmw-great-sage-broken-shell.png"
+];
+assert(blackMythWukongAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Black Myth: Wukong should have dedicated scenario and enemy art assets.");
+assertUniqueAssets(blackMythWukongAssetNames, "Black Myth: Wukong scenario and enemy art should be unique.");
 const finalBattleEnemyAssetNames = [
   "rumbling-titan-line", "colossal-titan", "war-hammer-titan", "founding-eren",
   "infinity-castle-demon", "biwa-castle-demon", "upper-moon-demon", "kokushibo-moon-breath", "muzan-kibutsuji",
@@ -466,6 +698,81 @@ const finalBattleEnemyAssetNames = [
 ].map((id) => `enemy-${id}.png`);
 assert(finalBattleEnemyAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Post-white-light final battles should have dedicated IMAGE2 enemy art.");
 assertUniqueAssets(finalBattleEnemyAssetNames, "Post-white-light final battle IMAGE2 enemy art should not reuse placeholders.");
+const defeatAssetNames = data.defeatOutcomes.flatMap((outcome) => outcome.imageFiles || []);
+const fateStoryAssetNames = [
+  "story-fate-pressure-boss.png",
+  "story-fate-rescue-mission.png",
+  "story-fate-dark-return.png",
+  "story-fate-team-stance.png"
+];
+const systemEncounterRestAssetNames = data.systemEncounterRestImageFiles || [];
+const formalScenarioRestAssetNames = formalScenarios.map((scenario) => data.systemEncounterRestScenesByScenario?.[scenario.id]?.fileName);
+const systemEncounterAssetNames = [
+  "system-encounter-jjk-rescue.png",
+  "system-encounter-jjk-layout.png",
+  "system-encounter-jjk-price.png",
+  "system-encounter-fma-rescue.png",
+  "system-encounter-fma-layout.png",
+  "system-encounter-fma-price.png",
+  "system-encounter-cyberpunk-rescue.png",
+  "system-encounter-cyberpunk-layout.png",
+  "system-encounter-cyberpunk-price.png",
+  "system-encounter-bmw-rescue.png",
+  "system-encounter-bmw-layout.png",
+  "system-encounter-bmw-price.png",
+  "system-encounter-inazuma-rescue.png",
+  "system-encounter-inazuma-layout.png",
+  "system-encounter-inazuma-price.png",
+  "system-encounter-chainsaw-rescue.png",
+  "system-encounter-chainsaw-layout.png",
+  "system-encounter-chainsaw-price.png",
+  "system-encounter-solo-rescue.png",
+  "system-encounter-solo-layout.png",
+  "system-encounter-solo-price.png",
+  "system-encounter-elden-rescue.png",
+  "system-encounter-elden-layout.png",
+  "system-encounter-elden-price.png",
+  "system-encounter-rumbling-rescue.png",
+  "system-encounter-rumbling-layout.png",
+  "system-encounter-rumbling-price.png",
+  "system-encounter-infinity-rescue.png",
+  "system-encounter-infinity-layout.png",
+  "system-encounter-infinity-price.png",
+  "system-encounter-naruto-rescue.png",
+  "system-encounter-naruto-layout.png",
+  "system-encounter-naruto-price.png",
+  "system-encounter-bleach-rescue.png",
+  "system-encounter-bleach-layout.png",
+  "system-encounter-bleach-price.png",
+  "system-encounter-liyue-rescue.png",
+  "system-encounter-liyue-layout.png",
+  "system-encounter-liyue-price.png",
+  "system-encounter-nioh-rescue.png",
+  "system-encounter-nioh-layout.png",
+  "system-encounter-nioh-price.png",
+  "system-encounter-gintama-rescue.png",
+  "system-encounter-gintama-layout.png",
+  "system-encounter-gintama-price.png",
+  "system-encounter-avengers-rescue.png",
+  "system-encounter-avengers-layout.png",
+  "system-encounter-avengers-price.png"
+];
+assert(data.defeatOutcomes.length === 6, "Failure system should define six defeat outcomes.");
+assert(defeatAssetNames.length === 18, "Failure system should define eighteen IMAGE2 defeat images.");
+assert(data.defeatOutcomes.every((outcome) => outcome.imageFiles?.length === 3 && outcome.lines?.length === 10 && outcome.fateWeights), "Every defeat outcome should have three images, ten random lines, and fate weights.");
+assert(defeatAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Every defeat outcome IMAGE2 art asset should exist.");
+assertUniqueAssets(defeatAssetNames, "Defeat outcome IMAGE2 art should be unique.");
+assert(fateStoryAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Fate deepening story IMAGE2 assets should exist.");
+assertUniqueAssets(fateStoryAssetNames, "Fate deepening story IMAGE2 assets should be unique.");
+assert(formalScenarioRestAssetNames.every(Boolean), "Every formal scenario should have a dedicated tactical-rest IMAGE2 scene.");
+assert(new Set(formalScenarioRestAssetNames).size === formalScenarios.length, "Every formal scenario tactical-rest scene should use a distinct filename.");
+assert(systemEncounterRestAssetNames.length >= formalScenarios.length + 4, "System encounter rest table pool should cover every formal scenario plus fallback variants.");
+assert(Object.keys(data.systemEncounterRestScenesByScenario || {}).length >= formalScenarios.length && (data.systemEncounterRestFallbackImageFiles || []).length === 4, "System encounter rest tables should cover all formal scenarios plus four fallbacks.");
+assert(systemEncounterRestAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "System encounter tactical-rest IMAGE2 variants should exist.");
+assert(systemEncounterAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "System encounter IMAGE2 assets should exist.");
+assertUniqueAssets(systemEncounterAssetNames, "System encounter IMAGE2 assets should be unique.");
+assertUniqueAssets(systemEncounterRestAssetNames, "System encounter tactical-rest IMAGE2 variants should be unique.");
+assertUniqueAssets([...systemEncounterAssetNames, ...systemEncounterRestAssetNames], "System encounter base and tactical-rest IMAGE2 assets should all be unique.");
 const rumblingOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "rumbling-finale").opening);
 const infinityOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "infinity-castle").opening);
 const narutoOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "naruto-final-valley").opening);
@@ -482,6 +789,31 @@ const residentEvil6OpeningText = JSON.stringify(data.scenarios.find((scenario) =
 const eldenRingOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "elden-ring-hell-run").opening);
 const jujutsuKaisenOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "jujutsu-kaisen-shibuya").opening);
 const fullmetalAlchemistOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "fullmetal-alchemist-finale").opening);
+const genshinLiyueOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "genshin-liyue-childe").opening);
+const genshinInazumaOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "genshin-inazuma-vision-hunt").opening);
+const cyberpunkEdgerunnersOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "cyberpunk-edgerunners-night-city").opening);
+const niohOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "nioh-yokai-sengoku").opening);
+const blackMythWukongOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "black-myth-wukong-relics").opening);
+const chainsawManOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "chainsaw-man-reze-arc").opening);
+const kaijuNo8OpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "kaiju-no-8-defense-force").opening);
+const gachiakutaOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "gachiakuta-pit-cleaners").opening);
+const sakamotoDaysOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "sakamoto-days-assassin-order").opening);
+const dandadanOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "dandadan-evil-eye").opening);
+const soloLevelingOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "solo-leveling-jeju-raid").opening);
+const myHeroOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "my-hero-final-war").opening);
+const fireForceOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "fire-force-final-pillar").opening);
+const hellsParadiseOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "hells-paradise-shinsenkyo").opening);
+const windBreakerOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "wind-breaker-keel-brawl").opening);
+const blackCloverOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "black-clover-spade-raid").opening);
+const shangriLaOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "shangri-la-frontier-lycagon").opening);
+const slimeOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "slime-walpurgis-clash").opening);
+const mashleOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "mashle-divine-visionary").opening);
+const frierenOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "frieren-aura-exam").opening);
+const blueExorcistOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "blue-exorcist-blue-night").opening);
+const fairyTailOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "fairy-tail-100-years-quest").opening);
+const fourKnightsOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "four-knights-apocalypse-camelot").opening);
+const overlordOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "overlord-holy-kingdom").opening);
+const shieldHeroOpeningText = JSON.stringify(data.scenarios.find((scenario) => scenario.id === "shield-hero-qten-lo").opening);
 assert(["米卡莎", "阿爾敏", "兵長", "艾連"].every((name) => rumblingOpeningText.includes(name)), "The Rumbling finale opening should use original final-battle cast beats.");
 assert(["炭治郎", "富岡義勇", "黑死牟", "鬼舞辻無慘"].every((name) => infinityOpeningText.includes(name)), "The Infinity Castle opening should use original final-battle cast beats.");
 assert(["鳴人", "佐助", "卡卡西", "終末之谷"].every((name) => narutoOpeningText.includes(name)), "The Final Valley opening should use original final-battle cast beats.");
@@ -498,18 +830,43 @@ assert(["里昂·S·甘迺迪", "克里斯·雷德菲爾", "傑克·穆勒", "C�
 assert(["褪色者", "梅琳娜", "菈妮", "瑪蓮妮亞", "艾爾登獸"].every((name) => eldenRingOpeningText.includes(name)), "The Elden Ring hell opening should use Tarnished, guidance, moon, rot goddess, and Elden Beast beats.");
 assert(["虎杖悠仁", "伏黑惠", "乙骨憂太", "獄門疆", "宿儺"].every((name) => jujutsuKaisenOpeningText.includes(name)), "The Jujutsu Kaisen opening should use Shibuya, Prison Realm, and Shinjuku battle beats.");
 assert(["愛德華", "阿爾馮斯", "馬斯坦古", "瓶中小人", "國土鍊成陣"].every((name) => fullmetalAlchemistOpeningText.includes(name)), "The Fullmetal Alchemist opening should use Edward, Alphonse, Mustang, Father, and nationwide transmutation beats.");
+assert(["鍾離", "凝光", "刻晴", "公子", "奧賽爾", "群玉閣"].every((name) => genshinLiyueOpeningText.includes(name)), "The Genshin Liyue opening should use Zhongli, Qixing, Childe, Osial, and Jade Chamber beats.");
+assert(["雷電影", "神里綾華", "珊瑚宮心海", "楓原萬葉", "眼狩令", "一心淨土"].every((name) => genshinInazumaOpeningText.includes(name)), "The Genshin Inazuma opening should use Raiden Ei, Ayaka, Kokomi, Kazuha, Vision Hunt Decree, and Plane of Euthymia beats.");
+assert(["大衛", "露西", "蕾貝卡", "沙德威斯坦", "亞當·碎骨", "夜城"].every((name) => cyberpunkEdgerunnersOpeningText.includes(name)), "The Cyberpunk: Edgerunners opening should use David, Lucy, Rebecca, Sandevistan, Adam Smasher, and Night City beats.");
+assert(["威廉", "半藏", "瑟夏", "凱瑞", "安土城", "八岐大蛇"].every((name) => niohOpeningText.includes(name)), "The Nioh opening should use William, Hanzo, Saoirse, Kelley, Azuchi Castle, and Yamata-no-Orochi beats.");
+assert(["天命人", "真大聖", "豬八戒", "二郎神", "六根", "金箍"].every((name) => blackMythWukongOpeningText.includes(name)), "The Black Myth: Wukong opening should use Destined One, True Great Sage, Bajie, Erlang, six relics, and golden hoop beats.");
+assert(["淀治", "蕾塞", "早川秋", "颱風惡魔"].every((name) => chainsawManOpeningText.includes(name)), "The Chainsaw Man Reze Arc opening should use Denji, Reze, Aki, and Typhoon Devil beats.");
+assert(["日比野卡夫卡", "亞白米娜", "四之宮琪歌露", "怪獸9號"].every((name) => kaijuNo8OpeningText.includes(name)), "The Kaiju No. 8 opening should use Kafka, Mina, Kikoru, and Kaiju No. 9 beats.");
+assert(["路德", "恩金", "莉尤", "人器"].every((name) => gachiakutaOpeningText.includes(name)), "The Gachiakuta opening should use Rudo, Enjin, Riyoh, and Jinki beats.");
+assert(["坂本太郎", "朝倉新", "陸少糖", "X網路"].every((name) => sakamotoDaysOpeningText.includes(name)), "The Sakamoto Days opening should use Sakamoto, Shin, Lu, and X network beats.");
+assert(["厄卡倫", "綾瀨桃", "邪視", "塞伯星人"].every((name) => dandadanOpeningText.includes(name)), "The DAN DA DAN opening should use Okarun, Momo, Evil Eye, and Serpo beats.");
+assert(["成振宇", "車海印", "伊格利特", "蟻王"].every((name) => soloLevelingOpeningText.includes(name)), "The Solo Leveling opening should use Jinwoo, Cha Hae-in, Igris, and Ant King beats.");
+assert(["綠谷出久", "爆豪勝己", "轟焦凍", "死柄木"].every((name) => myHeroOpeningText.includes(name)), "The My Hero Academia opening should use Deku, Bakugo, Shoto, and Shigaraki beats.");
+assert(["森羅日下部", "亞瑟", "茉希", "大災害"].every((name) => fireForceOpeningText.includes(name)), "The Fire Force opening should use Shinra, Arthur, Maki, and Cataclysm beats.");
+assert(["畫眉丸", "佐切", "杠", "天仙"].every((name) => hellsParadiseOpeningText.includes(name)), "The Hell's Paradise opening should use Gabimaru, Sagiri, Yuzuriha, and Tensen beats.");
+assert(["櫻遙", "梅宮一", "蘇枋隼飛", "防風鈴"].every((name) => windBreakerOpeningText.includes(name)), "The WIND BREAKER opening should use Sakura, Umemiya, Suo, and Bofurin beats.");
+assert(["阿斯塔", "尤諾", "諾艾兒", "路西法羅"].every((name) => blackCloverOpeningText.includes(name)), "The Black Clover opening should use Asta, Yuno, Noelle, and Lucifero beats.");
+assert(["桑樂", "齋賀玲", "亞瑟", "利卡翁"].every((name) => shangriLaOpeningText.includes(name)), "The Shangri-La Frontier opening should use Sunraku, Psyger-0, Pencilgon, and Lycagon beats.");
+assert(["利姆路", "紅丸", "紫苑", "克雷曼"].every((name) => slimeOpeningText.includes(name)), "The Slime opening should use Rimuru, Benimaru, Shion, and Clayman beats.");
+assert(["馬修", "蘭斯", "多特", "無邪零"].every((name) => mashleOpeningText.includes(name)), "The MASHLE opening should use Mash, Lance, Dot, and Innocent Zero beats.");
+assert(["芙莉蓮", "菲倫", "修塔爾克", "阿烏拉"].every((name) => frierenOpeningText.includes(name)), "The Frieren opening should use Frieren, Fern, Stark, and Aura beats.");
+assert(["奧村燐", "奧村雪男", "杜山詩惠美", "撒旦門"].every((name) => blueExorcistOpeningText.includes(name)), "The Blue Exorcist opening should use Rin, Yukio, Shiemi, and Satan Gate beats.");
+assert(["納茲", "露西", "艾爾莎", "木神龍"].every((name) => fairyTailOpeningText.includes(name)), "The Fairy Tail opening should use Natsu, Lucy, Erza, and Aldoron beats.");
+assert(["柏西瓦爾", "蘭斯洛特", "崔斯坦", "混沌亞瑟"].every((name) => fourKnightsOpeningText.includes(name)), "The Four Knights opening should use Percival, Lancelot, Tristan, and Chaos Arthur beats.");
+assert(["安茲", "雅兒貝德", "夏提雅", "憤怒魔將"].every((name) => overlordOpeningText.includes(name)), "The Overlord opening should use Ainz, Albedo, Shalltear, and Wrath Demon beats.");
+assert(["岩谷尚文", "拉芙塔莉雅", "菲洛", "浪潮使徒"].every((name) => shieldHeroOpeningText.includes(name)), "The Shield Hero opening should use Naofumi, Raphtalia, Filo, and Wave Apostle beats.");
 assert(data.economy.legendaryRecruitmentMinInfiniteTier === 3, "Legendary protagonists should require deep infinite-mode progress before appearing.");
 assert(core.cardsById["kamehameha-limit"].damage === 48 && core.cardsById["buddha-lotus-flame"].damageAll === 32 && core.cardsById["jajanken-covenant"].damage === 46, "Legendary protagonist signatures should be especially strong.");
-assert(data.equipment.length === 84, "The equipment pool should include the existing DMC5 gear, final-battle weapon expansion, Gintama tools, Avengers equipment, Justice Dawn equipment, the two new movie weapon sets, Resident Evil 6 weapons, Elden Ring relics, Jujutsu cursed tools, and Fullmetal Alchemist gear.");
+assert(data.equipment.length === 148, "The equipment pool should include the existing crossover gear plus Genshin Liyue, Inazuma, Night City, Nioh, latest battle anime relics, and Black Myth: Wukong vessels.");
 const allCardAssetNames = data.cards.map((card) => `skill-${card.id}.png`);
 const allEquipmentAssetNames = data.equipment.map((item) => `equipment-${item.id}.png`);
 const sourceCoverAssetNames = data.cardSources.map((source) => `source-cover-${source.id}.png`);
 const rosterHeroAssetNames = data.characterSources.map((source) => source.heroFileName);
 assert(allCardAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Every card should have dedicated skill art.");
 assert(allEquipmentAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Every equipment item should have dedicated equipment art.");
-assert(sourceCoverAssetNames.length === 16, "The card shop should define sixteen source cover categories.");
+assert(sourceCoverAssetNames.length === 41, "The card shop should define forty-one source cover categories.");
 assert(sourceCoverAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Every card source should have a dedicated IMAGE2 cover.");
-assert(data.characterSources.length === 27, "Roster preparation should define twenty-seven team/source hero categories.");
+assert(data.characterSources.length === 52, "Roster preparation should define fifty-two team/source hero categories.");
 assert(rosterHeroAssetNames.every((fileName) => existsSync(assetUrl(fileName))), "Every roster source should have a dedicated IMAGE2 hero shot.");
 assertUniqueAssets([...allCardAssetNames, ...allEquipmentAssetNames], "Every card and equipment art file should be unique.");
 assertUniqueAssets(readdirSync(assetUrl(".")).filter((fileName) => /^(skill|equipment)-.+\.png$/.test(fileName)), "No generated skill or equipment image file should be a duplicate.");
@@ -528,18 +885,38 @@ data.characterSources.forEach((source) => {
 const rosterCharacterIds = data.characters.filter((character) => !character.tutorialOnly).map((character) => character.id);
 assert(rosterCharacterIds.every((id) => rosterSourceMembership.has(id)), "Roster sources should cover every non-tutorial character.");
 assert(data.legendaryRecruitmentPool.every((id) => rosterSourceMembership.get(id) !== "protagonist"), "Legendary protagonists should be split into their own anime/game/movie roster sources.");
-assert(["demon-slayer", "naruto", "one-piece", "dragon-ball", "battle-through-heavens", "bleach", "fullmetal-alchemist", "attack-on-titan", "hunter", "sword-art-online"].every((id) => data.characterSources.some((source) => source.id === id)), "Roster sources should split legendary protagonists by original source.");
-assert(data.bonds.length === 130, "The roster should include one hundred and thirty deployable bond combinations.");
+assert(["demon-slayer", "naruto", "one-piece", "dragon-ball", "battle-through-heavens", "bleach", "fullmetal-alchemist", "attack-on-titan", "hunter", "sword-art-online", "cyberpunk-edgerunners", "nioh", "black-myth-wukong", "chainsaw-man", "kaiju-no-8", "gachiakuta", "sakamoto-days", "dandadan", "solo-leveling", "my-hero-academia", "fire-force", "hells-paradise", "wind-breaker", "black-clover", "shangri-la-frontier", "slime", "mashle", "frieren", "blue-exorcist", "fairy-tail", "four-knights", "overlord", "shield-hero"].every((id) => data.characterSources.some((source) => source.id === id)), "Roster sources should split legendary protagonists by original source.");
+assert(data.bonds.length === 351, "The roster should include three hundred and fifty-one deployable bond combinations after the Black Myth, bond deepening, and thematic packs.");
 const characterIds = new Set(data.characters.map((character) => character.id));
-assert(data.bonds.every((bond) => (bond.members || []).every((id) => characterIds.has(id)) && (bond.anyMembers || []).every((id) => characterIds.has(id))), "Every bond must reference valid characters.");
-assert(["zhongzhou-frontline", "field-medic-link", "demon-assault-cell", "legendary-sun-flame", "scout-final-flight", "water-hashira-line", "yorozuya-three", "joy4-last-stand", "avengers-assemble-core", "trinity-dawn", "jaeger-drift-team", "war-rig-convoy", "bsaa-c-virus-taskforce", "elden-ring-tarnished-oath", "jjk-prison-realm-break", "fma-elric-brothers", "fma-eastern-command", "fma-truth-countercircle"].every((id) => data.bonds.some((bond) => bond.id === id)), "The expanded bond set should include Zhongzhou, support, demon, legendary, scout, Water Hashira, Gintama, Avengers, Justice Dawn, Pacific Rim, Fury Road, Resident Evil 6, Elden Ring, Jujutsu, and Fullmetal Alchemist combinations.");
+const bondCharacterRefs = (bond) => [...(bond.members || []), ...(bond.anyMembers || []), ...(bond.sourceMembers || [])];
+assert(data.bonds.every((bond) => bondCharacterRefs(bond).every((id) => characterIds.has(id))), "Every bond must reference valid characters.");
+assert(["zhongzhou-frontline", "field-medic-link", "demon-assault-cell", "legendary-sun-flame", "scout-final-flight", "water-hashira-line", "yorozuya-three", "joy4-last-stand", "avengers-assemble-core", "trinity-dawn", "jaeger-drift-team", "war-rig-convoy", "bsaa-c-virus-taskforce", "elden-ring-tarnished-oath", "jjk-prison-realm-break", "fma-elric-brothers", "fma-eastern-command", "fma-truth-countercircle", "genshin-liyue-qixing-line", "genshin-adepti-contract", "genshin-harbor-fireline", "genshin-inazuma-tri-commission", "genshin-inazuma-wish-flame-wind", "genshin-inazuma-oni-eternity", "edgerunners-moon-route", "edgerunners-heavy-fireteam", "edgerunners-blackice-team", "nioh-guardian-spirit-line", "nioh-tachibana-thunderline", "nioh-obsidian-front"].every((id) => data.bonds.some((bond) => bond.id === id)), "The expanded bond set should include Zhongzhou, support, demon, legendary, scout, Water Hashira, Gintama, Avengers, Justice Dawn, Pacific Rim, Fury Road, Resident Evil 6, Elden Ring, Jujutsu, Fullmetal Alchemist, Genshin, Cyberpunk, and Nioh combinations.");
+assert(["deep-main-formation", "deep-main-resonance", "deep-role-opening-command", "deep-role-medical-relay", "deep-hidden-protagonist-relay", "deep-analyst-grand-table"].every((id) => data.bonds.some((bond) => bond.id === id)), "The bond deepening pack should add source, role, protagonist, and analyst routes.");
+assert(data.bondDeepeningSummary && data.bondDeepeningSummary.addedCount === 104 && data.bondDeepeningSummary.sourceBondCount === 88 && data.bondDeepeningSummary.roleBondCount === 10 && data.bondDeepeningSummary.safetyBondCount === 4, "The bond deepening summary should track the full 104-bond package.");
+assert(["theme-white-hair-problem", "theme-main-character-meeting", "theme-villain-round-table", "theme-monster-heart-protagonists", "theme-fire-users-table", "theme-thunder-users", "theme-chu-xuan-mirror-calculation"].every((id) => data.bonds.some((bond) => bond.id === id)), "The thematic bond pack should add hair, protagonist, villain, mirror, and attribute joke routes.");
+assert(data.thematicBondSummary && data.thematicBondSummary.addedCount === 30 && data.thematicBondSummary.hairCount === 5 && data.thematicBondSummary.protagonistCount === 6 && data.thematicBondSummary.villainCount === 7 && data.thematicBondSummary.attributeCount === 12, "The thematic bond summary should track the full 30-bond joke package.");
+assert(["bmw-westward-relic-hunters", "bmw-monkey-lineage", "bmw-celestial-board", "cross-ruyi-sun-flame", "cross-erlang-calculation"].every((id) => data.bonds.some((bond) => bond.id === id)), "Black Myth: Wukong should add dedicated and crossover bond routes.");
 const crossWorldBonds = data.bonds.filter((bond) => bond.crossWorld);
-const crossWorldCoveredCharacters = new Set(crossWorldBonds.flatMap((bond) => bond.members || []));
+const crossWorldCoveredCharacters = new Set(crossWorldBonds.flatMap((bond) => bondCharacterRefs(bond)));
 const deployableCharacterIds = data.characters.filter((character) => !character.tutorialOnly && !character.playerOnly).map((character) => character.id);
-assert(crossWorldBonds.length === 69, "The expanded bond set should include sixty-nine explicit crossover bonds.");
+assert(crossWorldBonds.length === 165, "The expanded bond set should include one hundred and sixty-five explicit crossover bonds.");
 assert(deployableCharacterIds.every((id) => crossWorldCoveredCharacters.has(id)), "Every deployable character should appear in at least one explicit crossover bond.");
-assert(crossWorldBonds.every((bond) => new Set((bond.members || []).map((id) => core.charactersById[id].factionId || "main")).size >= 2), "Every explicit crossover bond should span multiple factions or worlds.");
-assert(["cross-blood-sun-frontline", "cross-genius-forge", "cross-dark-mirror-sun", "cross-freedom-breakers", "cross-jaeger-mecha-line", "cross-war-rig-shield-wall", "cross-redemption-signal", "cross-kennedy-protocol", "cross-antibody-rescue", "cross-great-rune-calculation", "cross-black-knife-shadow", "cross-limitless-sun-break", "cross-equivalent-forge", "cross-flame-sniper-grid", "cross-reconstruction-martial-law", "cross-philosopher-sage-circle"].every((id) => data.bonds.some((bond) => bond.id === id)), "Crossover bonds should include Zhongzhou, legendary, movie, game, anime, Jaeger, wasteland, C-virus, Elden Ring, Jujutsu, and Fullmetal Alchemist mixes.");
+assert(crossWorldBonds.every((bond) => new Set(bondCharacterRefs(bond).map((id) => core.charactersById[id].factionId || "main")).size >= 2), "Every explicit crossover bond should span multiple factions or worlds.");
+const bondCoverage = Object.fromEntries(deployableCharacterIds.map((id) => [id, 0]));
+data.bonds.forEach((bond) => {
+  for (const id of new Set(bondCharacterRefs(bond))) {
+    if (Object.prototype.hasOwnProperty.call(bondCoverage, id)) bondCoverage[id] += 1;
+  }
+  if (bond.faction) {
+    data.characters.forEach((character) => {
+      if (!character.tutorialOnly && !character.playerOnly && (character.factionId || "main") === bond.faction) {
+        bondCoverage[character.id] += 1;
+      }
+    });
+  }
+});
+assert(Math.min(...Object.values(bondCoverage)) >= 4, "Every deployable character should have at least four playable bond routes after the deepening pack.");
+assert(["cross-blood-sun-frontline", "cross-genius-forge", "cross-dark-mirror-sun", "cross-freedom-breakers", "cross-jaeger-mecha-line", "cross-war-rig-shield-wall", "cross-redemption-signal", "cross-kennedy-protocol", "cross-antibody-rescue", "cross-great-rune-calculation", "cross-black-knife-shadow", "cross-limitless-sun-break", "cross-equivalent-forge", "cross-flame-sniper-grid", "cross-reconstruction-martial-law", "cross-philosopher-sage-circle", "cross-contract-calculation", "cross-harbor-sniper-command", "cross-yaksha-black-flash", "cross-wok-fire-rescue", "cross-thunder-harbor-counter", "cross-frost-sniper-command", "cross-eternity-contract-table", "cross-frost-princess-line", "cross-firework-sun-breath", "cross-watatsumi-mental-link", "cross-kazuha-cutting-wind", "cross-tengu-sniper-order", "cross-oni-black-flash", "cross-sandevistan-gene-lock", "cross-moonwire-command", "cross-rebecca-bullet-storm", "cross-heavy-chrome-front", "cross-kiwi-cold-protocol", "cross-falco-getaway-road", "cross-living-weapon-gene-lock", "cross-iga-shadow-step", "cross-okatsu-moonwire-infiltration", "cross-raikiri-thunder-command", "cross-onmyo-truth-seal", "cross-obsidian-shield-wall"].every((id) => data.bonds.some((bond) => bond.id === id)), "Crossover bonds should include Zhongzhou, legendary, movie, game, anime, Jaeger, wasteland, C-virus, Elden Ring, Jujutsu, Fullmetal Alchemist, Genshin, Cyberpunk, and Nioh mixes.");
 assert(data.economy.skipCardReward === 150 && data.economy.deckCardRemovalCost === 300 && data.economy.curseRemovalCost === 400 && data.economy.minimumDeckSize === 6, "Economy constants should use the scaled original-novel-inspired point values.");
 assert(core.encountersById["alien-queen"].rewardPoints === 2500, "Boss rewards should pay thousands of reward points.");
 assert(core.shopById["shop-desert-eagle"].rewardPointCost === 1200 && core.shopById["shop-desert-eagle"].sideStoryCost === 1, "Infinite-ammo firearm purchases should require both points and side stories.");
@@ -557,9 +934,12 @@ const crossoverAttackIds = [
   "fury-war-rig-ram", "fury-thunderpoon-salvo", "fury-polecat-boarding",
   "re6-wing-shooter-burst", "re6-hydra-shotgun-sweep", "re6-bsaa-assault-fireline", "re6-anti-materiel-shot", "re6-elephant-killer", "re6-remote-bomb-breach",
   "er-transient-moonlight", "er-corpse-piler-bloodflame", "er-blasphemous-flame", "er-lion-claw-crush", "er-black-knife-wave", "er-ancient-dragon-lightning", "er-scarlet-aeonia", "er-starscourge-arrow-rain", "er-flame-redmanes", "er-godslayer-blackflame",
-  "fma-ground-spike", "fma-flame-burst", "fma-deconstruction-touch"
+  "fma-ground-spike", "fma-flame-burst", "fma-deconstruction-touch",
+  "genshin-adeptus-spear", "genshin-elemental-reaction", "genshin-inazuma-iai", "genshin-inazuma-firework-signal",
+  "edgerunners-sandevistan-slash", "edgerunners-smartgun-barrage",
+  "nioh-living-weapon-flare", "nioh-ninja-kunai-storm"
 ];
-assert(crossoverAttackIds.length === 64, "The crossover common pool should add sixty-four attack cards.");
+assert(crossoverAttackIds.length === 72, "The crossover common pool should add seventy-two attack cards.");
 assert(crossoverAttackIds.every((id) => core.cardsById[id]?.category === "general" && core.cardsById[id].type === "attack"), "Every crossover card should be a purchasable general attack card.");
 assert(crossoverAttackIds.every((id) => data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Every crossover attack card should have a shop entry.");
 assert(crossoverAttackIds.every((id) => existsSync(new URL(`../src/assets/generated/skill-${id}.png`, import.meta.url))), "Every crossover attack card should have shop art.");
@@ -572,7 +952,11 @@ assert(["re6-antiviral-serum", "re6-coop-quick-shot"].every((id) => core.cardsBy
 assert(["er-golden-vow", "er-bloodhound-step"].every((id) => core.cardsById[id]?.category === "general" && data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Elden Ring support and tactic cards should be purchasable.");
 assert(["jjk-simple-domain-guard", "jjk-reverse-cursed-technique", "jjk-domain-clash"].every((id) => core.cardsById[id]?.category === "general" && data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Jujutsu Kaisen guard, support, and domain cards should be purchasable.");
 assert(["fma-transmutation-wall", "fma-alkahestry-rebuild"].every((id) => core.cardsById[id]?.category === "general" && data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Fullmetal Alchemist guard and support cards should be purchasable.");
-assert(["demon-slayer", "attack-on-titan", "ff7", "yanyun", "jinyong", "gintama", "avengers", "dc-movie", "pacific-rim", "fury-road", "re6", "elden-ring", "jujutsu-kaisen", "fullmetal-alchemist"].every((sourceId) => data.cardSources.some((source) => source.id === sourceId)), "Card shop sources should include the requested anime, game, wuxia, movie, Elden Ring, Jujutsu Kaisen, and Fullmetal Alchemist categories.");
+assert(["genshin-jade-screen", "genshin-qixing-command"].every((id) => core.cardsById[id]?.category === "general" && data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Genshin Liyue guard and support cards should be purchasable.");
+assert(["genshin-inazuma-resistance-plan", "genshin-inazuma-vision-echo"].every((id) => core.cardsById[id]?.category === "general" && data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Genshin Inazuma support and tactic cards should be purchasable.");
+assert(["edgerunners-icebath-breach", "edgerunners-crew-cover"].every((id) => core.cardsById[id]?.category === "general" && data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Cyberpunk: Edgerunners tactic and guard cards should be purchasable.");
+assert(["nioh-onmyo-slow-talisman", "nioh-guardian-spirit-ward"].every((id) => core.cardsById[id]?.category === "general" && data.shop.some((entry) => entry.kind === "card" && entry.itemId === id)), "Nioh tactic and guard cards should be purchasable.");
+assert(["demon-slayer", "attack-on-titan", "ff7", "yanyun", "jinyong", "gintama", "avengers", "dc-movie", "pacific-rim", "fury-road", "re6", "elden-ring", "jujutsu-kaisen", "fullmetal-alchemist", "genshin-liyue", "genshin-inazuma", "cyberpunk-edgerunners", "nioh"].every((sourceId) => data.cardSources.some((source) => source.id === sourceId)), "Card shop sources should include the requested anime, game, wuxia, movie, Elden Ring, Jujutsu Kaisen, Fullmetal Alchemist, Genshin, Cyberpunk, and Nioh categories.");
 const artifactEquipmentIds = [
   "avalon-sheath", "ea-sword-rupture", "gates-of-babylon-key", "zangetsu-blade", "enma-blade",
   "odm-gear", "thunder-spear-pack", "survey-blades", "mikasa-red-scarf", "armin-seashell", "tanjiro-nichirin-blade", "water-hashira-nichirin",
@@ -610,7 +994,19 @@ assert(jujutsuToolIds.every((id) => data.shop.some((entry) => entry.kind === "eq
 const fullmetalAlchemistEquipmentIds = ["automail-right-arm", "flame-alchemy-gloves", "philosopher-stone-shard", "scar-brother-notes"];
 assert(fullmetalAlchemistEquipmentIds.every((id) => core.equipmentById[id]?.sourceId === "fma-equipment"), "Every Fullmetal Alchemist equipment item should have the alchemy equipment source.");
 assert(fullmetalAlchemistEquipmentIds.every((id) => data.shop.some((entry) => entry.kind === "equipment" && entry.itemId === id)), "Every Fullmetal Alchemist equipment item should have a shop entry.");
-assert(["anime-artifacts", "final-battle-weapons", "novel-artifacts", "wuxia-artifacts", "gintama-equipment", "avengers-equipment", "dc-equipment", "pacific-rim-equipment", "fury-road-equipment", "re6-equipment", "elden-ring-equipment", "jujutsu-tools", "fma-equipment"].every((sourceId) => data.equipmentSources.some((source) => source.id === sourceId)), "Equipment shop sources should include anime, final-battle, novel, wuxia, Gintama, Avengers, Justice Dawn, Pacific Rim, Fury Road, Resident Evil 6, Elden Ring, Jujutsu cursed-tool, and Fullmetal Alchemist gear categories.");
+const genshinLiyueEquipmentIds = ["vortex-vanquisher", "jade-chamber-beacon", "adeptus-talisman", "delusion-shard"];
+assert(genshinLiyueEquipmentIds.every((id) => core.equipmentById[id]?.sourceId === "genshin-liyue-equipment"), "Every Genshin Liyue equipment item should have the Liyue equipment source.");
+assert(genshinLiyueEquipmentIds.every((id) => data.shop.some((entry) => entry.kind === "equipment" && entry.itemId === id)), "Every Genshin Liyue equipment item should have a shop entry.");
+const genshinInazumaEquipmentIds = ["mistsplitter-reforged", "thundering-pulse", "omamori-yae", "vision-shell"];
+assert(genshinInazumaEquipmentIds.every((id) => core.equipmentById[id]?.sourceId === "genshin-inazuma-equipment"), "Every Genshin Inazuma equipment item should have the Inazuma equipment source.");
+assert(genshinInazumaEquipmentIds.every((id) => data.shop.some((entry) => entry.kind === "equipment" && entry.itemId === id)), "Every Genshin Inazuma equipment item should have a shop entry.");
+const cyberpunkEquipmentIds = ["military-grade-sandevistan", "monowire-spool", "guts-shotgun", "cyberskeleton-frame"];
+assert(cyberpunkEquipmentIds.every((id) => core.equipmentById[id]?.sourceId === "cyberpunk-equipment"), "Every Cyberpunk: Edgerunners equipment item should have the Night City equipment source.");
+assert(cyberpunkEquipmentIds.every((id) => data.shop.some((entry) => entry.kind === "equipment" && entry.itemId === id)), "Every Cyberpunk: Edgerunners equipment item should have a shop entry.");
+const niohEquipmentIds = ["raikiri-katana", "kusarigama-chainblade", "onmyo-talisman-case", "guardian-spirit-amulet"];
+assert(niohEquipmentIds.every((id) => core.equipmentById[id]?.sourceId === "nioh-equipment"), "Every Nioh equipment item should have the Sengoku relic equipment source.");
+assert(niohEquipmentIds.every((id) => data.shop.some((entry) => entry.kind === "equipment" && entry.itemId === id)), "Every Nioh equipment item should have a shop entry.");
+assert(["anime-artifacts", "final-battle-weapons", "novel-artifacts", "wuxia-artifacts", "gintama-equipment", "avengers-equipment", "dc-equipment", "pacific-rim-equipment", "fury-road-equipment", "re6-equipment", "elden-ring-equipment", "jujutsu-tools", "fma-equipment", "genshin-liyue-equipment", "genshin-inazuma-equipment", "cyberpunk-equipment", "nioh-equipment"].every((sourceId) => data.equipmentSources.some((source) => source.id === sourceId)), "Equipment shop sources should include anime, final-battle, novel, wuxia, Gintama, Avengers, Justice Dawn, Pacific Rim, Fury Road, Resident Evil 6, Elden Ring, Jujutsu cursed-tool, Fullmetal Alchemist, Genshin, Cyberpunk, and Nioh gear categories.");
 
 // Bloodline upgrades are purchased per character and only enhance that owner's signature.
 let bloodlineState = createCombatTestState();
@@ -756,7 +1152,7 @@ passiveState = core.chooseStoryOption(passiveState, "start");
 assert(passiveState.maxEnergy === 5, "Support energy tiers and Luo Gandao's low-health passive should both affect turn energy.");
 assert(passiveState.party.find((member) => member.id === "cheng-xiao").hp === 23, "Cheng Xiao should heal the lowest-health ally at turn start.");
 assert(passiveState.party.find((member) => member.id === "imhotep").hp === 63, "Imhotep should regenerate at turn start.");
-assert(core.getAliveActiveParty(passiveState).every((member) => member.block === 1), "Imhotep should grant one block to the active party.");
+assert(core.getAliveActiveParty(passiveState).every((member) => member.block >= 1), "Imhotep should grant at least one block to the active party, even when deepened bonds stack additional defense.");
 
 // New chain passives trigger on their intended card numbers.
 let chainState = createCombatTestState();
@@ -793,7 +1189,7 @@ addCharacter(rivalState, "clone-chu-xuan");
 addCharacter(rivalState, "clone-luo-gandao");
 rivalState = core.chooseStoryOption(rivalState, "start");
 assert(rivalState.maxEnergy === 4, "Clone Luo Gandao should grant two opening overdrive energy.");
-assert(rivalState.hand.length === 7, "Clone Chu Xuan should draw two additional cards on the opening turn.");
+assert(rivalState.hand.length >= 7, "Clone Chu Xuan should draw at least two additional cards on the opening turn, with deepened bonds allowed to stack.");
 assert(rivalState.party.find((member) => member.id === "clone-luo-gandao").stress === 32, "Opening overdrive should add eight stress to its pilot.");
 
 let blackFlameState = createCombatTestState();
@@ -900,6 +1296,49 @@ crossWorldBondState = core.chooseStoryOption(crossWorldBondState, "start");
 assert(crossWorldBondState.hand.length >= 6 && crossWorldBondState.party.every((member) => member.block >= 2), "The blood-sun crossover bond should grant opening draw and turn-start armor.");
 assert(expandedBondState.party.every((member) => member.block >= 5), "The Zhongzhou frontline bond should stack opening defense with Ba Wang's passive.");
 
+let sourceDeepBondState = createCombatTestState();
+sourceDeepBondState.party = [];
+data.bonds.find((bond) => bond.id === "deep-main-formation").sourceMembers.slice(0, 3).forEach((id) => addCharacter(sourceDeepBondState, id));
+assert(core.getActiveBonds(sourceDeepBondState).some((bond) => bond.id === "deep-main-formation"), "The deepened source formation bond should activate from any three valid members of the same source pool.");
+sourceDeepBondState = core.chooseStoryOption(sourceDeepBondState, "start");
+assert(sourceDeepBondState.hand.length >= 6, "The deepened source formation bond should grant an opening card.");
+
+let roleDeepBondState = createCombatTestState();
+roleDeepBondState.party = [];
+data.bonds.find((bond) => bond.id === "deep-role-opening-command").sourceMembers.slice(0, 3).forEach((id) => addCharacter(roleDeepBondState, id));
+assert(core.getActiveBonds(roleDeepBondState).some((bond) => bond.id === "deep-role-opening-command"), "The deepened role bond should activate from any three opening-command specialists.");
+roleDeepBondState = core.chooseStoryOption(roleDeepBondState, "start");
+assert(roleDeepBondState.hand.length >= 6, "The deepened opening-command role bond should improve the first hand.");
+
+let whiteHairThemeState = createCombatTestState();
+whiteHairThemeState.party = [];
+["satoru-gojo", "gintoki-sakata", "frieren-mage"].forEach((id) => addCharacter(whiteHairThemeState, id));
+assert(core.getActiveBonds(whiteHairThemeState).some((bond) => bond.id === "theme-white-hair-problem"), "The white-hair thematic bond should activate from Gojo, Gintoki, and Frieren.");
+whiteHairThemeState = core.chooseStoryOption(whiteHairThemeState, "start");
+assert(whiteHairThemeState.hand.length >= 6, "The white-hair thematic bond should improve opening tempo.");
+
+let monsterHeartThemeState = createCombatTestState();
+monsterHeartThemeState.party = [];
+["naruto-uzumaki", "yuji-itadori", "denji-chainsaw"].forEach((id) => addCharacter(monsterHeartThemeState, id));
+assert(core.getActiveBonds(monsterHeartThemeState).some((bond) => bond.id === "theme-monster-heart-protagonists"), "The monster-heart protagonist bond should activate from hosts of inner powers.");
+monsterHeartThemeState = core.chooseStoryOption(monsterHeartThemeState, "start");
+assert(monsterHeartThemeState.maxEnergy >= 3, "The monster-heart protagonist bond should add opening energy without breaking combat setup.");
+
+let villainThemeState = createCombatTestState();
+villainThemeState.party = [];
+["clone-zheng-zha", "clone-chu-xuan", "ainz-ooal-gown"].forEach((id) => addCharacter(villainThemeState, id));
+assert(core.getActiveBonds(villainThemeState).some((bond) => bond.id === "theme-villain-round-table"), "The villain round-table bond should activate from mixed villain and demon-team members.");
+
+let fireThemeState = createCombatTestState();
+fireThemeState.party = [];
+["roy-mustang", "shinra-kusakabe", "natsu-dragneel"].forEach((id) => addCharacter(fireThemeState, id));
+assert(core.getActiveBonds(fireThemeState).some((bond) => bond.id === "theme-fire-users-table"), "The fire-attribute thematic bond should activate from cross-world flame users.");
+
+let mirrorThemeState = createCombatTestState();
+mirrorThemeState.party = [];
+["chu-xuan", "clone-chu-xuan"].forEach((id) => addCharacter(mirrorThemeState, id));
+assert(core.getActiveBonds(mirrorThemeState).some((bond) => bond.id === "theme-chu-xuan-mirror-calculation"), "The Chu Xuan mirror bond should activate from the original and clone together.");
+
 let geniusBondState = createCombatTestState();
 geniusBondState.party = [];
 ["chu-xuan", "adam"].forEach((id) => addCharacter(geniusBondState, id));
@@ -967,6 +1406,7 @@ const normalized = core.normalizeState(JSON.parse(JSON.stringify(state)));
 assert(JSON.stringify(normalized.run.map) === savedMap, "Reloading must preserve the generated map.");
 let campaignRun = finishScenario(state);
 assert(campaignRun.screen === "hub" && campaignRun.campaign.unlockedScenarios.includes("juon"), "Alien completion should return to hub and unlock Juon.");
+assert(core.randomNormalScenarioPool(campaignRun).map((scenario) => scenario.id).join(",") === "juon", "Before the opening arc is complete, the random entry should point to the next fixed original scenario.");
 campaignRun = core.beginScenario(campaignRun, "juon");
 campaignRun = finishScenario(campaignRun);
 assert(campaignRun.campaign.unlockedScenarios.includes("mummy-curse") && !campaignRun.campaign.infiniteUnlocked, "Juon completion should unlock The Mummy before infinite mode.");
@@ -975,81 +1415,19 @@ campaignRun = finishScenario(campaignRun);
 assert(campaignRun.campaign.unlockedScenarios.includes("jurassic-island") && !campaignRun.campaign.infiniteUnlocked, "The Mummy completion should unlock Jurassic Park before infinite mode.");
 campaignRun = core.beginScenario(campaignRun, "jurassic-island");
 campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("abyssal-ark") && !campaignRun.campaign.infiniteUnlocked, "Jurassic Park completion should unlock Abyssal Ark before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "abyssal-ark");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("evernight-castle"), "Abyssal Ark completion should unlock Evernight Castle.");
-campaignRun = core.beginScenario(campaignRun, "evernight-castle");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("demon-frontier") && !campaignRun.campaign.infiniteUnlocked, "Evernight Castle completion should unlock Demon Frontier before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "demon-frontier");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("main-god-trial") && !campaignRun.campaign.infiniteUnlocked, "Demon Frontier completion should unlock Main God Trial before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "main-god-trial");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("starship-troopers") && !campaignRun.campaign.infiniteUnlocked, "Main God Trial completion should unlock Starship Troopers before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "starship-troopers");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("avp-pyramid") && !campaignRun.campaign.infiniteUnlocked, "Starship Troopers completion should unlock AVP before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "avp-pyramid");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("nightmare-elm") && !campaignRun.campaign.infiniteUnlocked, "AVP completion should unlock Nightmare on Elm Street before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "nightmare-elm");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("lotr-war") && !campaignRun.campaign.infiniteUnlocked, "Nightmare on Elm Street completion should unlock LOTR before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "lotr-war");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("rumbling-finale") && !campaignRun.campaign.infiniteUnlocked, "LOTR completion should unlock the Rumbling finale before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "rumbling-finale");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("infinity-castle") && !campaignRun.campaign.infiniteUnlocked, "The Rumbling finale should unlock Infinity Castle before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "infinity-castle");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("naruto-final-valley") && !campaignRun.campaign.infiniteUnlocked, "Infinity Castle completion should unlock Final Valley before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "naruto-final-valley");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("bleach-false-karakura") && !campaignRun.campaign.infiniteUnlocked, "Final Valley completion should unlock Fake Karakura before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "bleach-false-karakura");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("gintama-yoshiwara") && !campaignRun.campaign.infiniteUnlocked, "Fake Karakura completion should unlock Yoshiwara before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "gintama-yoshiwara");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("gintama-final-war") && !campaignRun.campaign.infiniteUnlocked, "Yoshiwara completion should unlock Gintama final war before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "gintama-final-war");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("avengers-new-york") && !campaignRun.campaign.infiniteUnlocked, "Gintama final war completion should unlock Avengers before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "avengers-new-york");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("batman-v-superman") && !campaignRun.campaign.infiniteUnlocked, "Avengers completion should unlock Batman v Superman before infinite mode.");
-campaignRun = core.beginScenario(campaignRun, "batman-v-superman");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.infiniteUnlocked && campaignRun.campaign.unlockedScenarios.includes("devil-may-cry-5"), "Batman v Superman completion should unlock infinite mode and DMC5.");
-campaignRun = core.beginScenario(campaignRun, "devil-may-cry-5");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("final-destination"), "DMC5 completion should unlock Final Destination.");
-campaignRun = core.beginScenario(campaignRun, "final-destination");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("jinyong-heroic-peak"), "Final Destination completion should unlock the Jinyong wuxia scenario.");
-campaignRun = core.beginScenario(campaignRun, "jinyong-heroic-peak");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("pacific-rim-breach"), "Jinyong completion should unlock the Pacific Rim breach battle.");
-campaignRun = core.beginScenario(campaignRun, "pacific-rim-breach");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("fury-road-war-rig"), "Pacific Rim completion should unlock the Fury Road war-rig chase.");
-campaignRun = core.beginScenario(campaignRun, "fury-road-war-rig");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("resident-evil-6-c-virus"), "Fury Road completion should unlock the Resident Evil 6 C-virus war scenario.");
-campaignRun = core.beginScenario(campaignRun, "resident-evil-6-c-virus");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("elden-ring-hell-run"), "Resident Evil 6 completion should unlock the Elden Ring hell scenario.");
-campaignRun = core.beginScenario(campaignRun, "elden-ring-hell-run");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("jujutsu-kaisen-shibuya"), "Elden Ring hell completion should unlock the Jujutsu Kaisen Shibuya scenario.");
-campaignRun = core.beginScenario(campaignRun, "jujutsu-kaisen-shibuya");
-campaignRun = finishScenario(campaignRun);
-assert(campaignRun.campaign.unlockedScenarios.includes("fullmetal-alchemist-finale"), "Jujutsu Kaisen completion should unlock the Fullmetal Alchemist final battle scenario.");
-campaignRun = core.beginScenario(campaignRun, "fullmetal-alchemist-finale");
-campaignRun = finishScenario(campaignRun);
+let progressionStatus = core.scenarioProgressionStatus(campaignRun);
+let postOpeningPool = core.randomNormalScenarioPool(campaignRun);
+assert(progressionStatus.nextFixedId === null && progressionStatus.randomUnlockedCount >= 6 && postOpeningPool.every((scenario) => !["alien", "juon", "mummy-curse", "jurassic-island"].includes(scenario.id)) && !campaignRun.campaign.infiniteUnlocked, "Jurassic Park completion should end the fixed opening arc and open a shuffled normal scenario pool.");
+assert(progressionStatus.groups.some((group) => group.id === "standard"), "The first shuffled pool should expose the medium-risk scenario band.");
+for (let step = 0; step < 12 && !campaignRun.campaign.infiniteUnlocked; step += 1) {
+  const nextScenario = core.randomNormalScenarioPool(campaignRun).find((scenario) => !campaignRun.campaign.completedScenarios.includes(scenario.id)) || core.randomNormalScenarioPool(campaignRun)[0];
+  assert(nextScenario, "The shuffled scenario pool should keep offering playable scenarios while progression expands.");
+  campaignRun = core.beginScenario(campaignRun, nextScenario.id);
+  campaignRun = finishScenario(campaignRun);
+}
+progressionStatus = core.scenarioProgressionStatus(campaignRun);
+assert(campaignRun.campaign.infiniteUnlocked && progressionStatus.completedNormalCount >= progressionStatus.infiniteUnlockClearCount, "Normal clears from the shuffled pools should unlock infinite mode after the configured threshold.");
+assert(progressionStatus.groups.some((group) => group.id === "hard" || group.id === "nightmare"), "Later clears should mix higher-risk scenario bands into the shuffled pool.");
 const legendaryRecruitIds = new Set(data.legendaryRecruitmentPool);
 let lockedLegendaryState = structuredClone(campaignRun);
 lockedLegendaryState.screen = "hub";
@@ -1071,14 +1449,12 @@ campaignRun = core.beginScenario(campaignRun, "infinite");
 if (campaignRun.screen === "recruit") campaignRun = core.chooseRecruit(campaignRun, campaignRun.pending.candidates[0]);
 if (campaignRun.screen === "scenario-intro") campaignRun = core.continueScenarioIntro(campaignRun);
 assert(campaignRun.screen === "map" && campaignRun.run.sourceScenarioId === "infinite", "Infinite mode should launch a random completed scenario.");
-assert([
-  "alien", "juon", "mummy-curse", "jurassic-island", "abyssal-ark", "evernight-castle", "demon-frontier", "main-god-trial",
-  "starship-troopers", "avp-pyramid", "nightmare-elm", "lotr-war", "rumbling-finale", "infinity-castle", "naruto-final-valley", "bleach-false-karakura", "gintama-yoshiwara", "gintama-final-war", "avengers-new-york", "batman-v-superman", "devil-may-cry-5", "final-destination", "jinyong-heroic-peak", "pacific-rim-breach", "fury-road-war-rig", "resident-evil-6-c-virus", "elden-ring-hell-run", "jujutsu-kaisen-shibuya", "fullmetal-alchemist-finale"
-].includes(campaignRun.run.scenarioId), "Infinite mode should rotate through all completed scenarios.");
+assert(campaignRun.campaign.completedScenarios.includes(campaignRun.run.scenarioId), "Infinite mode should rotate through completed scenarios from the shuffled campaign.");
 
 let randomScenarioState = createCompletedTutorialState();
 fillOwnedRoster(randomScenarioState);
 randomScenarioState.campaign.unlockedScenarios = data.scenarios.map((scenario) => scenario.id).filter((id) => id !== "tutorial");
+randomScenarioState.campaign.completedScenarios = ["alien", "juon", "mummy-curse", "jurassic-island"];
 randomScenarioState.campaign.dynamicDifficulty.randomHistory = ["alien", "juon"];
 const randomPool = core.randomNormalScenarioPool(randomScenarioState);
 assert(randomPool.length > 2 && randomPool.every((scenario) => scenario.id !== "elden-ring-hell-run" && scenario.id !== "tutorial" && !core.isSuperHardScenario(scenario)), "Random normal pool should exclude tutorial, infinite, and super-hard scenarios.");
@@ -1129,7 +1505,23 @@ quoteCombatState.combatFlags = { lastChanceUsed: [], bondTriggers: [] };
 quoteCombatState = core.playCard(quoteCombatState, "quote-zheng", quoteCombatState.selectedTargetId);
 assert(quoteCombatState.run.banterFeed.some((line) => line.speaker === "鄭吒" && (line.line.includes("基因鎖") || line.line.includes("活下去"))), "Signature cards should trigger the owner's original-story-style line.");
 dynamicState.screen = "defeat";
+dynamicState.pending = {
+  kind: "defeat",
+  report: {
+    kind: "defeat-report",
+    outcomeId: "narrow-escape",
+    title: "成功逃脫",
+    subtitle: "測試用逃脫結算。",
+    line: data.defeatOutcomes.find((outcome) => outcome.id === "narrow-escape").lines[0],
+    imageFile: "defeat-narrow-escape-01.png",
+    scenarioId: dynamicState.run.scenarioId,
+    scenarioName: core.scenariosById[dynamicState.run.scenarioId].name,
+    superHard: false,
+    fates: core.getActiveParty(dynamicState).map((member) => ({ characterId: member.id, name: member.name, fate: "escaped", label: "逃脫", text: data.defeatFates.escaped.text, tone: "escape" }))
+  }
+};
 dynamicState = core.returnAfterDefeat(dynamicState);
+assert(dynamicState.lastDefeatReport?.fates?.every((fate) => fate.fate === "escaped"), "Returning after defeat should preserve the generated defeat report.");
 assert(dynamicState.campaign.dynamicDifficulty.failureRelief === 1 && dynamicState.campaign.dynamicDifficulty.successStreak === 0, "Defeat should add one relief stack and reset success streak.");
 dynamicState = core.beginScenario(dynamicState, "alien");
 assert(dynamicState.run.dynamicDifficulty.multiplier < raisedMultiplier, "Failure relief should slightly lower the next normal scenario multiplier.");
@@ -1139,7 +1531,7 @@ assert(dynamicEncounterId, "Dynamic test should start from a concrete encounter.
 for (const scenarioId of [
   "mummy-curse", "jurassic-island", "abyssal-ark", "evernight-castle", "demon-frontier", "main-god-trial",
   "starship-troopers", "avp-pyramid", "nightmare-elm", "lotr-war", "rumbling-finale", "infinity-castle",
-  "naruto-final-valley", "bleach-false-karakura", "gintama-yoshiwara", "gintama-final-war", "avengers-new-york", "batman-v-superman", "devil-may-cry-5", "final-destination", "jinyong-heroic-peak", "pacific-rim-breach", "fury-road-war-rig", "resident-evil-6-c-virus", "elden-ring-hell-run", "jujutsu-kaisen-shibuya", "fullmetal-alchemist-finale"
+  "naruto-final-valley", "bleach-false-karakura", "gintama-yoshiwara", "gintama-final-war", "avengers-new-york", "batman-v-superman", "devil-may-cry-5", "final-destination", "jinyong-heroic-peak", "pacific-rim-breach", "fury-road-war-rig", "resident-evil-6-c-virus", "elden-ring-hell-run", "jujutsu-kaisen-shibuya", "fullmetal-alchemist-finale", "genshin-liyue-childe", "genshin-inazuma-vision-hunt", "black-myth-wukong-relics"
 ]) {
   const scenario = core.scenariosById[scenarioId];
   assert(scenario.normal.length >= 2 && scenario.elite.length >= 1 && scenario.miniboss && scenario.boss, `${scenarioId} should have a full encounter set.`);
@@ -1163,6 +1555,8 @@ const eldenRingScenario = core.scenariosById["elden-ring-hell-run"];
 assert(eldenRingScenario.hellBossPool.length === 10, "Elden Ring hell mode should define ten random boss challenge encounters.");
 let eldenRingMapState = structuredClone(campaignRun);
 eldenRingMapState.screen = "hub";
+eldenRingMapState.run = null;
+eldenRingMapState.campaign.unlockedScenarios = [...new Set([...eldenRingMapState.campaign.unlockedScenarios, "elden-ring-hell-run"])];
 eldenRingMapState.party = data.characters
   .filter((character) => !character.tutorialOnly && !character.playerOnly && !data.legendaryRecruitmentPool.includes(character.id))
   .map((character, index) => {
@@ -1214,6 +1608,51 @@ function chooseRouteStep(state, routeId, message) {
   return core.resolveEvent(state, choice.id);
 }
 
+function isSystemArtForSlug(fileName, slug) {
+  return fileName?.startsWith(`system-encounter-${slug}-`) || fileName === `system-rest-${slug}.png`;
+}
+
+let systemEncounterEvent = launchEventForScenario("cyberpunk-edgerunners-night-city");
+const systemEncounterChoice = systemEncounterEvent.pending.choices.find((choice) => isSystemArtForSlug(choice.imageFile, "cyberpunk"));
+assert(systemEncounterChoice, "Selected deepened scenarios should surface randomized system encounter routes.");
+assert(isSystemArtForSlug(systemEncounterChoice.imageFile, "cyberpunk"), "System encounter stage-one choices should surface IMAGE2 choice art.");
+systemEncounterEvent = core.resolveEvent(systemEncounterEvent, systemEncounterChoice.id);
+systemEncounterEvent = chooseRouteStep(systemEncounterEvent, systemEncounterChoice.routeId, "System encounter should keep its route available at stage two.");
+systemEncounterEvent = chooseRouteStep(systemEncounterEvent, systemEncounterChoice.routeId, "System encounter should keep its route available at stage three.");
+assert(systemEncounterEvent.screen === "event-result" && isSystemArtForSlug(systemEncounterEvent.pending.result.imageFile, "cyberpunk"), "System encounters should resolve to a dedicated IMAGE2 event result.");
+assert(systemEncounterEvent.pending.result.dialogue.some((line) => line.speaker === "楚軒" && line.line.includes("凡人的智慧啊")), "System encounters should include Chu Xuan's signature dialogue.");
+
+let secondBatchSystemEvent = launchEventForScenario("genshin-inazuma-vision-hunt");
+const secondBatchSystemChoice = secondBatchSystemEvent.pending.choices.find((choice) => isSystemArtForSlug(choice.imageFile, "inazuma"));
+assert(secondBatchSystemChoice, "Second-batch scenarios should surface system encounter routes with IMAGE2 choice art.");
+secondBatchSystemEvent = core.resolveEvent(secondBatchSystemEvent, secondBatchSystemChoice.id);
+const secondBatchStageTwoChoice = secondBatchSystemEvent.pending.choices.find((choice) => choice.routeId === secondBatchSystemChoice.routeId);
+assert(isSystemArtForSlug(secondBatchStageTwoChoice?.imageFile, "inazuma"), "Second-batch stage-two system choices should keep IMAGE2 choice art.");
+secondBatchSystemEvent = core.resolveEvent(secondBatchSystemEvent, secondBatchStageTwoChoice.id);
+const secondBatchFinalChoice = secondBatchSystemEvent.pending.choices.find((choice) => choice.routeId === secondBatchSystemChoice.routeId);
+assert(isSystemArtForSlug(secondBatchFinalChoice?.imageFile, "inazuma"), "Second-batch final system choices should keep IMAGE2 choice art.");
+secondBatchSystemEvent = core.resolveEvent(secondBatchSystemEvent, secondBatchFinalChoice.id);
+assert(secondBatchSystemEvent.screen === "event-result" && isSystemArtForSlug(secondBatchSystemEvent.pending.result.imageFile, "inazuma"), "Second-batch system encounters should resolve to dedicated IMAGE2 result art.");
+assert(secondBatchSystemEvent.pending.result.dialogue.some((line) => line.speaker === "楚軒" && line.line.includes("凡人的智慧啊")), "Second-batch system encounters should include Chu Xuan's signature dialogue.");
+
+let thirdBatchSystemEvent = launchEventForScenario("naruto-final-valley");
+const thirdBatchSystemChoice = thirdBatchSystemEvent.pending.choices.find((choice) => isSystemArtForSlug(choice.imageFile, "naruto"));
+assert(thirdBatchSystemChoice, "Third-batch scenarios should surface system encounter routes with IMAGE2 choice art.");
+thirdBatchSystemEvent = core.resolveEvent(thirdBatchSystemEvent, thirdBatchSystemChoice.id);
+thirdBatchSystemEvent = chooseRouteStep(thirdBatchSystemEvent, thirdBatchSystemChoice.routeId, "Third-batch system encounter should keep its route at stage two.");
+thirdBatchSystemEvent = chooseRouteStep(thirdBatchSystemEvent, thirdBatchSystemChoice.routeId, "Third-batch system encounter should keep its route at stage three.");
+assert(thirdBatchSystemEvent.screen === "event-result" && isSystemArtForSlug(thirdBatchSystemEvent.pending.result.imageFile, "naruto"), "Third-batch system encounters should resolve to dedicated IMAGE2 result art.");
+assert(thirdBatchSystemEvent.pending.result.dialogue.some((line) => line.line.includes("跨宇宙通訊")) && thirdBatchSystemEvent.pending.result.dialogue.some((line) => line.line.includes("彩蛋訊號")), "Third-batch system encounters should include crossover dialogue and easter egg signals.");
+
+let fourthBatchSystemEvent = launchEventForScenario("avengers-new-york");
+const fourthBatchSystemChoice = fourthBatchSystemEvent.pending.choices.find((choice) => isSystemArtForSlug(choice.imageFile, "avengers"));
+assert(fourthBatchSystemChoice, "Fourth-batch scenarios should surface system encounter routes with IMAGE2 choice art.");
+fourthBatchSystemEvent = core.resolveEvent(fourthBatchSystemEvent, fourthBatchSystemChoice.id);
+fourthBatchSystemEvent = chooseRouteStep(fourthBatchSystemEvent, fourthBatchSystemChoice.routeId, "Fourth-batch system encounter should keep its route at stage two.");
+fourthBatchSystemEvent = chooseRouteStep(fourthBatchSystemEvent, fourthBatchSystemChoice.routeId, "Fourth-batch system encounter should keep its route at stage three.");
+assert(fourthBatchSystemEvent.screen === "event-result" && isSystemArtForSlug(fourthBatchSystemEvent.pending.result.imageFile, "avengers"), "Fourth-batch system encounters should resolve to dedicated IMAGE2 result art.");
+assert(fourthBatchSystemEvent.pending.result.dialogue.some((line) => line.line.includes("跨宇宙通訊")) && fourthBatchSystemEvent.pending.result.dialogue.some((line) => line.line.includes("彩蛋訊號")), "Fourth-batch system encounters should include crossover dialogue and easter egg signals.");
+
 function resolveScenarioThemeEvent(scenarioId) {
   let next = launchEventForScenario(scenarioId);
   const stage1 = next.pending.choices.find((choice) => choice.id === `${scenarioId}-theme-entry`);
@@ -1227,6 +1666,88 @@ function resolveScenarioThemeEvent(scenarioId) {
   assert(next.pending.result.rewards.length && next.pending.result.costs.length && next.pending.result.storyImpact, `${scenarioId} result should explain rewards, costs, and story impact.`);
   return next;
 }
+
+function launchOpeningFateEvent(scenarioId, excludedOwnedIds = []) {
+  let next = createEventReadyHubState();
+  next.party = next.party.filter((member) => !excludedOwnedIds.includes(member.id));
+  let active = 0;
+  next.party = next.party.map((member) => {
+    const canDeploy = member.id !== "player-avatar" && !core.memberRecoveryStatus(member);
+    const shouldDeploy = canDeploy && active < 3;
+    if (shouldDeploy) active += 1;
+    return { ...member, active: shouldDeploy };
+  });
+  next = core.beginScenario(next, scenarioId);
+  if (next.screen === "recruit") {
+    const candidate = next.pending.candidates.find((id) => !excludedOwnedIds.includes(id)) || next.pending.candidates[0];
+    next = core.chooseRecruit(next, candidate);
+  }
+  if (next.screen === "scenario-intro") next = core.continueScenarioIntro(next);
+  const eventNode = next.run.map.layers.flat().find((node) => node.type === "event");
+  next.run.currentLayer = eventNode.layer - 1;
+  next.run.currentLane = eventNode.lane;
+  return core.chooseMapNode(next, eventNode.id);
+}
+
+let alienFateRoute = launchOpeningFateEvent("alien", ["zheng-zha"]);
+alienFateRoute = core.resolveEvent(alienFateRoute, "alien-fate-rescue");
+alienFateRoute = core.resolveEvent(alienFateRoute, "alien-rescue-lock-signal");
+alienFateRoute = core.resolveEvent(alienFateRoute, "alien-rescue-lock-signal-save-hidden");
+assert(alienFateRoute.screen === "event-result" && alienFateRoute.party.some((member) => member.id === "zheng-zha"), "Alien fate rescue should recruit Zheng Zha through the 3 -> 9 -> 27 route.");
+assert(core.scenarioFateStatus(alienFateRoute, "alien").hiddenRescued && core.scenarioFateStatus(alienFateRoute, "alien").completedRouteCount >= 1, "Alien hidden rescue should write the fate archive.");
+assert(alienFateRoute.pending.result.teamStance?.reactions?.length, "Fate routes should record visible ally stance reactions.");
+
+let juonRiskRoute = launchOpeningFateEvent("juon");
+const curseCountBeforeJuon = juonRiskRoute.curses.length;
+juonRiskRoute = core.resolveEvent(juonRiskRoute, "juon-fate-risk");
+juonRiskRoute = core.resolveEvent(juonRiskRoute, "juon-risk-curse-ticket");
+juonRiskRoute = core.resolveEvent(juonRiskRoute, "juon-risk-curse-ticket-curse-prize");
+assert(juonRiskRoute.screen === "event-result" && juonRiskRoute.curses.length > curseCountBeforeJuon && juonRiskRoute.pending.result.rewards.some((item) => item.includes("稀有") || item.includes("獎勵")), "Juon high-cost route should grant a reward while adding a curse cost.");
+assert(core.scenarioFateStatus(juonRiskRoute, "juon").fatePressure > 0 && juonRiskRoute.pending.result.fatePressure > 0, "High-cost fate routes should raise visible fate pressure.");
+
+let grayBossState = createEventReadyHubState();
+grayBossState.campaign.unlockedScenarios = [...new Set([...grayBossState.campaign.unlockedScenarios, "mummy-curse"])];
+grayBossState.campaign.fateArchive = {
+  "mummy-curse": {
+    scenarioId: "mummy-curse",
+    completedRoutes: ["test-gray-boss"],
+    routeTypes: ["劇本專屬線"],
+    fateTags: ["gray-boss-altered", "gray-shop-opened"],
+    fatePressure: 20,
+    worldStates: ["哈姆納塔補給暗格與 Boss 破綻已保存。"]
+  }
+};
+grayBossState = core.normalizeState(grayBossState);
+assert(core.shopFateDiscountRate(grayBossState) > 0 && core.discountedShopRewardPointCost(grayBossState, 1000) < 1000, "Gray shop routes should discount later Main God shop purchases.");
+grayBossState = core.beginScenario(grayBossState, "mummy-curse");
+if (grayBossState.screen === "recruit") grayBossState = core.chooseRecruit(grayBossState, grayBossState.pending.candidates[0]);
+if (grayBossState.screen === "scenario-intro") grayBossState = core.continueScenarioIntro(grayBossState);
+const grayBossNode = grayBossState.run.map.layers.flat().find((node) => node.type === "boss");
+grayBossState.run.currentLayer = grayBossNode.layer - 1;
+grayBossState.run.currentLane = grayBossNode.lane;
+grayBossState = core.chooseMapNode(grayBossState, grayBossNode.id);
+assert(grayBossState.screen === "combat" && grayBossState.activeEnemies.some((enemy) => enemy.weak > 0 || enemy.stun > 0), "Gray boss-altered world state should weaken later boss openings.");
+
+let blackMythMapProbe = createEventReadyHubState();
+blackMythMapProbe = core.beginScenario(blackMythMapProbe, "black-myth-wukong-relics");
+if (blackMythMapProbe.screen === "recruit") blackMythMapProbe = core.chooseRecruit(blackMythMapProbe, blackMythMapProbe.pending.candidates[0]);
+if (blackMythMapProbe.screen === "scenario-intro") blackMythMapProbe = core.continueScenarioIntro(blackMythMapProbe);
+assert(blackMythMapProbe.run.map.layers.length >= 12, "Black Myth: Wukong should generate a long route with at least twelve layers.");
+assert(core.scenariosById["black-myth-wukong-relics"].difficultyBand === "nightmare", "Black Myth: Wukong should enter the nightmare random pool.");
+
+let blackMythDestinedRoute = launchEventForScenario("black-myth-wukong-relics");
+blackMythDestinedRoute = core.resolveEvent(blackMythDestinedRoute, "bmw-save-destined-one");
+blackMythDestinedRoute = core.resolveEvent(blackMythDestinedRoute, "bmw-six-root-stable");
+blackMythDestinedRoute = core.resolveEvent(blackMythDestinedRoute, "bmw-destined-one-good-end");
+assert(blackMythDestinedRoute.screen === "event-result" && blackMythDestinedRoute.party.some((member) => member.id === "bmw-destined-one"), "The normal Black Myth hidden route should recruit the Destined One.");
+assert(!blackMythDestinedRoute.party.some((member) => member.id === "bmw-true-great-sage"), "The normal Destined One route should not also grant True Great Sage.");
+
+let blackMythTrueSageRoute = launchEventForScenario("black-myth-wukong-relics");
+blackMythTrueSageRoute = core.resolveEvent(blackMythTrueSageRoute, "bmw-six-relics-all-in");
+blackMythTrueSageRoute = core.resolveEvent(blackMythTrueSageRoute, "bmw-meishan-erlang-duel");
+blackMythTrueSageRoute = core.resolveEvent(blackMythTrueSageRoute, "bmw-refuse-golden-hoop");
+assert(blackMythTrueSageRoute.screen === "event-result" && blackMythTrueSageRoute.party.some((member) => member.id === "bmw-true-great-sage"), "The harder Black Myth route should recruit True Great Sage through a specific route reward.");
+assert(blackMythTrueSageRoute.pending.result.costs.length >= 3 && blackMythTrueSageRoute.curses.length >= 1, "The True Great Sage route should carry heavier costs than a normal hidden route.");
 
 const scenarioPowerExpectations = [
   ["mummy-curse", "book-of-amun-ra"],
@@ -1245,7 +1766,9 @@ const scenarioPowerExpectations = [
   ["fury-road-war-rig", "war-rig-breakthrough"],
   ["resident-evil-6-c-virus", "c-virus-antibody-window"],
   ["elden-ring-hell-run", "great-rune-overload"],
-  ["fullmetal-alchemist-finale", "reverse-nationwide-circle"]
+  ["fullmetal-alchemist-finale", "reverse-nationwide-circle"],
+  ["genshin-liyue-childe", "liyue-contract-line"],
+  ["genshin-inazuma-vision-hunt", "inazuma-wish-thunder"]
 ];
 for (const [scenarioId, powerId] of scenarioPowerExpectations) {
   const resolved = resolveScenarioThemeEvent(scenarioId);
@@ -1265,7 +1788,7 @@ fixedRouteEvent = core.resolveEvent(fixedRouteEvent, fixedRouteChoice.id);
 fixedRouteEvent = chooseRouteStep(fixedRouteEvent, fixedRouteChoice.routeId, "Fixed route should remain available in stage two.");
 fixedRouteEvent = chooseRouteStep(fixedRouteEvent, fixedRouteChoice.routeId, "Fixed route should remain available in stage three.");
 assert(fixedRouteEvent.screen === "event-result" && fixedRouteEvent.pending.result.rewards.some((item) => item.includes("劇本增益") || item.includes("加入") || item.includes("支線劇情")), "Fixed route should produce explicit rewards.");
-assert(fixedRouteEvent.pending.result.storyImpact.includes("改寫") || fixedRouteEvent.pending.result.storyImpact.includes("避開"), "Fixed good route should explain the story improvement.");
+assert(["改寫", "避開", "輪迴檔案", "偏離"].some((marker) => fixedRouteEvent.pending.result.storyImpact.includes(marker) || fixedRouteEvent.pending.result.text.includes(marker)), "Fixed good route should explain the story improvement.");
 
 let prisonRealmEvent = launchEventForScenario("jujutsu-kaisen-shibuya");
 prisonRealmEvent = core.resolveEvent(prisonRealmEvent, "jjk-prison-realm-sense");
@@ -1288,6 +1811,28 @@ assert(alchemyFinaleEvent.screen === "event-result", "Returning Alphonse's body 
 assert(alchemyFinaleEvent.party.some((member) => member.id === "edward-elric"), "Returning Alphonse's body should recruit hidden Edward.");
 assert(alchemyFinaleEvent.run.temporaryPowers.some((power) => power.id === "equivalent-exchange-route"), "Returning Alphonse's body should grant a dedicated temporary power.");
 assert(alchemyFinaleEvent.pending.result.rewards.length && alchemyFinaleEvent.pending.result.costs.length && alchemyFinaleEvent.pending.result.storyImpact.includes("阿爾"), "The Fullmetal Alchemist result should clearly show rewards, costs, and story impact.");
+
+let genshinLiyueEvent = launchEventForScenario("genshin-liyue-childe");
+genshinLiyueEvent = core.resolveEvent(genshinLiyueEvent, "genshin-rite-of-parting");
+assert(genshinLiyueEvent.screen === "event" && genshinLiyueEvent.pending.stage === 2 && genshinLiyueEvent.pending.choices.some((choice) => choice.id === "genshin-contract-read"), "The Genshin Liyue event should expose the contract-reading stage two route.");
+genshinLiyueEvent = core.resolveEvent(genshinLiyueEvent, "genshin-contract-read");
+assert(genshinLiyueEvent.screen === "event" && genshinLiyueEvent.pending.stage === 3 && genshinLiyueEvent.pending.choices.some((choice) => choice.id === "genshin-morax-contract-revealed"), "The Genshin Liyue event should expose the Morax contract reveal final choice.");
+genshinLiyueEvent = core.resolveEvent(genshinLiyueEvent, "genshin-morax-contract-revealed");
+assert(genshinLiyueEvent.screen === "event-result", "Revealing the Liyue contract should show a result screen before returning to the map.");
+assert(genshinLiyueEvent.party.some((member) => member.id === "zhongli-morax"), "Revealing the Liyue contract should recruit hidden Zhongli.");
+assert(genshinLiyueEvent.run.temporaryPowers.some((power) => power.id === "morax-contract-route"), "Revealing the Liyue contract should grant a dedicated temporary power.");
+assert(genshinLiyueEvent.pending.result.rewards.length && genshinLiyueEvent.pending.result.costs.length && genshinLiyueEvent.pending.result.storyImpact.includes("璃月"), "The Genshin Liyue result should clearly show rewards, costs, and story impact.");
+
+let genshinInazumaEvent = launchEventForScenario("genshin-inazuma-vision-hunt");
+genshinInazumaEvent = core.resolveEvent(genshinInazumaEvent, "inazuma-komore-network");
+assert(genshinInazumaEvent.screen === "event" && genshinInazumaEvent.pending.stage === 2 && genshinInazumaEvent.pending.choices.some((choice) => choice.id === "inazuma-yae-wish-plan"), "The Genshin Inazuma event should expose the Yae wish-plan stage two route.");
+genshinInazumaEvent = core.resolveEvent(genshinInazumaEvent, "inazuma-yae-wish-plan");
+assert(genshinInazumaEvent.screen === "event" && genshinInazumaEvent.pending.stage === 3 && genshinInazumaEvent.pending.choices.some((choice) => choice.id === "inazuma-ei-wish-reached"), "The Genshin Inazuma event should expose the wish-reaching final choice.");
+genshinInazumaEvent = core.resolveEvent(genshinInazumaEvent, "inazuma-ei-wish-reached");
+assert(genshinInazumaEvent.screen === "event-result", "Reaching Ei in the Plane of Euthymia should show a result screen before returning to the map.");
+assert(genshinInazumaEvent.party.some((member) => member.id === "raiden-ei"), "Reaching Ei with the people's wishes should recruit hidden Raiden Ei.");
+assert(genshinInazumaEvent.run.temporaryPowers.some((power) => power.id === "plane-euthymia-route"), "Reaching Ei should grant a dedicated temporary power.");
+assert(genshinInazumaEvent.pending.result.rewards.length && genshinInazumaEvent.pending.result.costs.length && genshinInazumaEvent.pending.result.storyImpact.includes("眼狩令"), "The Genshin Inazuma result should clearly show rewards, costs, and story impact.");
 assert(core.eventOutcomeCount >= 27, "Scenario events should preserve at least the original twenty-seven generic endings.");
 assert(data.scenarios.filter((scenario) => scenario.id !== "tutorial").every((scenario) => scenario.hiddenProtagonistId), "Every formal scenario should declare one hidden protagonist.");
 
@@ -1363,12 +1908,107 @@ state.upgradeTokens = 1;
 state.sideStories = 0;
 state = core.buyPermanentUpgrade(state, "team-opening-block");
 assert(state.permanentUpgrades.team.includes("team-opening-block") && state.upgradeTokens === 0, "A boss upgrade token should buy one permanent upgrade for free.");
-state.party[0].hp = 0;
-state.party[0].stress = 100;
+assert(data.permanentUpgrades.length >= 10 && data.permanentUpgrades.every((upgrade) => upgrade.effects && Object.keys(upgrade.effects).length), "Team permanent upgrades should offer multiple real combat effect choices.");
+let teamUpgradeCombat = createCompletedTutorialState();
+fillOwnedRoster(teamUpgradeCombat);
+teamUpgradeCombat.permanentUpgrades.team = ["team-opening-block", "team-opening-draw", "team-opening-energy", "team-field-aegis", "team-evasive-opening"];
+teamUpgradeCombat = core.beginScenario(teamUpgradeCombat, "alien");
+if (teamUpgradeCombat.screen === "scenario-intro") teamUpgradeCombat = core.continueScenarioIntro(teamUpgradeCombat);
+teamUpgradeCombat = core.chooseMapNode(teamUpgradeCombat, teamUpgradeCombat.run.map.layers[0][0].id);
+const teamUpgradeActive = core.getAliveActiveParty(teamUpgradeCombat);
+assert(teamUpgradeCombat.screen === "combat" && teamUpgradeCombat.maxEnergy === core.calculateEnergy(teamUpgradeCombat) + 1, "Opening energy team upgrade should add one first-turn energy.");
+assert(teamUpgradeCombat.hand.length >= 6, "Opening draw team upgrade should increase the first-turn hand size.");
+assert(teamUpgradeActive.every((member) => member.block >= 5 && member.evade >= 1), "Opening block, turn aegis, and evade team upgrades should apply to every active member.");
+const escapedRepairMember = state.party.find((member) => member.id !== "player-avatar") || state.party[0];
+escapedRepairMember.hp = 0;
+escapedRepairMember.stress = 100;
+escapedRepairMember.active = true;
 state.rewardPoints = 1;
 state.screen = "defeat";
+state.pending = {
+  kind: "defeat",
+  report: {
+    kind: "defeat-report",
+    outcomeId: "narrow-escape",
+    title: "成功逃脫",
+    subtitle: "測試用逃脫結算。",
+    line: data.defeatOutcomes.find((outcome) => outcome.id === "narrow-escape").lines[0],
+    imageFile: "defeat-narrow-escape-02.png",
+    scenarioId: state.run?.scenarioId || "alien",
+    scenarioName: "測試劇本",
+    superHard: false,
+    fates: [{ characterId: escapedRepairMember.id, name: escapedRepairMember.name, fate: "escaped", label: "逃脫", text: data.defeatFates.escaped.text, tone: "escape" }]
+  }
+};
 state = core.returnAfterDefeat(state);
-assert(state.party[0].hp >= 1, "A downed member must return with at least one HP even when repair points are insufficient.");
+assert(state.party.find((member) => member.id === escapedRepairMember.id).hp >= 1, "A downed escaped member must return with at least one HP even when repair points are insufficient.");
+
+let defeatConsequenceState = createCompletedTutorialState();
+fillOwnedRoster(defeatConsequenceState, ["zheng-zha", "zhan-lan", "zero"]);
+defeatConsequenceState.screen = "defeat";
+defeatConsequenceState.rewardPoints = 10000;
+defeatConsequenceState.sideStories = 6;
+defeatConsequenceState.run = { id: "defeat-test", scenarioId: "alien", sourceScenarioId: "alien", acquiredDeckIds: [], acquiredEquipmentIds: [], temporaryPowers: [] };
+defeatConsequenceState.pending = {
+  kind: "defeat",
+  report: {
+    kind: "defeat-report",
+    outcomeId: "death-confirmed",
+    title: "死亡確認",
+    subtitle: "測試用死亡結算。",
+    line: data.defeatOutcomes.find((outcome) => outcome.id === "death-confirmed").lines[0],
+    imageFile: "defeat-death-confirmed-01.png",
+    scenarioId: "alien",
+    scenarioName: "異形",
+    superHard: false,
+    fates: [
+      { characterId: "zheng-zha", name: "鄭吒", fate: "dead", label: "永久死亡", text: data.defeatFates.dead.text, tone: "fatal" },
+      { characterId: "zhan-lan", name: "詹嵐", fate: "injured", label: "重傷", text: data.defeatFates.injured.text, tone: "injury" },
+      { characterId: "zero", name: "零點", fate: "lost", label: "失散", text: data.defeatFates.lost.text, tone: "lost" }
+    ]
+  }
+};
+defeatConsequenceState = core.returnAfterDefeat(defeatConsequenceState);
+assert(core.memberRecoveryStatus(defeatConsequenceState.party.find((member) => member.id === "zheng-zha")) === "dead", "Defeat consequence should support permanent death.");
+assert(core.memberRecoveryStatus(defeatConsequenceState.party.find((member) => member.id === "zhan-lan")) === "injured", "Defeat consequence should support severe injury.");
+assert(core.memberRecoveryStatus(defeatConsequenceState.party.find((member) => member.id === "zero")) === "lost", "Defeat consequence should support lost-in-transit state.");
+assert(!core.getActiveParty(defeatConsequenceState).some((member) => ["zheng-zha", "zhan-lan", "zero"].includes(member.id)), "Dead, injured, and lost members should not remain deployable.");
+const failedAlienMissions = core.rescueMissionsForScenario(defeatConsequenceState, "alien");
+assert(failedAlienMissions.length === 3, "Dead, injured, and lost members should create active follow-up missions for the failed scenario.");
+assert(["復活代價線", "重傷復健線", "黑化歸來線"].every((routeType) => failedAlienMissions.some((mission) => mission.routeType === routeType)), "Failure follow-up missions should split into revival, rehab, and dark-return routes.");
+assert(core.scenarioFateStatus(defeatConsequenceState, "alien").fatePressure >= 10, "Defeat follow-up records should raise scenario fate pressure.");
+let rescueMissionState = structuredClone(defeatConsequenceState);
+rescueMissionState.rewardPoints = 0;
+rescueMissionState.sideStories = 0;
+let rescueDeployCount = 0;
+rescueMissionState.party = rescueMissionState.party.map((member) => {
+  const canDeploy = member.id !== "player-avatar" && !core.memberRecoveryStatus(member);
+  const active = canDeploy && rescueDeployCount < 3;
+  if (active) rescueDeployCount += 1;
+  return { ...member, active };
+});
+rescueMissionState.screen = "hub";
+rescueMissionState.pending = null;
+rescueMissionState.campaign.unlockedScenarios = [...new Set([...rescueMissionState.campaign.unlockedScenarios, "alien"])];
+rescueMissionState = core.beginScenario(rescueMissionState, "alien");
+if (rescueMissionState.screen === "recruit") rescueMissionState = core.chooseRecruit(rescueMissionState, rescueMissionState.pending.candidates[0]);
+if (rescueMissionState.screen === "scenario-intro") rescueMissionState = core.continueScenarioIntro(rescueMissionState);
+const rescueEventNode = rescueMissionState.run.map.layers.flat().find((node) => node.type === "event");
+rescueMissionState.run.currentLayer = rescueEventNode.layer - 1;
+rescueMissionState.run.currentLane = rescueEventNode.lane;
+rescueMissionState = core.chooseMapNode(rescueMissionState, rescueEventNode.id);
+const zeroRescueChoice = rescueMissionState.pending.choices.find((choice) => choice.title.includes("零點"));
+assert(zeroRescueChoice && zeroRescueChoice.routeType === "黑化歸來線", "A lost character should surface a dark-return rescue route in the next event.");
+rescueMissionState = core.resolveEvent(rescueMissionState, zeroRescueChoice.id);
+rescueMissionState = core.resolveEvent(rescueMissionState, rescueMissionState.pending.choices.find((choice) => choice.routeId === zeroRescueChoice.routeId).id);
+rescueMissionState = core.resolveEvent(rescueMissionState, rescueMissionState.pending.choices.find((choice) => choice.routeId === zeroRescueChoice.routeId).id);
+assert(rescueMissionState.screen === "event-result" && !core.memberRecoveryStatus(rescueMissionState.party.find((member) => member.id === "zero")), "Completing a rescue route should recover a lost character without using the paid recovery action.");
+assert(rescueMissionState.permanentUpgrades.signatures.includes("zero") && rescueMissionState.permanentUpgrades.bloodlines.includes("zero"), "A dark-return rescue should make the lost character come back stronger.");
+assert(rescueMissionState.party.find((member) => member.id === "zero")?.fateReturnMode === "hardened-return", "Dark-return rescued characters should keep a visible return marker.");
+assert(core.scenarioFateStatus(rescueMissionState, "alien").rescueCount >= 1, "Rescue completion should be written into the scenario fate archive.");
+const pointsBeforeRecovery = defeatConsequenceState.rewardPoints;
+defeatConsequenceState = core.recoverCharacter(defeatConsequenceState, "zheng-zha");
+assert(!core.memberRecoveryStatus(defeatConsequenceState.party.find((member) => member.id === "zheng-zha")) && defeatConsequenceState.rewardPoints < pointsBeforeRecovery, "Recovery should spend resources and return a dead member to the roster.");
 
 // Unique card ownership: only starter cards repeat; other cards upgrade instead of duplicating.
 let uniqueCardState = core.createInitialState();
@@ -1398,6 +2038,7 @@ const normalizedFieldMedicines = normalizedDuplicateSave.deck.filter((entry) => 
 assert(normalizedFieldMedicines.length === 1 && normalizedFieldMedicines[0].upgraded, "Save normalization should collapse old unique duplicates into one upgraded card.");
 const normalRewards = core.chooseCardRewards(core.createInitialState(), 20, "battle");
 assert(normalRewards.every((card) => ["common", "uncommon"].includes(card.rarity)), "Normal combat rewards should only offer R/SR cards.");
+assert(normalRewards.every((card) => rewardSourceId(card) === "main-god"), "Default card rewards should use the base Main God card pool when no scenario is active.");
 const eliteRewards = core.chooseCardRewards(core.createInitialState(), 20, "elite");
 assert(eliteRewards.some((card) => card.rarity === "rare") && eliteRewards.every((card) => ["common", "uncommon", "rare"].includes(card.rarity)), "Elite and miniboss rewards should be able to offer SSR cards.");
 const bossRewards = core.chooseBossRewards(core.createInitialState());
@@ -1405,6 +2046,26 @@ const bossCard = bossRewards.find((reward) => reward.kind === "card");
 const bossEquipment = bossRewards.find((reward) => reward.kind === "equipment");
 assert(core.cardsById[bossCard.itemId].rarity === "rare", "Boss rewards should include a high-rarity card.");
 assert(core.equipmentById[bossEquipment.itemId].rarity === "legendary", "Boss equipment rewards should prioritize legendary equipment.");
+const alienRewardState = core.createInitialState();
+alienRewardState.run = { id: "test-alien-reward-run", scenarioId: "alien" };
+const alienCardRewards = core.chooseCardRewards(alienRewardState, 999, "elite");
+assert(alienCardRewards.length > 0, "Alien scenario should still have base card rewards.");
+assert(alienCardRewards.every((card) => rewardSourceId(card) === "main-god"), "Early scenario card rewards should not draw anime or game source cards.");
+const infinityCastleRewardState = core.createInitialState();
+infinityCastleRewardState.run = { id: "test-infinity-castle-reward-run", scenarioId: "infinity-castle" };
+const infinityCastleRewards = core.chooseCardRewards(infinityCastleRewardState, 999, "elite");
+assert(infinityCastleRewards.some((card) => rewardSourceId(card) === "demon-slayer"), "Demon Slayer cards should be obtainable as rewards in the Demon Slayer scenario.");
+assert(infinityCastleRewards.every((card) => ["main-god", "demon-slayer"].includes(rewardSourceId(card))), "Demon Slayer scenario rewards should only mix Demon Slayer and base Main God cards.");
+const alienBossRewardState = core.createInitialState();
+alienBossRewardState.run = { id: "test-alien-boss-reward-run", scenarioId: "alien" };
+const alienBossCard = core.chooseBossRewards(alienBossRewardState).find((reward) => reward.kind === "card");
+assert(!alienBossCard || rewardSourceId(core.cardsById[alienBossCard.itemId]) === "main-god", "Boss card rewards should follow the active scenario source restriction.");
+let sourceShopState = core.createInitialState();
+sourceShopState.screen = "hub";
+sourceShopState.rewardPoints = 999999;
+sourceShopState.sideStories = 999;
+sourceShopState = core.buyShopItem(sourceShopState, "shop-hinokami-clear-blue-sky");
+assert(sourceShopState.deck.some((entry) => entry.cardId === "hinokami-clear-blue-sky"), "Shop purchases should still allow off-scenario source cards.");
 
 // Legacy migration preserves progress and maps clear count to campaign unlocks.
 const migrated = core.normalizeState({
@@ -1450,11 +2111,109 @@ assert(renderedHtml.includes('class="energy-badge">+3') && renderedHtml.includes
 assert(["生命 +8", "專屬牌+", "血統解放"].every((label) => renderedHtml.includes(label)), "Roster source sections should keep character upgrade actions.");
 assert(core.setHubTab(uiState, "shop").hubTab === "shop", "Hub tabs should persist through core state.");
 assert(core.setHubTab(uiState, "growth").hubTab === "growth", "The custom growth tab should persist through core state.");
+const recoveryUiState = createCompletedTutorialState();
+fillOwnedRoster(recoveryUiState, ["zheng-zha", "zhan-lan", "zero"]);
+recoveryUiState.hubTab = "roster";
+recoveryUiState.rewardPoints = 7000;
+recoveryUiState.sideStories = 5;
+const recoveryUiMember = recoveryUiState.party.find((member) => member.id === "zheng-zha");
+recoveryUiMember.recoveryStatus = "dead";
+recoveryUiMember.recoveryRunsRemaining = 0;
+recoveryUiMember.active = false;
+recoveryUiMember.hp = 0;
+recoveryUiMember.fateReturnMode = "hardened-return";
+recoveryUiMember.fateReturnNote = "鄭吒從失散裂縫裡變強回來。";
+globalThis.localStorage = { getItem: () => JSON.stringify(recoveryUiState), setItem: () => undefined };
+renderedHtml = "";
+await import("../src/game-ui.js?recovery-roster");
+assert(renderedHtml.includes("永久死亡") && renderedHtml.includes("復活 · 6000 點 / 4 支線") && renderedHtml.includes("recovery-action") && renderedHtml.includes("黑化歸來"), "Roster UI should render defeat recovery state, return markers, and resource action.");
+const defeatUiState = createCompletedTutorialState();
+fillOwnedRoster(defeatUiState, ["zheng-zha", "zhan-lan", "zero"]);
+defeatUiState.screen = "defeat";
+defeatUiState.pending = {
+  kind: "defeat",
+  report: {
+    kind: "defeat-report",
+    outcomeId: "death-confirmed",
+    title: "死亡確認",
+    subtitle: "測試用失敗畫面。",
+    line: data.defeatOutcomes.find((outcome) => outcome.id === "death-confirmed").lines[0],
+    imageFile: "defeat-death-confirmed-01.png",
+    scenarioId: "alien",
+    scenarioName: "異形",
+    superHard: true,
+    fates: [
+      { characterId: "zheng-zha", name: "鄭吒", fate: "dead", label: "永久死亡", text: data.defeatFates.dead.text, tone: "fatal" },
+      { characterId: "zhan-lan", name: "詹嵐", fate: "injured", label: "重傷", text: data.defeatFates.injured.text, tone: "injury" },
+      { characterId: "zero", name: "零點", fate: "lost", label: "失散", text: data.defeatFates.lost.text, tone: "lost" }
+    ]
+  }
+};
+globalThis.localStorage = { getItem: () => JSON.stringify(defeatUiState), setItem: () => undefined };
+renderedHtml = "";
+await import("../src/game-ui.js?defeat-report");
+assert(renderedHtml.includes("defeat-report") && renderedHtml.includes("defeat-death-confirmed-01.png") && renderedHtml.includes("超困難副本") && renderedHtml.includes("永久死亡") && renderedHtml.includes("後續路線") && renderedHtml.includes("承受後果，返回主神空間"), "Defeat UI should render IMAGE2 report art, fate cards, follow-up route copy, and return action.");
+const fateResultUiState = createCompletedTutorialState();
+fateResultUiState.screen = "event-result";
+fateResultUiState.pending = {
+  kind: "event-result",
+  scenarioId: "juon",
+  result: {
+    title: "詛咒獎勵門",
+    text: "隊伍用詛咒換取高價值獎勵。",
+    rewards: ["稀有卡牌"],
+    costs: ["命運壓力 +18"],
+    storyImpact: "高代價路線被寫入輪迴檔案。",
+    worldState: "咒怨宅邸留下高壓殘響。",
+    imageFile: "system-encounter-cyberpunk-layout.png",
+    dialogue: [
+      { speaker: "楚軒", line: "凡人的智慧啊，只要知道主神怎麼出題，結局就不是唯一答案。" },
+      { speaker: "主角", line: "第 7 人支援已接上。" }
+    ],
+    fatePressure: 66,
+    pressureLevel: { label: "高壓" },
+    teamStance: { summary: "隊友對高代價路線產生分歧。", reactions: ["鄭吒：反對拿隊伍生命作籌碼。"] }
+  }
+};
+globalThis.localStorage = { getItem: () => JSON.stringify(fateResultUiState), setItem: () => undefined };
+renderedHtml = "";
+await import("../src/game-ui.js?fate-result-art");
+assert(renderedHtml.includes("system-encounter-cyberpunk-layout.png") && renderedHtml.includes("輪迴壓力") && renderedHtml.includes("隊友立場") && renderedHtml.includes("對話劇本") && renderedHtml.includes("凡人的智慧啊"), "Event result UI should render system encounter art, pressure, ally stance, and dialogue panels.");
+const eventChoiceUiState = createCompletedTutorialState();
+eventChoiceUiState.screen = "event";
+eventChoiceUiState.pending = {
+  kind: "event",
+  scenarioId: "genshin-inazuma-vision-hunt",
+  stage: 1,
+  path: [],
+  choices: [
+    {
+      id: "system-inazuma-rescue",
+      routeType: "系統救援局",
+      title: "救回雷電影的核心命線",
+      text: "千手百眼神像裡的願望正在偏移。",
+      imageFile: "system-encounter-inazuma-rescue.png"
+    }
+  ]
+};
+globalThis.localStorage = { getItem: () => JSON.stringify(eventChoiceUiState), setItem: () => undefined };
+renderedHtml = "";
+await import("../src/game-ui.js?event-choice-art");
+assert(renderedHtml.includes("choice-art") && renderedHtml.includes("system-encounter-inazuma-rescue.png") && renderedHtml.includes("系統救援局") && renderedHtml.includes("tactical-rest-art") && renderedHtml.includes("system-rest-inazuma.png"), "Event choice UI should render IMAGE2 choice art, route labels, and the scenario tactical-rest table.");
+const campUiState = createCompletedTutorialState();
+campUiState.screen = "camp";
+campUiState.run = { scenarioId: "cyberpunk-edgerunners-night-city", currentNodeId: "camp-node", map: { layers: [] } };
+globalThis.localStorage = { getItem: () => JSON.stringify(campUiState), setItem: () => undefined };
+renderedHtml = "";
+await import("../src/game-ui.js?camp-rest-table");
+assert(renderedHtml.includes("整頓戰術桌") && renderedHtml.includes("tactical-rest-art") && renderedHtml.includes("system-rest-cyberpunk.png"), "Camp UI should render the scenario tactical-rest table above rest choices.");
 uiState.hubTab = "deployment";
 uiState.campaign.unlockedScenarios = data.scenarios.map((scenario) => scenario.id).filter((id) => id !== "tutorial");
+uiState.campaign.completedScenarios = ["alien", "juon", "mummy-curse", "jurassic-island"];
+globalThis.localStorage = { getItem: () => JSON.stringify(uiState), setItem: () => undefined };
 renderedHtml = "";
 await import("../src/game-ui.js?deployment-random");
-assert(renderedHtml.includes("下一場隨機劇本") && renderedHtml.includes("抽選池") && renderedHtml.includes("預估") && renderedHtml.includes("超困難劇本") && renderedHtml.includes("艾爾登法環"), "Deployment should replace normal scenario picking with a random normal entry while keeping super-hard scenarios visible.");
+assert(renderedHtml.includes("原劇情後亂序投放") && renderedHtml.includes("下一場隨機劇本") && renderedHtml.includes("抽選池") && renderedHtml.includes("中危亂序池") && renderedHtml.includes("預估") && renderedHtml.includes("超困難劇本") && renderedHtml.includes("艾爾登法環"), "Deployment should show the new progression overview, shuffled scenario pool, and visible super-hard entry.");
 uiState.hubTab = "growth";
 uiState.rewardPoints = 20000;
 uiState.playerGrowth.tagOffers = ["vampire-seed", "vampire-count", "t-virus-adaptation", "spider-sense", "inner-qi-breath", "black-flame-seed"];
@@ -1463,6 +2222,7 @@ uiState.playerGrowth.mutations = ["blood-virus-core"];
 uiState.playerGrowth.activeTagIds = ["vampire-seed", "t-virus-adaptation"];
 uiState.playerGrowth.activeMutationId = "blood-virus-core";
 uiState.playerGrowth.art = core.customMutationsById["blood-virus-core"].art;
+uiState.equipmentInventory.push({ instanceId: "ui-support-gauss", equipmentId: "gauss-pistol", upgraded: false, acquiredRunId: null });
 uiState.equipmentInventory.push({ instanceId: "ui-support-battery", equipmentId: "tactical-battery", upgraded: false, acquiredRunId: null });
 uiState.playerGrowth.supportEquipmentIds = ["ui-support-battery"];
 renderedHtml = "";
@@ -1470,6 +2230,10 @@ await import("../src/game-ui.js?custom-growth");
 assert(renderedHtml.includes("第 7 人支援") && renderedHtml.includes("血統與裝備槽") && renderedHtml.includes("逆種血核") && renderedHtml.includes("支援裝備 1"), "The custom growth tab should render seventh-support loadout controls.");
 assert(["變異血統", "一般血統 1", "一般血統 2", "支援裝備 1", "支援裝備 2"].every((label) => renderedHtml.includes(label)), "The seventh-support controls should preserve 1 mutation, 2 normal bloodlines, and 2 support equipment slots.");
 assert(renderedHtml.includes("growth-active-loadout") && renderedHtml.includes("support-pick-card") && renderedHtml.includes("support-slot-card") && renderedHtml.includes("ui-support-battery"), "The custom growth tab should render clickable image loadout cards.");
+const supportSlotOneStart = renderedHtml.indexOf("<strong>支援裝備 1</strong>");
+const supportSlotTwoStart = renderedHtml.indexOf("<strong>支援裝備 2</strong>");
+const supportSlotOneHtml = renderedHtml.slice(supportSlotOneStart, supportSlotTwoStart);
+assert(supportSlotOneHtml.indexOf("戰術能量電池") >= 0 && supportSlotOneHtml.indexOf("高斯手槍") >= 0 && supportSlotOneHtml.indexOf("戰術能量電池") < supportSlotOneHtml.indexOf("高斯手槍"), "Equipped support equipment should render before unequipped equipment in the picker.");
 assert(renderedHtml.includes("支援槽 1") && renderedHtml.includes("戰術能量電池") && renderedHtml.includes("第 7 人支援"), "The growth effect matrix should surface active support equipment and custom support effects.");
 assert(renderedHtml.includes("RPG 六維") && renderedHtml.includes("主神候選池") && renderedHtml.includes("標籤矩陣") && renderedHtml.includes("初階血族") && renderedHtml.includes("伯爵血核") && renderedHtml.includes("6600 點 / 1 支線"), "The custom growth tab should render stats, offers, tag matrix UI, and dual-resource costs.");
 uiState.hubTab = "shop";
@@ -1525,10 +2289,12 @@ globalThis.localStorage = { getItem: () => JSON.stringify(combatUiState), setIte
 renderedHtml = "";
 await import("../src/game-ui.js?combat-frame");
 assert(renderedHtml.includes("hand-zone") && renderedHtml.includes("card-frame") && renderedHtml.includes("rarity-sr"), "Combat hand cards should output the shared rarity frame class.");
+assert(renderedHtml.indexOf("hand-zone") < renderedHtml.indexOf("command-rail"), "Combat hand should render before the command rail so cards stay close to the battlefield.");
 assert(renderedHtml.includes("combat-status-bar") && renderedHtml.includes("combat-intent-strip") && renderedHtml.includes("抽牌") && renderedHtml.includes("耗盡"), "Combat should render a tactical status bar with energy and pile summaries.");
-assert(renderedHtml.includes("上下雙排戰場") && renderedHtml.indexOf("enemy-line") < renderedHtml.indexOf("party-combat"), "Combat should place enemies above the two-row party grid.");
+assert(renderedHtml.includes("敵我戰術桌") && renderedHtml.indexOf("enemy-line") < renderedHtml.indexOf("party-combat") && renderedHtml.indexOf("party-combat") < renderedHtml.indexOf("hand-zone"), "Combat should keep enemies, party status, and the hand in a close tactical reading order.");
 assert(renderedHtml.includes("target-lock") && renderedHtml.includes("目標鎖定") && renderedHtml.includes("intent-chip") && renderedHtml.includes("selected"), "Combat should surface the selected enemy and intent summary.");
 assert(renderedHtml.includes("modifier-chip-row") && renderedHtml.includes("血統") && renderedHtml.includes("裝備") && renderedHtml.includes("自創支援") && renderedHtml.includes("能量不足：需要"), "Combat cards should render modifier chips and disabled reasons.");
+assert(renderedHtml.includes('class="game-tooltip"') && renderedHtml.includes("data-tooltip=") && renderedHtml.includes("持有人：鄭吒") && renderedHtml.includes("效果：首張攻擊 +7"), "Combat modifier chips should expose hover tooltips with equipment holder and effect text.");
 assert(renderedHtml.includes("command-rail") && renderedHtml.includes("指揮短欄") && renderedHtml.includes("選中敵人") && renderedHtml.includes("戰場通訊") && renderedHtml.includes("完整戰鬥資料"), "Combat should render a compact command rail with selected target and latest comms before the collapsible details.");
 assert(renderedHtml.includes("戰鬥加成來源") && renderedHtml.includes("高斯手槍") && renderedHtml.includes("戰術能量電池"), "Combat should keep loadout and seventh-support rows inside the collapsible effect matrix.");
 
