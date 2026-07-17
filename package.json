@@ -7,7 +7,8 @@
     "generate:audio": "node scripts/generate-audio-assets.mjs",
     "dev": "vite --host 127.0.0.1",
     "preview:static": "node scripts/serve.mjs",
-    "check": "node scripts/smoke-test.mjs"
+    "check": "node scripts/smoke-test.mjs",
+    "publish:version": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/publish-version.ps1"
   },
   "devDependencies": {
     "typescript": "^5.8.0",

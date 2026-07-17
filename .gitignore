@@ -1,0 +1,9 @@
+# Dependencies and local working output
+node_modules/
+tmp/
+
+# Local tooling and desktop builds
+.agents/
+.codex/
+*.exe
+
